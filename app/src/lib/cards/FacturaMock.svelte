@@ -23,6 +23,7 @@
 		total: string;
 		label?: string;
 	} = $props();
+	const disc = $derived(discount && !discount.startsWith('-') && !discount.startsWith('−') ? '−' + discount : discount);
 </script>
 
 <article class="relative overflow-hidden rounded-card border border-line bg-card p-4 shadow-card">
@@ -45,7 +46,7 @@
 	<div class="mt-2 space-y-0.5 border-t border-line pt-2 text-sm">
 		{#if subtotal}<p class="flex justify-between"><span>Subtotal</span><span>{subtotal}</span></p>{/if}
 		{#if iva}<p class="flex justify-between"><span>IVA</span><span>{iva}</span></p>{/if}
-		{#if discount}<p class="flex justify-between text-secondary"><span>Descuento cupón</span><span>{discount}</span></p>{/if}
+		{#if discount}<p class="flex justify-between text-secondary"><span>Descuento cupón</span><span>{disc}</span></p>{/if}
 		<p class="flex justify-between text-lg font-bold"><span>Total</span><span>{total}</span></p>
 	</div>
 	<p class="mt-2 text-xs text-muted">Se enviaría por email (demo: no se envía nada).</p>
