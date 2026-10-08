@@ -1,0 +1,551 @@
+openapi: 3.0.3
+info:
+  title: Farmaenlace mock API
+  version: "1.0"
+  description: >
+    Simulación de los 7 servicios Farmaenlace. Auth SigV4 (execute-api) + allowlist
+    del rol orquestador. Datos sintéticos; facturas SIMULADA_NO_TRANSMITIDA.
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com
+    variables:
+      apiId: { default: connect-atv-farmaenlace-api }
+      region: { default: us-east-1 }
+  - url: http://127.0.0.1:8765
+security:
+  - sigv4: []
+paths:
+  /health:
+    get:
+      summary: Health
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  service: { type: string }
+                  products: { type: integer }
+
+  /catalogo/productos:
+    get:
+      summary: Listar / buscar productos
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: incluir_receta, in: query, schema: { type: string, default: "true" } }
+        - { name: limit, in: query, schema: { type: integer, default: 6, maximum: 50 } }
+      responses:
+        "200":
+          description: items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Producto" } }
+                  count: { type: integer }
+
+  /catalogo/productos/{sku}:
+    get:
+      summary: Producto por SKU
+      parameters:
+        - { name: sku, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: producto
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Producto" }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /farmacias:
+    get:
+      summary: Farmacias ordenadas por distancia
+      parameters:
+        - { name: lat, in: query, schema: { type: number } }
+        - { name: lng, in: query, schema: { type: number } }
+      responses:
+        "200":
+          description: items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Farmacia" } }
+                  count: { type: integer }
+
+  /farmacias/{id}:
+    get:
+      summary: Farmacia por id
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: lat, in: query, schema: { type: number } }
+        - { name: lng, in: query, schema: { type: number } }
+      responses:
+        "200":
+          description: farmacia
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Farmacia" }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /inventario:
+    get:
+      summary: Matriz de stock
+      parameters:
+        - { name: skus, in: query, schema: { type: string }, description: "csv de SKUs" }
+      responses:
+        "200":
+          description: stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stock:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      additionalProperties: { type: integer }
+
+  /inventario/{id}:
+    get:
+      summary: Stock de una farmacia
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pharmacyId: { type: string }
+                  stock: { type: object, additionalProperties: { type: integer } }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /inventario/{id}/{sku}:
+    get:
+      summary: Stock SKU en farmacia
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: sku, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pharmacyId: { type: string }
+                  sku: { type: string }
+                  stock: { type: integer }
+
+  /crm/clientes:
+    post:
+      summary: Crear cliente (sandbox)
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cedula]
+              properties:
+                cedula: { type: string, pattern: "^\\d{10}$" }
+                name: { type: string }
+      responses:
+        "201":
+          description: creado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cliente" }
+        "409":
+          description: conflicto
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /crm/clientes/{cedula}:
+    get:
+      summary: Obtener cliente
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: cedula, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: cliente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cliente: { $ref: "#/components/schemas/Cliente" }
+                  origen: { type: string, enum: [sandbox, seed] }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    put:
+      summary: Reemplazar cliente
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: cedula, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Cliente" }
+      responses:
+        "200":
+          description: guardado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cliente" }
+
+  /smartclub/{cedula}:
+    get:
+      summary: SmartClub + cupón + promos
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: cedula, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cedula: { type: string }
+                  socio: { type: boolean }
+                  cashback_saldo: { type: number }
+                  cupon: { $ref: "#/components/schemas/Cupon" }
+                  promociones: { type: array, items: { type: object } }
+
+  /smartclub/{cedula}/cupones:
+    post:
+      summary: Asegurar cupón
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: cedula, in: path, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                qr: { type: string, default: BIENVENIDA }
+      responses:
+        "200":
+          description: cupón
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cupon" }
+
+  /pedidos:
+    post:
+      summary: Reservar pedido (idempotente)
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cedula, pharmacyId, items, billing]
+              properties:
+                cedula: { type: string }
+                pharmacyId: { type: string }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      sku: { type: string }
+                      qty: { type: integer }
+                      reposicion: { type: boolean }
+                billing:
+                  type: object
+                  properties:
+                    tipo: { type: string }
+                    nombre: { type: string }
+                    identificacion: { type: string }
+                    tipoId: { type: string }
+                    email: { type: string }
+      responses:
+        "201":
+          description: creado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Pedido" }
+        "200":
+          description: replay idempotente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Pedido" }
+
+  /pedidos/{orderNumber}:
+    get:
+      summary: Pedido por número
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: orderNumber, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: pedido
+          content:
+            application/json:
+              schema: { type: object }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /facturacion/comprobantes:
+    post:
+      summary: Emitir comprobante mock (SRI-shaped)
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, billing]
+              properties:
+                orderNumber: { type: string }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      sku: { type: string }
+                      qty: { type: integer }
+                billing:
+                  type: object
+                  required: [email]
+                  properties:
+                    tipo: { type: string }
+                    nombre: { type: string }
+                    identificacion: { type: string }
+                    tipoId: { type: string }
+                    email: { type: string }
+      responses:
+        "201":
+          description: comprobante
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comprobante" }
+
+  /facturacion/comprobantes/{n}:
+    get:
+      summary: Comprobante por número
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+        - { name: n, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: comprobante
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comprobante" }
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /sandbox:
+    delete:
+      summary: Borrar estado SBX# de la sesión
+      parameters:
+        - $ref: "#/components/parameters/XSandboxId"
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+
+  /admin/{svc}:
+    get:
+      summary: Listado admin (solo lectura)
+      parameters:
+        - name: svc
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [catalogo, farmacias, inventario, crm, smartclub, pedidos, facturacion]
+        - { name: interno, in: query, schema: { type: string }, description: "1 = condiciones_probables visibles" }
+      responses:
+        "200":
+          description: items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  items: { type: array, items: { type: object } }
+                  count: { type: integer }
+
+components:
+  securitySchemes:
+    sigv4:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: AWS SigV4 (execute-api), solo rol del orquestador
+
+  parameters:
+    XSandboxId:
+      name: X-Sandbox-Id
+      in: header
+      required: true
+      schema: { type: string, pattern: "^[A-Za-z0-9_.:-]{1,80}$" }
+      description: Aísla CRM/cupones/pedidos/facturas por sesión de demo
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, pattern: "^[A-Za-z0-9_-]{8,64}$" }
+
+  schemas:
+    Producto:
+      type: object
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        detail: { type: string }
+        price: { type: number }
+        iva: { type: number }
+        tags: { type: array, items: { type: string } }
+        requiere_receta: { type: boolean }
+        cashback_pct: { type: number }
+        boost: { type: integer }
+        precio_referencial: { type: boolean }
+        nota_precio: { type: string }
+        score: { type: integer }
+
+    Farmacia:
+      type: object
+      properties:
+        pharmacyId: { type: string }
+        name: { type: string }
+        brand: { type: string }
+        address: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        hours: { type: string }
+        phone: { type: string }
+        distance_m: { type: integer }
+        mapsUrl: { type: string }
+
+    Cliente:
+      type: object
+      properties:
+        cedula: { type: string }
+        name: { type: string }
+        archetype: { type: string }
+        ui_hints: { type: object }
+        frequent_products: { type: array, items: { type: object } }
+        farmacia_habitual: { type: string }
+        preferencias: { type: object }
+        consent: { type: object, nullable: true }
+        billing: { type: object, nullable: true }
+        smartclub:
+          type: object
+          properties:
+            socio: { type: boolean }
+            cashback_saldo: { type: number }
+        nuevo: { type: boolean }
+        created_at: { type: string }
+
+    Cupon:
+      type: object
+      properties:
+        code: { type: string }
+        title: { type: string }
+        amount: { type: number }
+        until: { type: string }
+        note: { type: string }
+        qr: { type: string }
+        cedula: { type: string }
+        status: { type: string, enum: [disponible, usado] }
+
+    Pedido:
+      type: object
+      properties:
+        order: { type: object }
+        invoice: { $ref: "#/components/schemas/Comprobante" }
+        pricing: { type: object }
+        coupon: { $ref: "#/components/schemas/Cupon" }
+        replay: { type: boolean }
+
+    Comprobante:
+      type: object
+      properties:
+        number: { type: string }
+        label: { type: string, example: SIMULADA }
+        orderNumber: { type: string }
+        customerName: { type: string }
+        customerId: { type: string }
+        total: { type: string }
+        sri:
+          type: object
+          description: Forma SRI MOCK; estado SIMULADA_NO_TRANSMITIDA; RUC emisor falso
+          properties:
+            estado: { type: string, example: SIMULADA_NO_TRANSMITIDA }
+            infoTributaria:
+              type: object
+              properties:
+                ruc: { type: string }
+                claveAcceso: { type: string, description: "49 dígitos + mod 11" }
+            infoFactura:
+              type: object
+              properties:
+                totalConImpuestos:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      codigoPorcentaje: { type: string, enum: ["0", "4"] }
+            detalles: { type: array, items: { type: object } }
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
