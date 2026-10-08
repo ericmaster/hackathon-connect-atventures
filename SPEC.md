@@ -1,10 +1,10 @@
 # Farmacéutico Virtual: especificación de producto
 
-> Estado: borrador del 8 oct 2026. **Decidido** = acordado con Eric. **Propuesta** = falta que Eric lo confirme. **Por definir** = no está decidido.
+> Estado: borrador del 8 oct 2026. **Decidido** = acordado con Eric. **Propuesta** = falta que Eric lo confirme. **Por definir** = no está decidido. **En prueba** = se está probando.
 > Fuentes: `PITCH.md`, `services/dashboard/canvas.json`, `services/dashboard/value-prop.json` y `docs/DRIVE-SUMMARY.md`.
 
 ## 1. Resumen
-El Farmacéutico Virtual es un asistente de Farmaenlace al que le hablas o le escribes y que **arma en el momento la pantalla que necesitas**: productos, la farmacia más cercana y tu beneficio SmartClub, sin catálogos ni formularios. Está pensado para los clientes que hoy evitan las apps y la web. Entran por un QR en la farmacia que les da un cupón y se identifican solo con su cédula.
+El Farmacéutico Virtual es un asistente de Farmaenlace al que le hablas o le escribes y que **arma en el momento la pantalla que necesitas**: productos, la farmacia más cercana y tu beneficio SmartClub, sin catálogos ni formularios. Está pensado para los clientes que hoy evitan las apps y la web. Entran por un QR en la farmacia que les da un beneficio y se identifican solo con su cédula. Los datos de facturación se piden una sola vez, justo antes de la primera compra.
 
 **High-concept:** *"Tu farmacéutico más cercano, en el celular."*
 
@@ -35,35 +35,52 @@ Versiones y checklist del método Montero: pestaña **Propuesta de valor** del d
 
 ## 5. Diferenciador: Interfaz de Usuario Generativa y Conversacional
 - **No es "solo un chatbot".** Un chatbot responde con texto. Aquí **la interfaz se arma sola para cada persona**: letra grande, pocos botones y tarjetas (producto, beneficio, farmacia, cupón) con acciones directas.
-- Es **audio-first**: un botón grande para hablar. Escribir es la alternativa.
+- Es **audio-first**: un botón grande para hablar (push-to-talk). Escribir es la alternativa.
 - **No hay formularios**: los datos se piden uno a uno, dentro de la conversación.
-- La misma capa sirve para la PWA móvil y para la web híbrida.
+- La misma capa sirve para la PWA móvil y para la web híbrida. El formato de la UI generada es A2UI (§8).
 - **Regla de demo:** la UI generada tiene que verse **en los primeros 10 s**.
 
-## 6. Flujos
-Cada paso indica lo que hace el usuario y, después de "→ UI:", lo que genera la interfaz.
+## 6. Flujos (decidido)
+Cada paso indica lo que hace el usuario y, después de "→ UI:", lo que genera la interfaz. Recorrido completo: onboarding → consulta → pedido y retiro → datos de facturación → compra completada. El hand-off está disponible en todo momento.
 
-### 6.1 Onboarding: QR + cupón (resuelve la paradoja de adopción)
-1. En la farmacia, el cliente ve un QR con un beneficio o promoción por instalar la app y mostrar su cupón al farmacéutico en un solo paso. **El beneficio queda abierto: lo define Farmaenlace** (ej. descuento o bonificación en la próxima compra). → UI: ninguna (material físico).
+### 6.1 Onboarding: QR + cédula (pseudo-FSM guiado por IA)
+La IA conversa, pero una máquina de estados decide el paso y no avanza hasta cumplirlo: `saludo → pedir_cedula → validar → buscar_crm → (confirmar_datos) → listo`.
+1. En la farmacia, el cliente ve un QR con un beneficio por instalar la app. **El beneficio queda abierto: lo define Farmaenlace** (ej. descuento o bonificación en la próxima compra). → UI: ninguna (material físico).
 2. Escanea el QR y se abre la PWA, sin pasar por la tienda de apps. → UI: saludo del Farmacéutico Virtual, botón grande para hablar y la opción de instalar en la pantalla de inicio.
-3. Dice o escribe su cédula, que es el único dato que se pide. → UI: un único campo numérico grande o la captura por voz.
-4. Si la cédula ya está en SmartClub o en los sistemas del grupo, el resto se precarga. → UI: tarjeta con los datos para confirmar ("¿Eres …?") y botones Sí/No.
-5. Si no hay datos, el sistema valida con el usuario conversando, una pregunta a la vez y sin formulario. → UI: preguntas cortas con respuesta por voz o con botones.
-6. Se emite el cupón. → UI: tarjeta grande con el código/QR del cupón y el texto "Muéstralo al farmacéutico".
-7. El cliente lo muestra al farmacéutico en un solo paso y se aplica el beneficio que haya definido Farmaenlace.
+3. El asistente pide la cédula; el usuario la dice o la escribe. **Es el único dato del onboarding.** → UI: una pregunta y un campo numérico grande (o la captura por voz).
+4. Se valida el dígito verificador (módulo 10) **en el dispositivo** y otra vez **en el backend**. Si falla, la pide de nuevo sin culpar ("¿me la repites?"); al tercer intento ofrece el hand-off. → UI: aviso corto en el mismo campo.
+5. Busca la cédula en el CRM. Si hay datos cruzados, los muestra para confirmar ("¿Eres …?", Sí/No). **El MVP asume que no hay datos cruzados**: este paso se salta.
+6. El beneficio del QR queda asociado a la cédula en SmartClub y se entrega al completar la compra (§6.5). → UI: "Listo, ya tienes tu beneficio" y pasa a la consulta.
+
+**Módulo 10 (cédula):** 10 dígitos; provincia 01–24 (30 = registrados en el exterior); tercer dígito < 6; coeficientes 2-1-2-1-2-1-2-1-2 sobre los 9 primeros (si el producto pasa de 9, se resta 9); verificador = (10 − suma mód 10) mód 10. Ejemplo sintético válido: `1710034065`.
 
 En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato personal es real.
 
-### 6.2 Consulta / compra conversacional
-1. El usuario toca el botón y habla, por ejemplo: "algo para la gripe". → UI: la transcripción y un indicador de que el asistente está escuchando o pensando.
-2. Si es una consulta de síntomas, el asistente hace preguntas mínimas de seguridad (ver §7). → UI: una pregunta con botones grandes.
-3. Sugiere opciones. → UI: 1–3 tarjetas de producto con precio y beneficio SmartClub (cashback o descuento), más una nota visible: "si persiste, consulta a un médico".
-4. Muestra dónde conseguirlo. → UI: tarjeta de la farmacia cercana con stock, distancia y horario, y botones "Cómo llegar" y "Llamar".
-5. El usuario confirma. → UI: botón grande "Lo quiero" y luego una pantalla de confirmación con el beneficio SmartClub. Qué significa "confirmar" está **por definir** (ver §13).
+### 6.2 Consulta conversacional
+1. El usuario toca el botón y habla, por ejemplo: "algo para la gripe". → UI: la transcripción en vivo y un indicador de que el asistente está escuchando o pensando.
+2. La capa de guardrails revisa el pedido antes de generar la respuesta (§7). Si es una consulta de síntomas, hace preguntas mínimas de seguridad. → UI: una pregunta con botones grandes.
+3. Sugiere opciones. → UI: 1–3 tarjetas de producto con precio, beneficio SmartClub (cashback o descuento), stock en la farmacia más cercana y el botón "Agregar al pedido". Cuando aplica, una nota visible: "si persiste, consulta a un médico".
 
-### 6.3 Hand-off a un farmacéutico humano
-1. Hay tres disparadores: el usuario lo pide, el producto requiere receta, o aparece un síntoma de alarma (ver §7).
-2. → UI: tarjeta "Habla con un farmacéutico" con la farmacia cercana y los botones Llamar / Cómo llegar. Si hay una señal de alarma, la UI muestra en cambio un aviso destacado de atención médica urgente.
+### 6.3 Pedido y retiro
+1. El usuario agrega productos. → UI: resumen del pedido (productos, cantidades, total y cashback).
+2. Elige retirar en la farmacia más cercana (u otra). → UI: tarjeta de farmacia con stock, distancia y horario, y botones "Retirar aquí", "Cómo llegar" y "Llamar".
+3. Sin entrega a domicilio.
+
+### 6.4 Datos de facturación (solo antes del checkout)
+1. Antes de pagar, el asistente pide **solo los datos que falten**, una pregunta a la vez: nombre o razón social, cédula o RUC, email, dirección y teléfono. → UI: una pregunta y un campo grande por dato; al final, una tarjeta para confirmar.
+2. Se guardan **de forma permanente en el CRM** y en **caché en el dispositivo**. La próxima vez no se piden.
+3. **Requisitos SRI (verificado):** la factura electrónica exige nombre o razón social e identificación (cédula, RUC o pasaporte) del comprador. Dirección, email y teléfono son opcionales en el comprobante, pero el email sirve para enviar la factura. Se puede facturar a **"consumidor final"** (ID `9999999999999`) solo hasta **USD 50 con IVA**; sobre ese monto hay que identificar al comprador. Desde 2026 una factura a consumidor final no se puede anular, y no sirve para deducir gastos personales (las medicinas son deducibles).
+4. **Propuesta:** si el total es ≤ USD 50, ofrecer "consumidor final" como opción rápida.
+
+### 6.5 Compra completada
+1. → UI: confirmación del pedido (número, farmacia, hora y código QR de retiro).
+2. → UI: factura (mock, marcada **SIMULADA**).
+3. → UI: cupón o beneficio con el texto "Muéstralo al farmacéutico". El beneficio lo define Farmaenlace.
+4. Cómo se paga está **por definir** (§17).
+
+### 6.6 Hand-off a un farmacéutico humano
+1. Está disponible en todo momento. Hay tres disparadores: el usuario lo pide, el producto requiere receta, o aparece un síntoma de alarma (ver §7).
+2. → UI: tarjeta "Habla con un farmacéutico" con la farmacia cercana y los botones Llamar / Cómo llegar. Si hay una señal de alarma, la UI muestra en cambio una **alerta roja** de atención médica urgente (ECU 911).
 3. La conversación queda resumida para que el cliente no tenga que repetir nada. El canal real está por definir; en el demo es simulado.
 
 ## 7. Farmacéutico Virtual: alcance y guardrails
@@ -72,25 +89,83 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 - **Nunca emite un diagnóstico.**
 - Ante un "¿qué tomo para…?", sugiere y recomienda ver a un médico si el problema persiste.
 - Debe ser flexible y no un muro de negativas. Contexto: en la permacrisis de Ecuador, mucha gente no tiene tiempo de ir al médico.
+- **Los guardrails son una capa propia, no solo el prompt.** Corren antes de generar la respuesta, sobre lo que dijo el usuario y sobre los productos que devuelve el catálogo. Detectan síntomas de alarma, pedidos de diagnóstico y medicamentos con receta. Si se activan, la respuesta usa un componente fijo (alerta roja, hand-off) y no la decide el LLM.
 
 **Propuesta — confirmar con Eric** (guardrails mínimos que mantienen esa flexibilidad):
-- Solo sugiere productos **OTC / de venta libre**.
+- Solo sugiere productos **OTC / de venta libre** (el catálogo marca venta libre vs receta).
 - Ante medicamentos **con receta**, no sugiere: remite al farmacéutico o a la receta médica.
 - **Síntomas de alarma → recomendar atención urgente o un médico de inmediato.** Ejemplos: dolor de pecho, dificultad para respirar, fiebre alta en bebés, embarazo.
 - **Antes de sugerir, pregunta siempre** por alergias y por otros medicamentos que la persona esté tomando.
 - Muestra un **aviso visible**: "No reemplaza la consulta con un profesional de salud."
-- Ofrece **hand-off a un farmacéutico humano** en cualquier momento (§6.3).
+- Ofrece **hand-off a un farmacéutico humano** en cualquier momento (§6.6).
 
-## 8. Canales
+## 8. UI generativa: A2UI (decidido)
+- **Versión: A2UI v0.9.1**, la versión estable de producción (spec cerrada). v1.0 es release candidate y v0.8 es legacy. Repo: `github.com/a2ui-project/a2ui` (antes `google/A2UI`), docs en a2ui.org.
+- **Mensajes agente → cliente** (JSONL; cada uno lleva `"version": "v0.9.1"` y una sola clave): `createSurface` (surfaceId, catalogId, theme), `updateComponents` (lista plana de componentes con `id` y `component`, enlazados por id, uno con id `root`), `updateDataModel` (path JSON Pointer + value) y `deleteSurface`. **Cliente → agente:** `action` (name, surfaceId, sourceComponentId, timestamp, context) y `error`.
+- **Basic Catalog (18):** Text, Image, Icon, Video, AudioPlayer, Row, Column, List, Card, Tabs, Modal, Divider, Button, CheckBox, TextField, DateTimeInput, ChoicePicker, Slider. Funciones: required, regex, length, numeric, email, formatString, formatNumber, formatCurrency, formatDate, pluralize, openUrl, and/or/not.
+- **Catálogo propio:** un JSON Schema con su `catalogId` (una URI que no necesita resolver). El cliente lo anuncia en `supportedCatalogIds`. Cada surface usa un solo catálogo, así que el nuestro = Basic + componentes FV + funciones `cedulaEc` y `rucEc` (validación en el dispositivo).
+- **Renderers oficiales:** React, Lit y Angular (`@a2ui/*`), Flutter (GenUI SDK); Jetpack Compose en alpha. **Svelte no tiene renderer oficial**; hay uno comunitario (`svelte-a2ui`, Svelte 5, apunta a v1.0 RC). Cuál usamos en la PWA está por definir.
+- El botón de micrófono, la entrada de texto y el historial son el shell de la app, no A2UI.
+- `nimblersoft-web` solo es referencia: usa un formato anterior.
+
+| Paso | Basic Catalog | Catálogo FV (custom) |
+|---|---|---|
+| Onboarding: pedir y validar cédula | Text, TextField (`number`, checks `required` + `cedulaEc`), Button | `cedulaEc` (función) |
+| Onboarding: confirmar datos cruzados (fuera del MVP) | Card, Text, Row, Button Sí/No | — |
+| Onboarding: beneficio asociado | Text, Icon | — |
+| Consulta: preguntas de seguridad | Text, ChoicePicker o Row de Buttons | — |
+| Consulta: sugerencias | List, Column | `ProductCard` (precio, beneficio SmartClub, stock en farmacia cercana, venta libre, "Agregar") |
+| Consulta: nota de salud | — | `AvisoSalud` ("si persiste…", "no reemplaza…") |
+| Pedido: resumen | Button | `ResumenPedido` (ítems, total, cashback) |
+| Retiro: elegir farmacia | List, Button (`openUrl` para Cómo llegar / Llamar) | `PharmacyCard` (distancia, horario, stock) |
+| Facturación: un dato a la vez | Text, TextField (checks `required`, `email`, `regex`, `rucEc`), Button, ChoicePicker ("consumidor final") | `rucEc` (función) |
+| Facturación: confirmar datos | Card, Column, Text, Button | — |
+| Compra completada | Column, Text | `ConfirmacionPedido` (n.º, farmacia, QR de retiro), `FacturaMock`, `Cupon` (código + QR) |
+| Hand-off | Text, Button | `HandoffCard` (resumen + farmacia) |
+| Señal de alarma | — | `AlertaRoja` (urgencia, ECU 911, hand-off) |
+
+## 9. IA y voz
+- **Turno:** voz → STT → **GLiNER2.5-Decide** (intención + tool calling contra la API mock) → **guardrails** → **LLM de Bedrock** que genera la respuesta en A2UI → se valida contra el schema → TTS de la frase corta.
+- **GLiNER2.5-Decide** (decidido, **en prueba**): detecta la intención y llama funciones. Alojado en AWS.
+- **LLM de Bedrock** (decidido): solo genera la respuesta en el schema A2UI. El modelo está por definir. **Propuesta:** los pasos fijos del FSM (onboarding, facturación) usan plantillas A2UI sin LLM.
+- **Límite de Bedrock (máx. 1 RPS, decidido):** una pequeña pausa entre llamadas encadenadas a Bedrock y reintentos con backoff exponencial ante throttling. Transcribe y Polly no cuentan para ese límite.
+- **Voz (propuesta, pendiente del OK de Eric):**
+  - **STT: Amazon Transcribe streaming, `es-US`.** No existe locale ecuatoriano ni es-419; es-US es el locale en español con más funciones (vocabulario personalizado, modelos de lenguaje personalizados, redacción de datos). El vocabulario personalizado (en formato tabla) sirve para nombres de productos. Transcribe Medical solo existe en inglés. Prueba sintética (Polly → streaming): cédula y frase exactas, resultado final ~0,2 s después de terminar el audio; marcas (Buprex, Tempra, Finalín) bien reconocidas. Voxtral (Bedrock) fue más lento y confundió marcas, además de gastar RPS. Nova 2 Sonic es speech-to-speech y no sirve solo para transcribir.
+  - **TTS: Amazon Polly, voz Lupe (es-US), motor generative**; Lupe neural si hace falta menos latencia. Alternativa masculina: Pedro.
+
+## 10. Backend simulado: una API mock (decidido)
+Todos los servicios viven detrás de **una sola API mock** con datos sintéticos:
+
+| Servicio | Datos |
+|---|---|
+| CRM | Clientes, datos de facturación, consentimientos |
+| Catálogo | Productos, precios, venta libre vs receta |
+| Inventario | Stock por farmacia |
+| Farmacias | Sucursales, ubicación, horarios |
+| SmartClub / Promociones | Cashback, beneficios, cupón del onboarding |
+| Pedidos | Carrito, reserva y retiro |
+| Facturación | Factura mock |
+
+**Admin liviano (decidido):** UI de solo lectura para revisar todos los registros de cada servicio mock y las últimas llamadas a la API (logs).
+
+## 11. Componentes del sistema
+- PWA (SvelteKit) con el shell de voz/chat y un renderer A2UI.
+- Orquestador conversacional: FSM de onboarding y facturación, GLiNER2.5-Decide, guardrails y LLM A2UI.
+- API mock única (§10) + admin de solo lectura.
+- Voz: Transcribe streaming (URL firmada por el backend; las credenciales nunca van al navegador) y Polly.
+
+La arquitectura de despliegue se diseña después (orden de Eric: diseño de producto → arquitectura → MVP → prototipo → pitch).
+
+## 12. Canales
 | Canal | Descripción | Estado |
 |---|---|---|
 | PWA móvil | Prompt + chat + botón grande de audio. Sin formularios. Placeholder desplegado en https://main.d2bloxc35rzfqy.amplifyapp.com (AWS Amplify) | Decidido |
 | Web híbrida | La web clásica más un prompt que genera la UI (referencia: nimblersoft.com) | Decidido |
-| Punto de venta | QR en la farmacia con recompensa (onboarding, §6.1) | Decidido |
+| Punto de venta | QR en la farmacia con beneficio (onboarding, §6.1) | Decidido |
 
-**Stack del placeholder:** SvelteKit 3 + Svelte 5 + Tailwind 4, PWA estática en Amplify. La arquitectura **no está diseñada** todavía.
+**Stack del placeholder:** SvelteKit 3 + Svelte 5 + Tailwind 4, PWA estática en Amplify.
 
-## 9. Métricas
+## 13. Métricas
 | KPI | Por qué |
 |---|---|
 | Frecuencia de compra SmartClub | Fidelización (el reto) |
@@ -101,43 +176,52 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 
 Secundaria, tomada del canvas: % de sesiones completadas por voz (inferido). Línea base: retención por marca del deck (por ejemplo, Económicas 63,37% y Medicity 49,34%).
 
-## 10. Real vs simulado
+## 14. Real vs simulado
 | Componente | Demo |
 |---|---|
-| LLM (AWS Bedrock, máx. 1 RPS) | **Real** |
-| Voz speech-to-speech (Nova 2 Sonic / Nova 2.5 Sonic) | **Real si funciona**: está disponible pero sin probar |
+| LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real** |
+| GLiNER2.5-Decide (AWS) | **Real** (en prueba) |
+| STT (Transcribe) y TTS (Polly) | **Real** (pendiente del OK de Eric) |
 | Hosting PWA (AWS Amplify) | **Real** |
+| Admin de solo lectura | **Real**, sobre datos simulados |
 | Catálogo, stock y precios | Simulado (sintético) |
 | SmartClub (socio, cashback, beneficios) | Simulado |
 | Farmacias cercanas | Simulado |
 | Cupones y canje | Simulado |
-| Identidad (cédula, cruce de datos) | Simulado (sin datos reales) |
+| Identidad (cédula, cruce de datos) | Simulado (sin datos reales; validación módulo 10 real) |
+| Pedidos, retiro y factura | Simulado (factura marcada SIMULADA) |
 | Hand-off a farmacéutico | Simulado |
 
 AWS es la única API externa. Todo lo demás está simulado.
 
-## 11. MVP candidato (por definir)
-Orden de trabajo de Eric: diseño de app → diseño de arquitectura → definir el MVP → prototipo → pitch. Esta sección es **solo una candidata** y no está decidida.
-- **Flujo principal:** hablar → pantalla generada con productos + beneficio SmartClub + farmacia cercana → confirmar (§6.2).
-- **Onboarding:** QR → cédula → cupón (§6.1).
+## 15. MVP
+Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → definir el MVP → prototipo → pitch. El flujo está decidido (§6); el recorte del MVP está **por definir**.
+- **Flujo principal:** QR → cédula (§6.1) → hablar → productos + beneficio SmartClub + farmacia cercana (§6.2) → pedido con retiro (§6.3) → facturación (§6.4) → confirmación + factura mock + cupón (§6.5).
 
-## 12. Fuera de alcance
+## 16. Fuera de alcance
 - Diagnóstico médico y venta o sugerencia de medicamentos con receta.
-- Pagos online, checkout real y entrega a domicilio.
+- Pagos reales, emisión real de facturas al SRI y entrega a domicilio.
 - Integraciones reales: SAP, VTEX/Pardux, SmartClub, FarmaPOS, identidad.
 - Cualquier dato real (personal, de salud o de pago). Solo se usan datos sintéticos.
-- Diseño de arquitectura (va en un documento aparte).
+- Diseño de arquitectura en detalle (va en un documento aparte).
 
-## 13. Preguntas abiertas
-1. **"Confirmar" en §6.2:** ¿significa reserva para retiro, pedido o solo intención de compra?
-2. **Modelo de voz:** ¿Nova 2 Sonic o Nova 2.5 Sonic (los dos sin probar)? ¿Alcanza con el límite de 1 RPS de Bedrock?
-3. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
-4. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
-5. **Guardrails propuestos en §7:** falta la confirmación de Eric.
-6. **Beneficio cross-marca en el demo:** ¿se muestra o no (por ejemplo, otras marcas SmartClub)?
-7. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
-8. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
+## 17. Preguntas abiertas
+1. **Pago:** ¿se paga al retirar en la farmacia o hay un pago simulado en la app antes de la factura?
+2. **Voz:** falta el OK de Eric a Transcribe streaming (es-US) + Polly Lupe (§9).
+3. **Modelo de Bedrock para generar A2UI** y renderer A2UI de la PWA (§8).
+4. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
+5. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
+6. **Guardrails propuestos en §7:** falta la confirmación de Eric.
+7. **Beneficio cross-marca en el demo:** ¿se muestra o no (por ejemplo, otras marcas SmartClub)?
+8. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
+9. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
 
-## 14. Decisiones registradas
+## 18. Decisiones registradas
 - **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia).
 - **Propiedad intelectual:** el código que generemos es nuestro (confirmado por Fernando Rivera, 8 oct).
+- **Onboarding:** pseudo-FSM guiado por IA; solo pide y valida la cédula (módulo 10 en dispositivo + backend). El MVP asume que no hay datos cruzados.
+- **Facturación:** los datos se piden solo antes del checkout; se guardan en el CRM y en caché del dispositivo.
+- **"Confirmar":** agregar al pedido y reservar para retirar en la farmacia.
+- **Backend:** una API mock con 7 servicios + admin de solo lectura.
+- **IA:** GLiNER2.5-Decide (intención + tool calling, en prueba) + LLM de Bedrock solo para A2UI; guardrails como capa propia; pausa + backoff por el límite de 1 RPS.
+- **UI generativa:** A2UI v0.9.1 con Basic Catalog + catálogo FV.
