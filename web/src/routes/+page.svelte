@@ -18,12 +18,28 @@
 	let listening = $state(false);
 	let senior = $state(false);
 	let results: HTMLElement | undefined = $state();
+	let heroForm: HTMLElement | undefined = $state();
+	let headerH = $state(64);
+	let stuck = $state(false); // barra compacta fija bajo el header cuando el prompt del hero sale de vista
 	let run = 0;
 
 	const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 	$effect(() => {
 		document.documentElement.classList.toggle('senior', senior);
+	});
+
+	$effect(() => {
+		const onScroll = () => {
+			if (heroForm) stuck = heroForm.getBoundingClientRect().bottom < headerH;
+		};
+		onScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll);
+		return () => {
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
+		};
 	});
 
 	// Deep link: /?q=... (p. ej. desde el QR de la farmacia)
@@ -78,10 +94,37 @@
 	];
 </script>
 
+{#snippet bar(v: 'hero' | 'compact')}
+	{@const big = v === 'hero'}
+	<input
+		bind:value={input}
+		placeholder={listening ? 'Te escucho…' : '¿Qué necesitas hoy?'}
+		aria-label="Escribe tu pregunta"
+		tabindex={big && stuck ? -1 : 0}
+		class="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted {big ? 'py-3 text-lg md:text-xl' : 'py-1.5 text-lg'}"
+	/>
+	<button
+		type="button"
+		onclick={mic}
+		aria-label={listening ? 'Escuchando' : 'Hablar (demo)'}
+		aria-pressed={listening}
+		class="grid shrink-0 place-items-center rounded-full text-white transition {big ? 'size-12 ring-4 md:size-14' : 'size-11 ring-2'} {listening
+			? 'animate-pulse bg-secondary ring-secondary/20'
+			: 'bg-primary-strong ring-primary/25 ' + (big ? 'shadow-mic' : '')}"
+	>
+		<svg viewBox="0 0 24 24" class={big ? 'size-6 md:size-7' : 'size-6'} fill="currentColor" aria-hidden="true">
+			<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z" />
+		</svg>
+	</button>
+	<button type="submit" disabled={!input.trim()} class="hidden shrink-0 rounded-full bg-ink px-6 font-semibold text-white disabled:opacity-40 sm:block {big ? 'h-12 md:h-14' : 'h-11'}">
+		Preguntar
+	</button>
+{/snippet}
+
 <div class="min-h-dvh bg-bg">
 	<div class="h-1.5 bg-primary"></div>
 
-	<header class="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur">
+	<header bind:offsetHeight={headerH} class="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
 		<div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 md:px-6">
 			<span class="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary text-white" aria-hidden="true">
 				<svg viewBox="0 0 24 24" class="size-6" fill="currentColor"><path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" /></svg>
@@ -107,6 +150,18 @@
 		</div>
 	</header>
 
+	{#if stuck}
+		<div
+			class="fixed inset-x-0 z-20 border-b border-line bg-bg/95 px-4 py-2 shadow-[0_6px_16px_rgb(29_29_31/0.08)] backdrop-blur md:px-6"
+			style="top: {headerH}px"
+			transition:fly={{ y: -8, duration: 150 }}
+		>
+			<form class="mx-auto flex max-w-3xl items-center gap-2 rounded-full border-2 border-line bg-card p-1.5 pl-4 focus-within:border-primary-strong" onsubmit={(e) => (e.preventDefault(), ask(input))}>
+				{@render bar('compact')}
+			</form>
+		</div>
+	{/if}
+
 	<main>
 		<!-- HERO + prompt generativo -->
 		<section class="relative overflow-hidden px-4 pt-10 pb-12 md:px-6 md:pt-16">
@@ -117,31 +172,11 @@
 				<p class="mx-auto mt-4 max-w-2xl text-lg text-muted md:text-xl">No busques en catálogos. Pregunta y te armamos la pantalla que necesitas: productos de venta libre, la farmacia con stock y tu beneficio smart.</p>
 
 				<form
+					bind:this={heroForm}
 					class="mt-8 flex items-center gap-2 rounded-full border-2 border-line bg-card p-2 pl-5 shadow-card focus-within:border-primary-strong"
 					onsubmit={(e) => (e.preventDefault(), ask(input))}
 				>
-					<input
-						bind:value={input}
-						placeholder={listening ? 'Te escucho…' : '¿Qué necesitas hoy?'}
-						aria-label="Escribe tu pregunta"
-						class="min-w-0 flex-1 bg-transparent py-3 text-lg outline-none placeholder:text-muted md:text-xl"
-					/>
-					<button
-						type="button"
-						onclick={mic}
-						aria-label={listening ? 'Escuchando' : 'Hablar (demo)'}
-						aria-pressed={listening}
-						class="grid size-12 shrink-0 place-items-center rounded-full text-white ring-4 transition md:size-14 {listening
-							? 'animate-pulse bg-secondary ring-secondary/20'
-							: 'bg-primary-strong ring-primary/25 shadow-mic'}"
-					>
-						<svg viewBox="0 0 24 24" class="size-6 md:size-7" fill="currentColor" aria-hidden="true">
-							<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z" />
-						</svg>
-					</button>
-					<button type="submit" disabled={!input.trim()} class="hidden h-12 shrink-0 rounded-full bg-ink px-6 font-semibold text-white disabled:opacity-40 sm:block md:h-14">
-						Preguntar
-					</button>
+					{@render bar('hero')}
 				</form>
 
 				<div class="mt-4 flex flex-wrap justify-center gap-2">
@@ -155,7 +190,7 @@
 			</div>
 
 			<!-- UI generada -->
-			<div bind:this={results} class="relative mx-auto max-w-6xl scroll-mt-24" aria-live="polite">
+			<div bind:this={results} class="relative mx-auto max-w-6xl scroll-mt-40" aria-live="polite">
 				{#if phase !== 'idle'}
 					<div class="mt-10 rounded-[2rem] border border-line bg-card/60 p-4 md:p-6" in:fade>
 						<div class="flex flex-wrap items-center gap-2">
@@ -194,7 +229,7 @@
 		</section>
 
 		<!-- Cómo funciona -->
-		<section id="como-funciona" class="scroll-mt-20 border-t border-line bg-card px-4 py-16 md:px-6">
+		<section id="como-funciona" class="scroll-mt-40 border-t border-line bg-card px-4 py-16 md:px-6">
 			<div class="mx-auto max-w-6xl">
 				<p class="text-sm font-semibold tracking-wider text-accent-strong uppercase">Cómo funciona</p>
 				<h2 class="mt-2 text-3xl font-bold text-secondary md:text-4xl">Simple, rápido y a tu ritmo</h2>
@@ -211,7 +246,7 @@
 		</section>
 
 		<!-- QR en farmacia → cupón -->
-		<section id="qr" class="scroll-mt-20 px-4 py-16 md:px-6">
+		<section id="qr" class="scroll-mt-40 px-4 py-16 md:px-6">
 			<div class="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2">
 				<div>
 					<p class="text-sm font-semibold tracking-wider text-accent-strong uppercase">En la farmacia</p>
@@ -230,7 +265,7 @@
 		</section>
 
 		<!-- Marcas SmartClub (solo texto) -->
-		<section id="smartclub" class="scroll-mt-20 border-t border-line bg-cream px-4 py-16 md:px-6">
+		<section id="smartclub" class="scroll-mt-40 border-t border-line bg-cream px-4 py-16 md:px-6">
 			<div class="mx-auto max-w-6xl text-center">
 				<p class="text-sm font-semibold tracking-wider text-accent-strong uppercase">Fidelización transversal</p>
 				<h2 class="mt-2 text-3xl font-bold text-secondary md:text-4xl">Un solo cashback smart en todas las marcas</h2>
