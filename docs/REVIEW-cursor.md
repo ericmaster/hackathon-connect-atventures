@@ -42,3 +42,4 @@
 - P0-3 + P1-2: real → fix with request generation token in `+page.svelte` (discard stale responses after Reiniciar; reset owns `busy`).
 - P1-5: trivial → `clients.claim()` in SW activate.
 - Rest: not fixed (time box).
+- Fixed in da964d2 (deployed Amplify job 9). Regression: tests/playwright demo/05 "mid-request" (failed on old build, passes now).

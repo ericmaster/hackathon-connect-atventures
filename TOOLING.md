@@ -4,7 +4,7 @@
 - node v24 (nvm default) | system node v20 in /usr/bin
 - pnpm 10, git, jq, gh (no login), vercel CLI (no login)
 - opencode v2 (`opencode`) | openchamber 2.1 (`openchamber`, needs node>=22, opencode>=2.0.20)
-- cursor-agent (CLI only, no desktop app) — login pending
+- cursor-agent (CLI only) logged in eric@nimblersoft.com — FREE plan: only `--model auto`; usage limit hit 13:00 Oct 8 (named models → ActionRequiredError)
 - cloudflared, cloudflare-warp (`warp-cli`)
 - nlm 0.15.4 (`nlm` + `notebooklm-mcp`, uv tool) — NotebookLM MCP `gemini-notebook-mcp` wired: opencode (global + ./opencode.json), cursor (~/.cursor + ./.cursor/mcp.json). 53 tools = heavy ctx
 
