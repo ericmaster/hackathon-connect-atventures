@@ -111,11 +111,11 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 4. **Ninguna acción comercial** (agregar, reservar, facturar) se ejecuta sin pasar los guardrails (§8) y sin **confirmación explícita** del usuario (botón A2UI → `action`).
 
 ### 7.4 Datos de facturación (solo antes del checkout)
-1. Antes de confirmar la reserva, si el total es ≤ USD 50 el asistente ofrece **"consumidor final"** como opción rápida. Si supera (o el usuario prefiere factura con datos), pide **solo los datos que falten**, una pregunta a la vez: **nombre o razón social, cédula/RUC/pasaporte y email**. No pide dirección ni teléfono. → UI: una pregunta y un campo grande por dato; al final, una tarjeta para confirmar.
+1. Antes de confirmar la reserva, si el total es ≤ USD 50 el asistente ofrece **"consumidor final"** como opción rápida y pide **solo el email** (si falta) para enviar la factura/RIDE. Si supera (o el usuario prefiere factura con datos), pide **solo los datos que falten**, una pregunta a la vez: **nombre o razón social, cédula/RUC/pasaporte y email**. **El email es obligatorio** siempre que se piden datos de facturación: toda la facturación es electrónica y la factura se entrega por email. No pide dirección ni teléfono. → UI: una pregunta y un campo grande por dato; al final, una tarjeta para confirmar.
 2. Se guardan **de forma permanente en el CRM** y en **caché en el dispositivo**. La próxima vez no se piden.
 3. **Requisitos SRI del comprador (verificado 8 oct con fuentes oficiales):**
    - **Obligatorios:** `tipoIdentificacionComprador` (04 RUC, 05 cédula, 06 pasaporte, 07 consumidor final, 08 exterior; se deriva, no se pregunta), `razonSocialComprador` (nombres y apellidos o razón social) e `identificacionComprador`. [F1 p. 13 y 49; F2; F3 art. 19 num. 1]
-   - **Opcionales:** `direccionComprador` ("obligatorio cuando corresponda"; `minOccurs="0"` en el XSD; solo se exige en la factura comercial negociable, Anexo 11, que no aplica). Email y teléfono van en `infoAdicional/campoAdicional`, también opcional. El email sirve para enviar la factura; sin email se entrega el RIDE. [F1 p. 49 y 109; F2; F4 preg. 16]
+   - **Opcionales:** `direccionComprador` ("obligatorio cuando corresponda"; `minOccurs="0"` en el XSD; solo se exige en la factura comercial negociable, Anexo 11, que no aplica). Email y teléfono van en `infoAdicional/campoAdicional`, también opcional para el SRI. El email sirve para enviar la factura; sin email se entrega el RIDE. [F1 p. 49 y 109; F2; F4 preg. 16] **Nuestra regla (8 oct 12:11): el email es obligatorio** (también con consumidor final), porque la factura/RIDE se entrega por email.
    - **Dirección o sector del comprador: NO es obligatorio** → no se agrega a los datos pedidos. El art. 19 no la incluye.
    - **Consumidor final:** tipo `07`, ID `9999999999999`, leyenda "CONSUMIDOR FINAL"; solo si la transacción **no supera USD 50** y el comprador no necesita sustentar costos o gastos. [F1 p. 13; F3 art. 19 num. 1; F4 preg. 34]
    - **Desde 1 ene 2026:** una factura a consumidor final transmitida al SRI **no se puede anular** ni modificar con nota de crédito. [F5; F6]
@@ -128,7 +128,7 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
      - F5 Boletín SRI 033 (anulación): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/142630d3-569f-4cd2-a5a5-58557b7fc342/BOLET%C3%8DN%20033%20-%20SRI%20ESTABLECE%20NUEVAS%20REGLAS%20PARA%20LA%20ANULACI%C3%93N%20DE%20COMPROBANTES%20ELECTR%C3%93NICOS%20COMO%20PARTE%20DE%20SU%20ESTRATEGIA%20DE%20CONTROL.pdf
      - F6 Res. NAC-DGERCGC25-00000017 (vigencia 1 ene 2026): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar?id=e98fc8a6-299e-4ea9-8de7-2f6c70dbb4f5&nombre=NAC-DGERCGC25-00000017.pdf
      - Índice: https://www.sri.gob.ec/web/intersri/facturacion-electronica
-4. **Decidido (única regla):** total ≤ USD 50 con IVA → ofrecer "consumidor final"; si supera → nombre + identificación + email.
+4. **Decidido (única regla):** total ≤ USD 50 con IVA → ofrecer "consumidor final" + email; si supera → nombre + identificación + email. Email siempre obligatorio.
 
 ### 7.5 Compra completada
 1. → UI: confirmación de la reserva (número, farmacia, hora y código QR de retiro).
@@ -341,4 +341,5 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - **Orquestación (Eric 8 oct 12:06):** GLiNER solo clasifica/extrae; el dispatch de acciones es código determinista propio; ninguna acción comercial antes de guardrails + confirmación del usuario (§7.3, §10).
 - **Demo (Eric 8 oct 12:06):** 2 arquetipos contrastantes; reposición solo en el chat (cierra la pregunta del push) (§6.1, §6.2).
 - **Web híbrida (Eric 8 oct 12:06):** se mantiene (visión omnicanal); prototipo en https://main.dfsvbpju4hwi2.amplifyapp.com (§13).
+- **Email de facturación obligatorio (Eric 8 oct 12:11):** siempre que se piden datos de facturación (nombre + ID + email), el email es obligatorio; con consumidor final también se pide el email para enviar la factura/RIDE. Motivo: toda la facturación es electrónica y la factura se entrega por email (§7.4).
 - **Real vs simulado (8 oct):** GLiNER multi-Decide funciona en Lambda; Transcribe/Polly probados; PWA y web desplegadas en Amplify como mocks (§15).
