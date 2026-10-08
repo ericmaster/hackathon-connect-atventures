@@ -1,13 +1,11 @@
-// Fetcher pluggable para /voice/*. B debe inyectar el fetch firmado (SigV4, Identity Pool):
-//   import { setVoiceFetcher } from '$lib/voice';
-//   setVoiceFetcher(signedFetch);  // (path, init) => Promise<Response>
-// Sin inyección: fetch directo a VITE_FV_API_URL (solo útil en local/sin auth).
+// Fetcher para /voice/*. Por defecto usa el fetch firmado SigV4 de B (#lib/api/auth: Identity Pool
+// invitado → execute-api). Sin pool configurado, signedFetch hace fetch simple a VITE_FV_API_URL.
+// Se puede sustituir (tests / otro transporte): setVoiceFetcher((path, init) => ...).
+import { signedFetch } from '#lib/api/auth.js';
 
 export type VoiceFetcher = (path: string, init?: RequestInit) => Promise<Response>;
 
-const BASE = ((import.meta.env.VITE_FV_API_URL as string | undefined) ?? '').replace(/\/$/, '');
-
-let fetcher: VoiceFetcher = (path, init) => fetch(BASE + path, init);
+let fetcher: VoiceFetcher = (path, init) => signedFetch(path, init);
 
 export function setVoiceFetcher(f: VoiceFetcher): void {
 	fetcher = f;
@@ -16,7 +14,7 @@ export function setVoiceFetcher(f: VoiceFetcher): void {
 export async function postJson<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
 	const res = await fetcher(path, {
 		method: 'POST',
-		headers: { 'content-type': 'application/json' },
+		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(body ?? {}),
 		signal
 	});
