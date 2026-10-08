@@ -268,7 +268,7 @@ Estado al 8 oct.
 | LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real**: Claude Haiku 4.5, temperatura 0,1 (0 en tests) (§10) |
 | GLiNER2.5-multi-Decide (AWS Lambda) | **Real**: funciona en Lambda (contenedor, pesos desde S3) |
 | STT (Transcribe) y TTS (Polly) | **Real**: probados |
-| PWA y web híbrida (AWS Amplify) | **Desplegadas** en Amplify como mocks |
+| PWA y web híbrida (AWS Amplify) | **Desplegadas** con API real (IA real, datos sintéticos); `?demo` = mock |
 | Admin de solo lectura | **Real**, sobre datos simulados |
 | Catálogo, stock y precios | Simulado (sintético) |
 | SmartClub (socio, cashback, beneficios) | Simulado |

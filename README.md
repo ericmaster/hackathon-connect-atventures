@@ -57,7 +57,7 @@ Renderer A2UI Svelte propio. Acciones comerciales solo tras guardrails + confirm
 ## Evidencia de calidad
 
 - 46 tests offline (22 API + 7 admin + 10 voz + 7 puntuador LLM).
-- Smoke e2e API desplegada 12/12; Playwright 16/16 (demo + live, 390×844; falla ante errores de consola).
+- Smoke e2e API desplegada 12/12; Playwright 17/17 (demo + live, 390×844; falla ante errores de consola).
 - Suite LLM (`tests/llm`; `tests/llm/results/BENCHMARK.md`, `docs/MODEL-BENCHMARKS.md`).
 - Revisiones: `docs/REVIEW-cursor.md`, `docs/REVIEW-opencode.md`.
 
