@@ -4,7 +4,7 @@
 Hackathon Connect atVentures 2026. Thu Oct 8. Solo dev: Eric.
 Sponsors: Farmaenlace (pharmacy group, EC) + BYD.
 Retos: fidelización | servicio cliente/postventa | mejora operativa.
-Idea: Generative UI omnichannel. Personalized exp per brand/customer type. Cross-brand via SmartClub.
+Idea: "Farmacéutico Virtual" = generative conversational UI omnichannel. Reto: fidelización transversal. Cross-brand via SmartClub.
 - Web: hybrid = classic web + prompt that generates UI (ref: nimblersoft.com).
 - Mobile: prompt input + chat + big audio-first button (people don't use tech).
 - NO forms. NO complex classic UI. MVP = simplest possible.
@@ -28,6 +28,7 @@ value/impact 30 | tech 25 | novelty 20 | viability 15 | demo 10
 
 ## Context hygiene
 - Read only what task needs.
+- Product spec: SPEC.md (flows, guardrails, real vs mock). Read before app/pitch work.
 - Event facts: docs/DRIVE-SUMMARY.md. Audio notes: docs/AUDIOS-SUMMARY.md (when ready).
 - Progress tracker = services/dashboard/progress.json. Edit it, bump updated_at.
 - Infra/tools: TOOLING.md. Don't touch infra unless asked.
