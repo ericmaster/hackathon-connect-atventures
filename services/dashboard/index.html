@@ -32,6 +32,7 @@ ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .vpg .blk h3{flex:1 1 100%;color:var(--fg);font-size:14px}.tpl{color:var(--mut);font-size:12px;margin-bottom:6px}.vtx{white-space:pre-wrap;cursor:pointer}.tag{background:#2d3640;color:var(--mut);font-size:11px;padding:1px 6px;border-radius:6px}
 .cnt{font-size:12px;margin-top:8px;color:var(--mut)}.cnt b{color:var(--ok)}.cnt b.err{color:var(--bad)}.vnote{font-size:12px;color:var(--mut);margin-top:6px;font-style:italic}
 .chk{overflow-x:auto}.chk td,.chk th{padding:5px 6px;font-size:13px}.chk td.c{text-align:center;cursor:pointer;font-size:15px}
+.ph{display:flex;flex-wrap:wrap;gap:8px;margin:0}.ph .pi{flex:1 1 140px;background:#121820;border-radius:8px;padding:10px;min-width:0;border:1px solid #2d3640}.ph .pi.done{border-color:rgba(63,185,80,.45)}.ph .pi.doing{border-color:rgba(210,153,34,.55)}.ph .nm2{font-weight:600;font-size:14px;margin:2px 0 4px}.ph .links a{color:var(--acc);text-decoration:none;font-size:12px;margin-right:8px}.ph .links a:hover{text-decoration:underline}
 @media(max-width:900px){.cv{grid-template-columns:1fr;grid-template-areas:"seg" "pro" "uvp" "sol" "can" "ing" "cos" "met" "ven"}}
 @media(max-width:760px){.vpg{grid-template-columns:1fr}thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
 td{display:flex;gap:8px;border:0;padding:4px 8px}td:before{content:attr(data-l);color:var(--mut);min-width:110px;font-size:12px;text-transform:uppercase}
@@ -57,6 +58,9 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 <div class="card ag" style="margin-bottom:12px"><h2>Agenda oficial · jue 8 oct (UTC-5)</h2>
 <table><thead><tr><th>Horario</th><th>Bloque</th><th>Estado</th><th>Cuenta</th></tr></thead><tbody id="agrows"></tbody></table>
 </div>
+<div class="card" style="margin-bottom:12px"><h2>Hitos del producto</h2>
+<div class="ph" id="phases"></div>
+</div>
 <div class="card tablecard"><h2>Objetivos (rúbrica)</h2>
 <table><thead><tr><th>Criterio</th><th>Peso</th><th>Qué evalúa</th><th>Nota (1–5)</th><th>Puntos</th><th>Meta</th><th>Progreso</th><th>Sub-objetivos</th></tr></thead><tbody id="rows"></tbody></table>
 </div>
@@ -73,7 +77,9 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 </main>
 <script>
 const ICON={done:'✔',doing:'◐',todo:'○'},esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const li=i=>`<li><span class="s ${esc(i.s)}">${ICON[i.s]||'○'}</span> ${esc(i.t)}</li>`;
+const ext=u=>String(u||'').startsWith('#')?'':' target="_blank" rel="noopener"';
+const lnk=(u,t,st)=>u?`<a href="${esc(u)}"${ext(u)}${st||''}>${esc(t)}</a>`:esc(t);
+const li=i=>`<li><span class="s ${esc(i.s)}">${ICON[i.s]||'○'}</span> ${lnk(i.u,i.t,' style="color:inherit"')}</li>`;
 const fmt=d=>new Date(d).toLocaleString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
 const hm=d=>new Date(d).toLocaleTimeString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 const dur=ms=>{const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`};
@@ -111,6 +117,9 @@ async function load(){try{const p=await (await fetch('api/state',{cache:'no-stor
   <td class="n" data-l="Progreso">${c.progress}%<div class="bar"><i style="width:${c.progress}%"></i></div></td>
   <td class="chk" data-l="Sub-objetivos"><ul>${(c.items||[]).map(li).join('')}</ul></td></tr>`).join('');
  document.getElementById('deliv').innerHTML=(p.deliverables||[]).map(li).join('');
+ document.getElementById('phases').innerHTML=(p.phases||[]).map(ph=>{
+  const links=(ph.links||[]).map(l=>lnk(l.u,l.t,'')).join(' ');
+  return `<div class="pi ${esc(ph.s)}"><span class="s ${esc(ph.s)}">${ICON[ph.s]||'○'}</span><div class="nm2">${esc(ph.t)}</div><div class="sub">${esc(ph.note||'')}</div>`+(links?`<div class="links">${links}</div>`:'')+`</div>`}).join('');
  const i=p.infra||{},a=i.aws||{},b=i.bedrock||{};
  document.getElementById('infra').innerHTML=
   `<li><span class="s ${a.ok?'done':'err'}">${a.ok?'✔':'✖'}</span> AWS: ${a.ok?`cuenta ${esc(a.account)} · rol ${esc(a.role)}`:esc(a.err||'—')}</li>`+

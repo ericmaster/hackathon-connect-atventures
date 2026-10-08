@@ -1,85 +1,362 @@
 {
-  "updated_at": "2026-10-08T09:22:00-05:00",
+  "updated_at": "2026-10-08T12:27:00-05:00",
   "freeze": "2026-10-08T15:45:00-05:00",
   "agenda": [
-    { "start": "2026-10-08T08:00:00-05:00", "end": "2026-10-08T09:00:00-05:00", "name": "Registro y desayuno", "kind": "event", "note": "Check-in, credenciales, Wi-Fi, instalación" },
-    { "start": "2026-10-08T09:00:00-05:00", "end": "2026-10-08T09:10:00-05:00", "name": "Bienvenida y arranque", "kind": "event" },
-    { "start": "2026-10-08T09:10:00-05:00", "end": "2026-10-08T11:15:00-05:00", "name": "Sprint 1: Problema → solución", "kind": "sprint" },
-    { "start": "2026-10-08T11:15:00-05:00", "end": "2026-10-08T11:30:00-05:00", "name": "Checkpoint #1 con mentores", "kind": "checkpoint", "note": "¿Qué problema, para quién, qué solución?" },
-    { "start": "2026-10-08T11:30:00-05:00", "end": "2026-10-08T13:00:00-05:00", "name": "Sprint 2: Construcción", "kind": "sprint" },
-    { "start": "2026-10-08T13:00:00-05:00", "end": "2026-10-08T13:45:00-05:00", "name": "Almuerzo + build", "kind": "sprint", "note": "La competencia no para" },
-    { "start": "2026-10-08T13:45:00-05:00", "end": "2026-10-08T14:45:00-05:00", "name": "Sprint 3: Producto + demo", "kind": "sprint" },
-    { "start": "2026-10-08T14:45:00-05:00", "end": "2026-10-08T15:00:00-05:00", "name": "Checkpoint #2 Demo readiness", "kind": "checkpoint", "note": "¿Funciona?, ¿se entiende?, ¿qué eliminar o terminar?" },
-    { "start": "2026-10-08T15:00:00-05:00", "end": "2026-10-08T15:45:00-05:00", "name": "Sprint final: ajustes, demo, publicación, pitch", "kind": "sprint" },
-    { "start": "2026-10-08T15:45:00-05:00", "end": "2026-10-08T15:45:00-05:00", "name": "Cierre definitivo de entregas (freeze)", "kind": "deadline", "note": "El proyecto se congela" },
-    { "start": "2026-10-08T15:45:00-05:00", "end": "2026-10-08T16:30:00-05:00", "name": "Evaluación del jurado", "kind": "event" },
-    { "start": "2026-10-08T16:30:00-05:00", "end": "2026-10-08T16:40:00-05:00", "name": "Deliberación", "kind": "event" },
-    { "start": "2026-10-08T16:40:00-05:00", "end": "2026-10-08T16:45:00-05:00", "name": "Traslado al escenario", "kind": "event" },
-    { "start": "2026-10-08T16:45:00-05:00", "end": "2026-10-08T16:50:00-05:00", "name": "Apertura", "kind": "event" },
-    { "start": "2026-10-08T16:50:00-05:00", "end": "2026-10-08T17:06:00-05:00", "name": "Pitches finalistas (3 min)", "kind": "event" },
-    { "start": "2026-10-08T17:06:00-05:00", "end": "2026-10-08T17:15:00-05:00", "name": "Deliberación", "kind": "event" },
-    { "start": "2026-10-08T17:15:00-05:00", "end": "2026-10-08T17:25:00-05:00", "name": "Premiación", "kind": "event" },
-    { "start": "2026-10-08T17:25:00-05:00", "end": "2026-10-08T17:30:00-05:00", "name": "Foto y cierre", "kind": "event" }
+    {
+      "start": "2026-10-08T08:00:00-05:00",
+      "end": "2026-10-08T09:00:00-05:00",
+      "name": "Registro y desayuno",
+      "kind": "event",
+      "note": "Check-in, credenciales, Wi-Fi, instalación"
+    },
+    {
+      "start": "2026-10-08T09:00:00-05:00",
+      "end": "2026-10-08T09:10:00-05:00",
+      "name": "Bienvenida y arranque",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T09:10:00-05:00",
+      "end": "2026-10-08T11:15:00-05:00",
+      "name": "Sprint 1: Problema → solución",
+      "kind": "sprint"
+    },
+    {
+      "start": "2026-10-08T11:15:00-05:00",
+      "end": "2026-10-08T11:30:00-05:00",
+      "name": "Checkpoint #1 con mentores",
+      "kind": "checkpoint",
+      "note": "¿Qué problema, para quién, qué solución? · HECHO"
+    },
+    {
+      "start": "2026-10-08T11:30:00-05:00",
+      "end": "2026-10-08T13:00:00-05:00",
+      "name": "Sprint 2: Construcción",
+      "kind": "sprint",
+      "note": "Spec, arquitectura, prototipos, IA AWS · plan en curso"
+    },
+    {
+      "start": "2026-10-08T13:00:00-05:00",
+      "end": "2026-10-08T13:45:00-05:00",
+      "name": "Almuerzo + build",
+      "kind": "sprint",
+      "note": "La competencia no para"
+    },
+    {
+      "start": "2026-10-08T13:45:00-05:00",
+      "end": "2026-10-08T14:45:00-05:00",
+      "name": "Sprint 3: Producto + demo",
+      "kind": "sprint"
+    },
+    {
+      "start": "2026-10-08T14:45:00-05:00",
+      "end": "2026-10-08T15:00:00-05:00",
+      "name": "Checkpoint #2 Demo readiness",
+      "kind": "checkpoint",
+      "note": "¿Funciona?, ¿se entiende?, ¿qué eliminar o terminar?"
+    },
+    {
+      "start": "2026-10-08T15:00:00-05:00",
+      "end": "2026-10-08T15:45:00-05:00",
+      "name": "Sprint final: ajustes, demo, publicación, pitch",
+      "kind": "sprint"
+    },
+    {
+      "start": "2026-10-08T15:45:00-05:00",
+      "end": "2026-10-08T15:45:00-05:00",
+      "name": "Cierre definitivo de entregas (freeze)",
+      "kind": "deadline",
+      "note": "El proyecto se congela"
+    },
+    {
+      "start": "2026-10-08T15:45:00-05:00",
+      "end": "2026-10-08T16:30:00-05:00",
+      "name": "Evaluación del jurado",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T16:30:00-05:00",
+      "end": "2026-10-08T16:40:00-05:00",
+      "name": "Deliberación",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T16:40:00-05:00",
+      "end": "2026-10-08T16:45:00-05:00",
+      "name": "Traslado al escenario",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T16:45:00-05:00",
+      "end": "2026-10-08T16:50:00-05:00",
+      "name": "Apertura",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T16:50:00-05:00",
+      "end": "2026-10-08T17:06:00-05:00",
+      "name": "Pitches finalistas (3 min)",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T17:06:00-05:00",
+      "end": "2026-10-08T17:15:00-05:00",
+      "name": "Deliberación",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T17:15:00-05:00",
+      "end": "2026-10-08T17:25:00-05:00",
+      "name": "Premiación",
+      "kind": "event"
+    },
+    {
+      "start": "2026-10-08T17:25:00-05:00",
+      "end": "2026-10-08T17:30:00-05:00",
+      "name": "Foto y cierre",
+      "kind": "event"
+    }
   ],
   "goal": 100,
+  "phases": [
+    {
+      "t": "Validación",
+      "s": "done",
+      "note": "Problema, UVP Montero, Lean Canvas, Checkpoint #1",
+      "links": [
+        {
+          "t": "Lean Canvas",
+          "u": "#canvas"
+        },
+        {
+          "t": "Propuesta de valor",
+          "u": "#propuesta"
+        }
+      ]
+    },
+    {
+      "t": "Diseño",
+      "s": "done",
+      "note": "SPEC.md completo + DESIGN.md SmartClub (repo)",
+      "links": []
+    },
+    {
+      "t": "Arquitectura",
+      "s": "done",
+      "note": "Diagramas arquitectura + flujo conversacional",
+      "links": [
+        {
+          "t": "Arquitectura y flujo",
+          "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
+        }
+      ]
+    },
+    {
+      "t": "Plan",
+      "s": "done",
+      "note": "PLAN.md generado (opencode plan mode)",
+      "links": []
+    },
+    {
+      "t": "Construcción",
+      "s": "doing",
+      "note": "Prototipos + IA AWS; falta backend/orquestador y A2UI",
+      "links": [
+        {
+          "t": "PWA demo",
+          "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
+        },
+        {
+          "t": "Web híbrida",
+          "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
+        }
+      ]
+    },
+    {
+      "t": "Demo",
+      "s": "todo",
+      "note": "E2E, reset, voz en browser, guardrails",
+      "links": [
+        {
+          "t": "PWA",
+          "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
+        },
+        {
+          "t": "Web",
+          "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
+        }
+      ]
+    },
+    {
+      "t": "Pitch",
+      "s": "todo",
+      "note": "PPT + pitch 3 min",
+      "links": []
+    }
+  ],
   "criteria": [
     {
-      "id": "valor", "name": "Propuesta de valor e impacto", "weight": 30,
+      "id": "valor",
+      "name": "Propuesta de valor e impacto",
+      "weight": 30,
       "evalua": "Problema relevante, usuario definido, beneficio concreto, cómo medir impacto",
       "nota": null,
       "items": [
-        { "t": "Problema relevante", "s": "doing" },
-        { "t": "Usuario definido", "s": "doing" },
-        { "t": "Beneficio concreto", "s": "doing" },
-        { "t": "Métrica de impacto", "s": "todo" }
+        {
+          "t": "Problema relevante",
+          "s": "done"
+        },
+        {
+          "t": "Usuario definido",
+          "s": "done"
+        },
+        {
+          "t": "Beneficio concreto (UVP Montero)",
+          "s": "done",
+          "u": "#propuesta"
+        },
+        {
+          "t": "Métrica de impacto (Lean Canvas)",
+          "s": "done",
+          "u": "#canvas"
+        }
       ]
     },
     {
-      "id": "tecnica", "name": "Calidad técnica y ejecución", "weight": 25,
+      "id": "tecnica",
+      "name": "Calidad técnica y ejecución",
+      "weight": 25,
       "evalua": "Flujo principal funcional, APIs reales, arquitectura apropiada, qué es real vs simulado",
       "nota": null,
       "items": [
-        { "t": "Flujo principal funcional", "s": "todo" },
-        { "t": "Integraciones reales con APIs", "s": "todo" },
-        { "t": "Arquitectura apropiada", "s": "todo" },
-        { "t": "Declarar real vs simulado", "s": "todo" }
+        {
+          "t": "Flujo principal funcional (prototipos live)",
+          "s": "doing",
+          "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
+        },
+        {
+          "t": "Integraciones reales (GLiNER Lambda, Transcribe, Polly, Haiku)",
+          "s": "doing"
+        },
+        {
+          "t": "Arquitectura apropiada",
+          "s": "done",
+          "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
+        },
+        {
+          "t": "Declarar real vs simulado (SPEC + mocks)",
+          "s": "doing"
+        }
       ]
     },
     {
-      "id": "novedad", "name": "Novedad y diferenciación", "weight": 20,
+      "id": "novedad",
+      "name": "Novedad y diferenciación",
+      "weight": 20,
       "evalua": "Combinar IA, APIs, datos o herramientas de forma creativa",
       "nota": null,
       "items": [
-        { "t": "Combinación creativa IA/APIs/datos", "s": "todo" },
-        { "t": "Diferenciación vs status quo", "s": "todo" }
+        {
+          "t": "IA creativa: GLiNER + Haiku A2UI + voz + CRM arquetipos",
+          "s": "doing"
+        },
+        {
+          "t": "Diferenciación vs status quo (farmacéutico virtual + CRM)",
+          "s": "doing"
+        }
       ]
     },
     {
-      "id": "viabilidad", "name": "Viabilidad e implementación", "weight": 15,
+      "id": "viabilidad",
+      "name": "Viabilidad e implementación",
+      "weight": 15,
       "evalua": "Ruta realista a piloto, datos/integraciones accesibles, costos, encaje con la operación",
       "nota": null,
       "items": [
-        { "t": "Ruta a piloto", "s": "todo" },
-        { "t": "Datos/integraciones accesibles", "s": "todo" },
-        { "t": "Costos razonables", "s": "todo" },
-        { "t": "Encaje con la operación", "s": "todo" }
+        {
+          "t": "Ruta a piloto (SPEC + PLAN en curso)",
+          "s": "doing"
+        },
+        {
+          "t": "Datos/integraciones accesibles (mock API 7 servicios pendiente)",
+          "s": "doing"
+        },
+        {
+          "t": "Costos razonables (Haiku + Lambda GLiNER)",
+          "s": "done"
+        },
+        {
+          "t": "Encaje con la operación (SRI, reposición, reserva)",
+          "s": "done"
+        }
       ]
     },
     {
-      "id": "demo", "name": "Claridad de presentación y demo", "weight": 10,
+      "id": "demo",
+      "name": "Claridad de presentación y demo",
+      "weight": 10,
       "evalua": "Buen uso de los 3 min",
       "nota": null,
       "items": [
-        { "t": "Pitch 3 min", "s": "todo" },
-        { "t": "Demo fluida", "s": "todo" },
-        { "t": "PPT corto", "s": "todo" }
+        {
+          "t": "Pitch 3 min",
+          "s": "todo"
+        },
+        {
+          "t": "Demo fluida (PWA + web híbrida; falta e2e)",
+          "s": "doing",
+          "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
+        },
+        {
+          "t": "PPT corto",
+          "s": "todo"
+        }
       ]
     }
   ],
   "deliverables": [
-    { "t": "Repo público", "s": "todo" },
-    { "t": "Demo pública desplegada (placeholder live)", "s": "doing" },
-    { "t": "PPT corto", "s": "todo" },
-    { "t": "Pitch 3 min", "s": "todo" }
+    {
+      "t": "Repo público",
+      "s": "todo"
+    },
+    {
+      "t": "Demo PWA (Amplify)",
+      "s": "done",
+      "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
+    },
+    {
+      "t": "Demo web híbrida (Amplify)",
+      "s": "done",
+      "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
+    },
+    {
+      "t": "Arquitectura / flujo publicados",
+      "s": "done",
+      "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
+    },
+    {
+      "t": "SPEC.md + DESIGN.md",
+      "s": "done"
+    },
+    {
+      "t": "PLAN.md (build)",
+      "s": "done"
+    },
+    {
+      "t": "Backend/orquestador + mock API 7 svc + admin",
+      "s": "todo"
+    },
+    {
+      "t": "A2UI renderer + guardrails + voz browser + e2e",
+      "s": "todo"
+    },
+    {
+      "t": "PPT corto",
+      "s": "todo"
+    },
+    {
+      "t": "Pitch 3 min",
+      "s": "todo"
+    }
   ]
 }
