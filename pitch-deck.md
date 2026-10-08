@@ -25,13 +25,13 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 
 ### 2. Problema (en palabras de Farmaenlace) — 20 s · valor
 - **Mensaje:** compran una vez y no vuelven; lo digital no les sirve.
-- Número grande: **"En 4 de 5 marcas, más de la mitad de los clientes compra una sola vez"** (p.24). Medicity 50,38% · Económicas 38,77%.
+- Número grande: **"En 4 de 5 marcas, más de la mitad de los clientes compra una sola vez"** (p.24). Medicity 50,38% · Farmacias Económicas 38,77%.
 - **~2%** ventas online (p.32).
 - Status quo: catálogos, filtros, formularios → no lo usan → van o llaman a la farmacia.
 
 ### 3. Propuesta de valor — 15 s · valor
 - **Mensaje:** le hablas y te arma la pantalla justa.
-- Fórmula Montero (1 frase, <20 s): "Para clientes de Económicas y Medicity que evitan las apps por complicadas, ofrecemos un farmacéutico virtual al que le hablas y te arma la pantalla que necesitas; a diferencia de catálogos y formularios, comprar —y volver a comprar— es tan fácil como preguntarle a tu farmacéutico."
+- Fórmula Montero (1 frase, <20 s): "Para clientes de Farmacias Económicas y Medicity que evitan las apps por complicadas, ofrecemos un farmacéutico virtual al que le hablas y te arma la pantalla que necesitas; a diferencia de catálogos y formularios, comprar —y volver a comprar— es tan fácil como preguntarle a tu farmacéutico."
 - Visual: antes (catálogo) vs después (1 tarjeta).
 
 ### 4. DEMO en vivo — 50 s · técnico, claridad
@@ -44,7 +44,7 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 ### 5. Diferenciador — 20 s · novedad
 - **Mensaje:** no es un chatbot: la interfaz se arma para cada persona.
 - Interfaz de Usuario Generativa y Conversacional (A2UI), voz primero, sin formularios.
-- "Fidelizar con datos" (p.25): UI por arquetipo (Medicity p.12, Económicas p.13); personaliza por comportamiento, **nunca nombra condición**.
+- "Fidelizar con datos" (p.25): UI por arquetipo (Medicity p.12, Farmacias Económicas p.13); personaliza por comportamiento, **nunca nombra condición**.
 - Guardrails: solo OTC, sin diagnóstico, alarma → alerta roja ECU 911, hand-off a farmacéutico humano.
 - Visual: 3 íconos. Máx. 3 bullets.
 
@@ -58,7 +58,7 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 ### 7. Piloto contra sus KPIs — 25 s · factibilidad, valor
 - **Mensaje:** no reemplaza nada; se mide contra control y escala solo con datos.
 - App nueva opt-in sobre las APIs actuales de Farmaenlace; no reemplaza la app actual.
-- Fases: canario 1% web → piloto QR en unas pocas farmacias Económicas/Medicity vs control → A/B web 10–50%.
+- Fases: canario 1% web → piloto QR en unas pocas Farmacias Económicas/Medicity vs control → A/B web 10–50%.
 - KPI norte: **recompra 30/60 días vs control** ("Más confianza y recompra", p.13; "Medir retención, abandono…", p.25). Tempranas: reservas completadas, retorno 7 días, instalaciones PWA.
 - Encaje operativo: reserva y retiro en farmacia, facturación lista para SRI, SmartClub. Backlog: pago en app, domicilio, WhatsApp.
 - Visual: timeline 3 pasos.
@@ -83,4 +83,4 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 
 ## Abierto (Eric)
 - Cargo/empresa para la portada.
-- Hook: cerrado — señora adulta de Económicas + "Pensemos… Según ella…"
+- Hook: cerrado — señora adulta de Farmacias Económicas + "Pensemos… Según ella…"

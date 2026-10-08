@@ -3,13 +3,13 @@
 Hablar despacio. Mirar al jurado, no a la pantalla. Demo: narrar mientras se toca.
 
 **[0:00–0:15] Portada**
-Hola, soy Eric Aguayo, co-fundador y director de IA aplicada en Nimblersoft. Pensemos en esa señora adulta que va a Económicas cada mes por su vitamina. Según ella, le toca ir porque las apps de hoy la abruman con catálogos, filtros, formularios y botones. Entonces no las usa. Para ella hice el Farmacéutico Virtual: tu farmacéutico más cercano, en el celular.
+Hola, soy Eric Aguayo, co-fundador y director de IA aplicada en Nimblersoft. Pensemos en esa señora adulta que va a Farmacias Económicas cada mes por su vitamina. Según ella, le toca ir porque las apps de hoy la abruman con catálogos, filtros, formularios y botones. Entonces no las usa. Para ella hice el Farmacéutico Virtual: tu farmacéutico más cercano, en el celular.
 
 **[0:15–0:35] Problema**
 Farmaenlace lo dice en su propio reto: en cuatro de cinco marcas, más de la mitad de los clientes compra una sola vez. Y solo cerca del dos por ciento de las ventas es online. Ustedes quieren pasar de la transacción a la relación. La puerta digital existe, pero cuesta cruzarla.
 
 **[0:35–0:50] Propuesta de valor**
-Para los clientes de Económicas y Medicity que evitan las apps porque les resultan complicadas, ofrecemos un farmacéutico virtual al que simplemente le hablas y te arma la pantalla que necesitas. Sin catálogos ni formularios: comprar, y volver a comprar, es tan fácil como preguntarle a tu farmacéutico.
+Para los clientes de Farmacias Económicas y Medicity que evitan las apps porque les resultan complicadas, ofrecemos un farmacéutico virtual al que simplemente le hablas y te arma la pantalla que necesitas. Sin catálogos ni formularios: comprar, y volver a comprar, es tan fácil como preguntarle a tu farmacéutico.
 
 **[0:50–1:40] Demo**
 Les muestro. Escaneo el QR de la farmacia, digo mi cédula y ya tengo mi cupón. Ahora hablo: "algo para la gripe". En segundos la app arma la pantalla: opciones de venta libre, precio, cashback SmartClub y stock en la farmacia más cercana.

@@ -24,7 +24,7 @@ Validar mañana: mentores/sponsors, observar no preguntar. No consejo médico. D
 ## Lanzamiento a producción (Eric + Huayna, 8 oct)
 - No reemplaza nada. App nueva (PWA) = experiencia mejorada sobre APIs actuales de Farmaenlace. Opt-in desde app actual / QR. Sin publicar en stores.
 - Fase 1, canario: 1% web → nueva web híbrida. Mide seguridad + costo (guardrails, errores, costo/conversación).
-- Fase 2, piloto tienda: QR en pocas farmacias Económicas/Medicity vs farmacias similares (control).
+- Fase 2, piloto tienda: QR en pocas Farmacias Económicas/Medicity vs farmacias similares (control).
 - Fase 3: escalar A/B web 10–50% si métricas tempranas acompañan.
 - Métrica norte: recompra 30/60 días vs control (no vs promedio: opt-in = sesgo de autoselección). Ref: deck p.24, 4 de 5 marcas >50% compra una sola vez.
 - Tempranas: reservas completadas, retorno 7 días, instalaciones PWA.
