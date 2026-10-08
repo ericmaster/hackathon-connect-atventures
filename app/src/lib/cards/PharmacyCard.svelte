@@ -1,6 +1,14 @@
 <script lang="ts">
 	import type { Pharmacy } from './types.js';
-	let { name, distance, hours, stock }: Pharmacy = $props();
+	let {
+		name,
+		distance,
+		hours,
+		stock,
+		onRetirar,
+		onComoLlegar,
+		onLlamar
+	}: Pharmacy & { onRetirar?: () => void; onComoLlegar?: () => void; onLlamar?: () => void } = $props();
 </script>
 
 <article class="rounded-card border border-line bg-card p-4 shadow-card">
@@ -10,13 +18,13 @@
 		</span>
 		<div>
 			<h3 class="text-lg leading-tight font-bold">{name}</h3>
-			<p class="text-muted">{distance} · {hours}</p>
+			<p class="text-muted">{[distance, hours].filter(Boolean).join(' · ')}</p>
 		</div>
 	</div>
-	<p class="mt-2 text-sm font-semibold text-success-strong">{stock}</p>
+	{#if stock}<p class="mt-2 text-sm font-semibold text-success-strong">{stock}</p>{/if}
 	<div class="mt-3 flex flex-wrap gap-2 text-sm font-semibold *:flex-1 *:px-3 *:whitespace-nowrap">
-		<button type="button" class="rounded-full bg-primary-strong py-2.5 text-white">Retirar aquí</button>
-		<button type="button" class="rounded-full border border-primary-strong py-2.5 text-primary-strong">Cómo llegar</button>
-		<button type="button" class="rounded-full border border-primary-strong py-2.5 text-primary-strong">Llamar</button>
+		<button type="button" onclick={() => onRetirar?.()} class="rounded-full bg-primary-strong py-2.5 text-white">Retirar aquí</button>
+		<button type="button" onclick={() => onComoLlegar?.()} class="rounded-full border border-primary-strong py-2.5 text-primary-strong">Cómo llegar</button>
+		<button type="button" onclick={() => onLlamar?.()} class="rounded-full border border-primary-strong py-2.5 text-primary-strong">Llamar</button>
 	</div>
 </article>

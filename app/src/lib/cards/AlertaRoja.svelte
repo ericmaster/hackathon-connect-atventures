@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { text }: { text: string } = $props();
+	let { text, phone = '911', onHandoff }: { text: string; phone?: string; onHandoff?: () => void } = $props();
 </script>
 
 <article role="alert" class="rounded-card bg-alerta p-4 text-white shadow-card">
@@ -9,6 +9,9 @@
 	</div>
 	<p class="mt-2 text-lg leading-snug">{text}</p>
 	<!-- Demo: no marca. Real = tel:911 -->
-	<button type="button" class="mt-3 w-full rounded-full bg-white py-3 text-lg font-bold text-alerta">Llamar al ECU 911</button>
+	<button type="button" class="mt-3 w-full rounded-full bg-white py-3 text-lg font-bold text-alerta">Llamar al ECU {phone}</button>
 	<p class="mt-2 text-center text-sm opacity-90">Demo: este botón no llama.</p>
+	{#if onHandoff}
+		<button type="button" onclick={() => onHandoff?.()} class="mt-2 w-full rounded-full border-2 border-white py-2.5 font-semibold">Hablar con un farmacéutico</button>
+	{/if}
 </article>

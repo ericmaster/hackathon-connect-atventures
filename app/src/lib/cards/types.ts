@@ -1,6 +1,6 @@
-// Props de las tarjetas custom. Antes del renderer A2UI real.
-export type Product = { name: string; detail: string; price: string; cashback: string; stock: string; note?: string };
-export type Pharmacy = { name: string; distance: string; hours: string; stock: string };
+// Props de las tarjetas custom (catálogo FV).
+export type Product = { sku?: string; name: string; detail?: string; price: string; cashback?: string; stock?: string; note?: string; ventaLibre?: boolean };
+export type Pharmacy = { pharmacyId?: string; name: string; distance?: string; hours?: string; stock?: string; phone?: string; mapsUrl?: string };
 export type Line = { name: string; qty: number; price: string };
 
 export type Card =
