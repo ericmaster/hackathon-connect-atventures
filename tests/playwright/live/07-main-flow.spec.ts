@@ -5,7 +5,8 @@ import {
 	acceptConsent,
 	completeOrderFromConsulta,
 	assertConfirmation,
-	latestSurface
+	latestSurface,
+	assertSimpleLanding
 } from '../helpers/flow';
 
 test.describe('live main flow', () => {
@@ -14,6 +15,7 @@ test.describe('live main flow', () => {
 	}) => {
 		test.setTimeout(180_000);
 		await openLive(page);
+		await assertSimpleLanding(page);
 		await enterCedula(page, '1710034065');
 		await acceptConsent(page);
 

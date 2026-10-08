@@ -5,7 +5,8 @@ import {
 	acceptConsent,
 	completeOrderFromConsulta,
 	assertConfirmation,
-	latestSurface
+	latestSurface,
+	assertSimpleLanding
 } from '../helpers/flow';
 
 test.describe('demo full flow', () => {
@@ -13,6 +14,7 @@ test.describe('demo full flow', () => {
 		guardedPage: page
 	}) => {
 		await openDemo(page);
+		await assertSimpleLanding(page);
 		await enterCedula(page, '1710034065');
 		await expect(latestSurface(page).getByText(/privacidad|historial de compras/i).first()).toBeVisible();
 		await acceptConsent(page);

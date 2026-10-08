@@ -129,13 +129,9 @@ function welcome(s: Sess): FvResponse {
 	const ui = new UI();
 	ui.text('¡Hola! Soy tu Farmacéutico Virtual de Farmaenlace.', 'h2');
 	ui.add({ component: 'Cupon', title: '$3 de descuento en tu primera reserva', code: 'BIENVENIDA3', until: 'Válido hasta 31/12/2026 · demo', note: 'Se aplica solo a tu primera reserva' });
+	// Sin campo propio: la cédula se escribe o se dice en el prompt principal (onText).
 	ui.text('Para guardar tu beneficio, ¿me ayudas con tu número de cédula?');
-	cedulaField(ui);
-	return resp(s, ui, '¡Hola! Soy tu Farmacéutico Virtual. ¿Me ayudas con tu número de cédula?', { cedula: '' });
-}
-function cedulaField(ui: UI) {
-	ui.add({ component: 'CedulaInput', label: 'Número de cédula', value: { path: '/cedula' }, action: { event: { name: 'enviar_cedula', context: { cedula: { path: '/cedula' } } } } });
-	ui.text('Demo: 1710034065 (Cuidador) · 1712456787 (Práctico) · otra válida = perfil nuevo', 'caption');
+	return resp(s, ui, '¡Hola! Soy tu Farmacéutico Virtual. ¿Me ayudas con tu número de cédula?');
 }
 
 function onCedula(s: Sess, raw: unknown): FvResponse {
@@ -146,8 +142,7 @@ function onCedula(s: Sess, raw: unknown): FvResponse {
 		if (s.attempts >= 3) return handoff(s, 'No pudimos validar la cédula tras 3 intentos.');
 		const ui = new UI();
 		ui.text('Mmm, no me cuadra. ¿Me la repites? Son 10 dígitos.');
-		cedulaField(ui);
-		return resp(s, ui, '¿Me la repites?', { cedula: '' });
+		return resp(s, ui, '¿Me la repites?');
 	}
 	s.cedula = c;
 	const prof = PROFILES[c];
@@ -437,7 +432,7 @@ function onText(s: Sess, text: string): FvResponse {
 	if (s.state === 'cedula') {
 		const d = t.replace(/\D/g, '');
 		if (d.length >= 10) return onCedula(s, d.slice(0, 10));
-		return say(s, 'Primero necesito tu cédula (10 dígitos). Puedes escribirla en el campo de arriba.');
+		return say(s, 'Primero necesito tu cédula (10 dígitos). Escríbela o dímela abajo.');
 	}
 	if (s.state === 'consentimiento') {
 		if (/^(s[ií]|acepto|ok|vale|claro)/i.test(t)) return onConsent(s, true);

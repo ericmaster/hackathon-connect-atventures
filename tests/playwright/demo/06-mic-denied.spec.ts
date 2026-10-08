@@ -69,10 +69,9 @@ test.describe('demo mic denied', () => {
 		await page.getByRole('button', { name: /^hablar$/i }).click();
 		await expect(page.getByRole('alert').filter({ hasText: MIC_MSG })).toBeVisible({ timeout: 15_000 });
 
-		// Text input still works: enter valid cédula via chat field or form
-		// (the error bubble is now the last entry, so target the cédula field directly)
-		await page.getByRole('textbox', { name: /número de cédula/i }).fill('1710034065');
-		await page.getByRole('button', { name: /^continuar$/i }).last().click();
+		// Text input still works: the cédula is typed in the main prompt (no separate field)
+		await page.getByRole('textbox', { name: /escribe tu pregunta/i }).fill('1710034065');
+		await page.getByRole('button', { name: /^enviar$/i }).click();
 		await waitIdle(page);
 		await expect(latestSurface(page).getByText(/privacidad|historial|gracias/i).first()).toBeVisible();
 

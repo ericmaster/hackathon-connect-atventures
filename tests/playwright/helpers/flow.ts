@@ -28,12 +28,24 @@ export async function openLive(page: Page) {
 	await expect(latestSurface(page).getByText(/cédula/i).first()).toBeVisible({ timeout: 60_000 });
 }
 
+/** The cédula has no separate field: it is typed (or said) in the main prompt and sent with Enviar. */
 export async function enterCedula(page: Page, cedula: string) {
-	const surface = latestSurface(page);
-	const input = surface.locator('input').first();
-	await input.fill(cedula);
-	await surface.getByRole('button', { name: /^continuar$/i }).click();
+	const box = page.getByRole('textbox', { name: /escribe tu pregunta/i });
+	await expect(box).toHaveAttribute('placeholder', /c[eé]dula/i);
+	await box.fill(cedula);
+	await page.getByRole('button', { name: /^enviar$/i }).click();
 	await waitIdle(page);
+}
+
+/** Landing has no separate cédula input, no CedulaInput form and no small-print disclaimer. */
+export async function assertSimpleLanding(page: Page) {
+	await expect(page.locator('main input')).toHaveCount(0);
+	await expect(page.getByRole('button', { name: /^continuar$/i })).toHaveCount(0);
+	await expect(page.getByText(/no diagnostica/i)).toHaveCount(0);
+	await expect(page.getByText(/Demo: 1710034065/)).toHaveCount(0);
+	await expect(page.getByTestId('reset')).toBeVisible();
+	await expect(page.getByTestId('mode-badge')).toBeVisible();
+	await expect(page.getByRole('button', { name: /^hablar$/i })).toBeVisible();
 }
 
 export async function acceptConsent(page: Page) {
@@ -72,6 +84,7 @@ export async function completeOrderFromConsulta(page: Page, query = 'algo para l
 		.getByRole('button', { name: /agregar( al pedido| y retirar)?/i })
 		.first();
 	await expect(add).toBeVisible({ timeout: 60_000 });
+	await expect(page.getByText(/no diagnostica/i)).toHaveCount(0);
 	await add.click();
 	await waitIdle(page);
 
