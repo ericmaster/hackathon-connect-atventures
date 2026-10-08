@@ -113,8 +113,12 @@ class DynamoStore:
             raise ConditionFailed(f"{pk}/{sk}") from e
 
     def query(self, pk, prefix="", desc=False, limit=None):
-        kw = {"TableName": self.table, "KeyConditionExpression": "pk = :p AND begins_with(sk, :s)",
-              "ExpressionAttributeValues": {":p": {"S": pk}, ":s": {"S": prefix}}, "ScanIndexForward": not desc}
+        if prefix:
+            kw = {"TableName": self.table, "KeyConditionExpression": "pk = :p AND begins_with(sk, :s)",
+                  "ExpressionAttributeValues": {":p": {"S": pk}, ":s": {"S": prefix}}, "ScanIndexForward": not desc}
+        else:
+            kw = {"TableName": self.table, "KeyConditionExpression": "pk = :p",
+                  "ExpressionAttributeValues": {":p": {"S": pk}}, "ScanIndexForward": not desc}
         if limit:
             kw["Limit"] = limit
         out = []
