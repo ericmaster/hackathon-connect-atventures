@@ -1,9 +1,9 @@
-# secretos
+# secrets
 .env
 .env.*
 !.env.example
 
-# dependencias / builds
+# deps / builds
 node_modules/
 .next/
 out/
@@ -13,8 +13,13 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 
+# local tooling / heavy context (not in repo)
+.venv*/
+scratch*/
+docs/drive/
+docs/audios/*.m4a
+
 # misc
 .DS_Store
 *.log
-npm-debug.log*
 coverage/
