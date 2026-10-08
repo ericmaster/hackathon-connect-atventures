@@ -38,44 +38,61 @@ Versiones y checklist del método Montero: pestaña **Propuesta de valor** del d
 - Es **audio-first**: un botón grande para hablar (push-to-talk). Escribir es la alternativa.
 - **No hay formularios**: los datos se piden uno a uno, dentro de la conversación.
 - La misma capa sirve para la PWA móvil y para la web híbrida. El formato de la UI generada es A2UI (§9).
-- La UI se adapta al **arquetipo del cliente** (insights CRM, §6).
+- La UI se adapta al **arquetipo del cliente** (insights CRM, §6), solo con consentimiento (§6.5).
 - **Regla de demo:** la UI generada tiene que verse **en los primeros 10 s**.
 
 ## 6. Inteligencia de cliente desde CRM (decidido, innovación)
-Asumimos que el CRM de Farmaenlace ya tiene insights por cliente. El mock los incluye. Sirven para personalizar la UI, reponer y sugerir — siempre bajo la capa de guardrails (§8). Solo datos sintéticos.
+Asumimos que el CRM de Farmaenlace ya tiene insights por cliente. El mock los incluye. Sirven para personalizar la UI, reponer y sugerir — siempre bajo guardrails (§8) y **solo con consentimiento** (§6.5). Solo datos sintéticos.
 
-**Campos del CRM mock (además de identidad y facturación):** preferencias, condiciones/enfermedades probables, productos frecuentes, arquetipo de cliente.
+**Campos del CRM mock (además de identidad y facturación):** consentimiento (booleano + timestamp), preferencias, condiciones/enfermedades probables, productos frecuentes (con ritmo de compra), arquetipo de cliente (§6.6).
 
-### 6.1 UI generativa adaptada al arquetipo
-La UI no solo cambia las sugerencias: **se adapta al arquetipo** (letra, prioridad de voz, cantidad de opciones, tipo de productos).
-- Adulto mayor: letra grande, voz primero, pocas opciones.
-- Mamá joven: productos infantiles / combos.
+**Regla dura (decidido):** el asistente **nunca asume ni afirma una condición**. La personalización se dice solo como sugerencia por comportamiento: "como sueles llevar X…". Las "condiciones probables" del CRM solo deciden **qué sugerencias se ofrecen**; **nunca se verbalizan** al usuario (tampoco en "¿por qué me sugieres esto?", que responde por comportamiento).
+
+### 6.1 UI generativa adaptada al arquetipo (decidido, incluido)
+La UI no solo cambia las sugerencias: **se adapta al arquetipo** (letra, prioridad de voz, cantidad de opciones, tipo de productos). Arquetipos del mock: §6.6.
 **Momento de demo:** la misma pregunta hecha por dos clientes distintos → dos UIs distintas.
 
-### 6.2 Reposición proactiva
-Desde productos frecuentes, p. ej. "Tu losartán se acaba en ~3 días, ¿te lo reservo en tu farmacia?". Recompra + adherencia = fidelización.
+### 6.2 Reposición proactiva (decidido, incluido)
+Solo por **ritmo de compra** de productos frecuentes; no se infiere ninguna condición. Ej.: lo compra cada mes → ~3 días antes de la fecha esperada, el asistente ofrece reservarlo en su farmacia habitual: "Sueles llevar tu multivitamínico cada mes, ¿te lo reservo en tu farmacia de siempre?". Recompra + adherencia = fidelización. Chat vs push: por definir (§18).
 → UI: tarjeta `SugerenciaPersonalizada` / `Reposicion` con acción de reservar y affordance "¿por qué me sugieres esto?" (§9).
 
-### 6.3 Volante (flywheel)
+### 6.3 Volante (flywheel) (decidido, incluido)
 Las conversaciones enriquecen el perfil CRM y generan señales de demanda para la planificación de Farmaenlace (contacto: **Diego Alarcón**, jefe de planificación de demanda).
 
 ### 6.4 Sugerencias personalizadas
-Basadas en estos insights, siempre bajo guardrails (§8). Sin diagnóstico.
+Basadas en estos insights, siempre bajo guardrails (§8) y la regla dura (§6). Sin diagnóstico.
 
-### 6.5 Privacidad (LOPDP Ecuador)
-Los datos de salud son sensibles → hace falta **consentimiento explícito** para usar "condiciones probables". Nunca afirmar una condición ("usted tiene X"); hablar por comportamiento ("como sueles llevar X…"). Incluir la explicación "¿por qué me sugieres esto?". Posicionamiento: **personalización transparente**. Solo datos sintéticos. Momento del consentimiento: por definir (§18).
+### 6.5 Privacidad y consentimiento (LOPDP Ecuador) (decidido)
+Los datos de salud son sensibles → hace falta **consentimiento explícito**.
+- **Mock simple:** un solo paso en el onboarding, justo después de validar la cédula (§7.1). Un toque/checkbox con el texto: "Acepto que Farmaenlace use mi historial de compras para darme sugerencias personalizadas". Se puede seguir sin aceptar.
+- Se guarda en el CRM mock como booleano + timestamp.
+- **Sin consentimiento:** sin personalización (ni arquetipo, ni reposición, ni sugerencias del CRM); solo respuestas genéricas.
+- Incluir la explicación "¿por qué me sugieres esto?". Posicionamiento: **personalización transparente**. Solo datos sintéticos.
+
+### 6.6 Arquetipos del mock CRM (decidido)
+Nombres y descripciones del deck del reto (`docs/drive/1. Hackaton - FARMAENLACE_BYD_Reto.pdf`): audiencias de Medicity (p. 12: Cuidadores, Wellness seekers, Prácticos) y de Económicas (p. 13: Cuidadores del hogar, Resolutivos de urgencia, Ahorradores inteligentes). Perfil demo, adaptación de UI y productos frecuentes = **datos sintéticos de demo**.
+
+| Arquetipo (fuente) | Perfil demo (sintético) | Adaptación de UI (sintético) | Productos frecuentes (sintético) |
+|---|---|---|---|
+| **Cuidador** (Medicity p. 12: "Cuidan de sí mismos y de quienes más les importan") | Adulto mayor que compra lo mismo cada mes | Letra extra grande, voz primero, 1–2 opciones, reposición destacada | Multivitamínico 50+ (mensual), crema humectante, pañal adulto |
+| **Cuidador del hogar** (Económicas p. 13) | Mamá/papá con niños pequeños | Productos infantiles y combos | Pañales (mensual), paracetamol infantil, suero oral |
+| **Práctico** (Medicity p. 12: "Quieren resolver sus necesidades de forma rápida y simple") | Joven profesional con poco tiempo | Una tarjeta con "Agregar" directo, recompra en un toque, mínimo de pasos | Antigripal, protector solar, desodorante |
+| **Ahorrador inteligente** (Económicas p. 13; el deck no lo describe) | Familia de NSE medio/medio-bajo (Económicas p. 13) | Precio, cashback y promo SmartClub primero; genérico / marca propia como alternativa (deck p. 21) | Paracetamol genérico, alcohol, minimarket |
+
+Fuera del demo: Wellness seekers y Resolutivos de urgencia.
 
 ## 7. Flujos (decidido)
 Cada paso indica lo que hace el usuario y, después de "→ UI:", lo que genera la interfaz. Recorrido completo: onboarding → consulta → pedido y retiro → datos de facturación → compra completada. El hand-off está disponible en todo momento.
 
 ### 7.1 Onboarding: QR + cédula (pseudo-FSM guiado por IA)
-La IA conversa, pero una máquina de estados decide el paso y no avanza hasta cumplirlo: `saludo → pedir_cedula → validar → buscar_crm → (confirmar_datos) → listo`.
+La IA conversa, pero una máquina de estados decide el paso y no avanza hasta cumplirlo: `saludo → pedir_cedula → validar → consentimiento → buscar_crm → (confirmar_datos) → listo`.
 1. En la farmacia, el cliente ve un QR con un beneficio por instalar la app. **El beneficio queda abierto: lo define Farmaenlace** (ej. descuento o bonificación en la próxima compra). → UI: ninguna (material físico).
 2. Escanea el QR y se abre la PWA, sin pasar por la tienda de apps. → UI: saludo del Farmacéutico Virtual, botón grande para hablar y la opción de instalar en la pantalla de inicio.
 3. El asistente pide la cédula; el usuario la dice o la escribe. **Es el único dato del onboarding.** → UI: una pregunta y un campo numérico grande (o la captura por voz).
 4. Se valida el dígito verificador (módulo 10) **en el dispositivo** y otra vez **en el backend**. Si falla, la pide de nuevo sin culpar ("¿me la repites?"); al tercer intento ofrece el hand-off. → UI: aviso corto en el mismo campo.
-5. Busca la cédula en el CRM. Si hay datos cruzados, los muestra para confirmar ("¿Eres …?", Sí/No). **El MVP asume que no hay datos cruzados**: este paso se salta.
-6. El beneficio del QR queda asociado a la cédula en SmartClub y se entrega al completar la compra (§7.5). → UI: "Listo, ya tienes tu beneficio" y pasa a la consulta.
+5. **Consentimiento (mock, §6.5):** un toque/checkbox "Acepto que Farmaenlace use mi historial de compras para darme sugerencias personalizadas". Se guarda booleano + timestamp en el CRM. Sin aceptar, sigue sin personalización. → UI: texto corto + checkbox + "Continuar".
+6. Busca la cédula en el CRM. Si hay datos cruzados, los muestra para confirmar ("¿Eres …?", Sí/No). **El MVP asume que no hay datos cruzados**: este paso se salta.
+7. El beneficio del QR queda asociado a la cédula en SmartClub y se entrega al completar la compra (§7.5). → UI: "Listo, ya tienes tu beneficio" y pasa a la consulta.
 
 **Módulo 10 (cédula):** 10 dígitos; provincia 01–24 (30 = registrados en el exterior); tercer dígito < 6; coeficientes 2-1-2-1-2-1-2-1-2 sobre los 9 primeros (si el producto pasa de 9, se resta 9); verificador = (10 − suma mód 10) mód 10. Ejemplo sintético válido: `1710034065`.
 
@@ -112,6 +129,7 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 **Decidido:**
 - El cliente puede preguntar cualquier cosa y el asistente puede sugerir.
 - **Nunca emite un diagnóstico.**
+- **Nunca asume ni afirma una condición** (regla dura, §6): sugiere solo por comportamiento ("como sueles llevar X…"); las condiciones probables del CRM solo filtran sugerencias y nunca se verbalizan.
 - Ante un "¿qué tomo para…?", sugiere y recomienda ver a un médico si el problema persiste.
 - Debe ser flexible y no un muro de negativas. Contexto: en la permacrisis de Ecuador, mucha gente no tiene tiempo de ir al médico.
 - **Los guardrails son una capa propia, no solo el prompt.** Corren antes de generar la respuesta, sobre lo que dijo el usuario y sobre los productos que devuelve el catálogo. Detectan síntomas de alarma, pedidos de diagnóstico y medicamentos con receta. Si se activan, la respuesta usa un componente fijo (alerta roja, hand-off) y no la decide el LLM.
@@ -137,6 +155,7 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 | Paso | Basic Catalog | Catálogo FV (custom) |
 |---|---|---|
 | Onboarding: pedir y validar cédula | Text, TextField (`number`, checks `required` + `cedulaEc`), Button | `cedulaEc` (función) |
+| Onboarding: consentimiento | Text, CheckBox, Button | — |
 | Onboarding: confirmar datos cruzados (fuera del MVP) | Card, Text, Row, Button Sí/No | — |
 | Onboarding: beneficio asociado | Text, Icon | — |
 | Consulta: preguntas de seguridad | Text, ChoicePicker o Row de Buttons | — |
@@ -165,7 +184,7 @@ Todos los servicios viven detrás de **una sola API mock** con datos sintéticos
 
 | Servicio | Datos |
 |---|---|
-| CRM | Clientes, datos de facturación, consentimientos, preferencias, condiciones/enfermedades probables, productos frecuentes, arquetipo de cliente |
+| CRM | Clientes, datos de facturación, consentimiento (booleano + timestamp), preferencias, condiciones/enfermedades probables, productos frecuentes, arquetipo de cliente |
 | Catálogo | Productos, precios, venta libre vs receta |
 | Inventario | Stock por farmacia |
 | Farmacias | Sucursales, ubicación, horarios |
@@ -230,7 +249,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
   - Voz: Transcribe streaming `es-US` + Polly Lupe (§10).
   - Renderer A2UI: Svelte mínimo propio (§9).
   - Facturación: "consumidor final" si total ≤ USD 50 c/IVA; si no, nombre + ID + email (§7.4).
-- **Flujo principal:** QR → cédula (§7.1) → hablar → productos + beneficio SmartClub + farmacia cercana (§7.2) → pedido con retiro (§7.3) → facturación (§7.4) → confirmación + factura mock + cupón (§7.5). Personalización / reposición CRM cuando haya perfil (§6).
+- **Flujo principal:** QR → cédula + consentimiento (§7.1) → hablar → productos + beneficio SmartClub + farmacia cercana (§7.2) → pedido con retiro (§7.3) → facturación (§7.4) → confirmación + factura mock + cupón (§7.5). Personalización / reposición CRM cuando haya perfil y consentimiento (§6).
 
 ## 17. Fuera de alcance
 - Diagnóstico médico y venta o sugerencia de medicamentos con receta.
@@ -249,13 +268,11 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 7. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
 8. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
 9. **Reposición proactiva en el MVP:** ¿solo en el chat o también push notification de la PWA?
-10. **Arquetipos sintéticos del mock CRM** para el demo: ¿cuáles 3–4?
-11. **Consentimiento LOPDP** para usar "condiciones probables": ¿en el onboarding (un toque con la cédula) o en la primera sugerencia?
 
 ## 19. Decisiones registradas
 - **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia).
 - **Propiedad intelectual:** el código que generemos es nuestro (confirmado por Fernando Rivera, 8 oct).
-- **Onboarding:** pseudo-FSM guiado por IA; solo pide y valida la cédula (módulo 10 en dispositivo + backend). El MVP asume que no hay datos cruzados.
+- **Onboarding:** pseudo-FSM guiado por IA; solo pide y valida la cédula (módulo 10 en dispositivo + backend) + un toque de consentimiento. El MVP asume que no hay datos cruzados.
 - **Facturación:** los datos se piden solo antes del checkout; se guardan en el CRM y en caché del dispositivo.
 - **"Confirmar":** agregar al pedido y reservar para retirar en la farmacia.
 - **Backend:** una API mock con 7 servicios + admin de solo lectura.
@@ -266,3 +283,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - **Facturación ≤ USD 50 c/IVA (Eric 8 oct 10:38):** ofrecer "consumidor final"; si supera, pedir nombre + identificación + email.
 - **Inteligencia de cliente desde CRM (Eric 8 oct 10:38):** el mock incluye preferencias, condiciones/enfermedades probables, productos frecuentes y arquetipo; UI adaptada al arquetipo, reposición proactiva, flywheel de demanda (Diego Alarcón) y sugerencias bajo guardrails; LOPDP = consentimiento + personalización transparente (§6).
 - **Criterio MVP (Eric 8 oct 10:38):** lo más simple en cada elección abierta.
+- **Innovación CRM (Eric 8 oct):** incluidas UI adaptada al arquetipo, reposición proactiva (solo por ritmo de compra) y conversaciones que alimentan el CRM / señales de demanda (§6.1–6.3).
+- **Regla dura (Eric 8 oct):** nunca asumir ni afirmar una condición; personalizar solo por comportamiento; las condiciones probables solo filtran sugerencias, nunca se verbalizan (§6, §8).
+- **Consentimiento (Eric 8 oct):** mock de un toque en el onboarding, tras validar la cédula; booleano + timestamp en el CRM; sin consentimiento, solo respuestas genéricas (§6.5, §7.1). Cierra la pregunta abierta.
+- **Arquetipos del mock CRM (Eric 8 oct):** Cuidador, Cuidador del hogar, Práctico y Ahorrador inteligente, tomados del deck (Medicity p. 12, Económicas p. 13); detalles sintéticos (§6.6). Cierra la pregunta abierta.
