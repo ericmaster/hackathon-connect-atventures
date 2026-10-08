@@ -31,6 +31,7 @@
 	<input
 		id="cedula-in"
 		bind:value={v}
+		oninput={() => (error = '')}
 		inputmode="numeric"
 		autocomplete="off"
 		maxlength="10"

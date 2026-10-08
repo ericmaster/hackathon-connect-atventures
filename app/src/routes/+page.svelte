@@ -155,7 +155,7 @@
 	async function scrollToLast() {
 		await tick();
 		const last = list?.querySelector('[data-entry]:last-of-type') as HTMLElement | null;
-		if (last) list.scrollTo({ top: last.offsetTop - list.offsetTop - 8, behavior: 'smooth' });
+		if (last) list.scrollTo({ top: last.offsetTop - 8, behavior: 'smooth' });
 	}
 </script>
 
@@ -176,17 +176,17 @@
 			>
 				Aa
 			</button>
-			<button type="button" onclick={reset} class="shrink-0 rounded-full border-2 border-secondary px-3 py-2 text-sm font-bold text-secondary" data-testid="reset">
-				Reiniciar demo
-			</button>
 		</div>
-		<div class="mt-1.5 flex flex-wrap gap-1.5 text-xs font-semibold">
+		<div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
 			<span class="rounded-full bg-cream px-2.5 py-0.5 text-secondary">Demo · datos simulados</span>
 			{#if simulated}
 				<span class="rounded-full bg-warning px-2.5 py-0.5 text-ink" data-testid="mode-badge">IA y servicios simulados</span>
 			{:else}
 				<span class="rounded-full bg-success-strong px-2.5 py-0.5 text-white" data-testid="mode-badge">IA real · datos sintéticos</span>
 			{/if}
+			<button type="button" onclick={reset} class="ml-auto rounded-full border-2 border-secondary px-3 py-1 text-sm font-bold text-secondary" data-testid="reset">
+				↺ Reiniciar demo
+			</button>
 		</div>
 		<p class="mt-1 text-xs text-muted">Solo productos de venta libre · No diagnostica · No reemplaza la consulta médica</p>
 	</header>
