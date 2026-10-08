@@ -30,6 +30,7 @@ value/impact 30 | tech 25 | novelty 20 | viability 15 | demo 10
 ## Context hygiene
 - Read only what task needs.
 - Product spec: SPEC.md (flows, guardrails, real vs mock). Read before app/pitch work.
+- Visual guide: DESIGN.md (SmartClub tokens, cards, a11y, tone). Read before UI work.
 - Event facts: docs/DRIVE-SUMMARY.md. Audio notes: docs/AUDIOS-SUMMARY.md (when ready).
 - Progress tracker = services/dashboard/progress.json. Edit it, bump updated_at.
 - Infra/tools: TOOLING.md. Don't touch infra unless asked.

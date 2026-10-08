@@ -1,1 +1,48 @@
 @import 'tailwindcss';
+
+/* Fuente: Source Sans 3 (OFL), la de smartclub.ec. Solo latin = menos precache. */
+@font-face {
+	font-family: 'Source Sans 3';
+	font-style: normal;
+	font-display: swap;
+	font-weight: 200 900;
+	src: url('@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2') format('woff2-variations');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Tokens SmartClub. Fuente de cada valor: DESIGN.md */
+@theme {
+	--font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+
+	--color-primary: #fe6403;
+	--color-primary-strong: #b83d00;
+	--color-secondary: #a00117;
+	--color-accent: #ff009e;
+	--color-accent-strong: #c40078;
+	--color-success: #33c15e;
+	--color-success-strong: #1f7a3d;
+	--color-warning: #ffad45;
+	--color-danger: #e83e2c;
+	--color-alerta: #a00117;
+	--color-ink: #1d1d1f;
+	--color-muted: #666666;
+	--color-line: #e2ddd4;
+	--color-cream: #f9f4e1;
+	--color-bg: #fff9ee;
+	--color-card: #ffffff;
+
+	--radius-card: 1.5rem;
+	--radius-bubble: 1.25rem;
+	--shadow-card: 0 2px 12px rgb(29 29 31 / 0.08);
+	--shadow-mic: 0 8px 24px rgb(254 100 3 / 0.45);
+}
+
+html {
+	font-size: 112.5%; /* base 18px */
+}
+html.senior {
+	font-size: 137.5%; /* adulto mayor: 22px, todo escala en rem */
+}
+body {
+	@apply bg-bg font-sans text-ink antialiased;
+}
