@@ -20,6 +20,12 @@
 	let mode: 'real' | 'simulado' = $state('simulado');
 	let input = $state('');
 	let busy = $state(false);
+	let slow = $state(false);
+	let slowT: ReturnType<typeof setTimeout> | undefined;
+	$effect(() => {
+		if (busy) slowT = setTimeout(() => (slow = true), 1500);
+		else (clearTimeout(slowT), (slow = false));
+	});
 	let listening = $state(false);
 	let partial = $state('');
 	let senior = $state(false);
@@ -203,7 +209,7 @@
 		{/if}
 		{#each entries as e (e.key)}
 			{#if e.kind === 'surface' && store.surfaces[e.id!]}
-				<div data-entry class="max-w-[96%] transition-opacity {e.id === latestSurface ? '' : 'opacity-60'}" inert={e.id !== latestSurface}>
+				<div data-entry class="max-w-[96%] transition-opacity {e.id === latestSurface && !busy ? '' : 'opacity-60'}" inert={e.id !== latestSurface || busy}>
 					<SurfaceView surface={store.surfaces[e.id!]} {onAction} />
 				</div>
 			{:else if e.kind === 'user'}
@@ -212,7 +218,16 @@
 				<div data-entry class="w-fit max-w-[85%] rounded-bubble rounded-bl-md border-2 border-danger bg-card px-4 py-2.5 text-lg" role="alert">{e.text}</div>
 			{/if}
 		{/each}
-		{#if busy}<p class="text-muted">Pensando…</p>{/if}
+		{#if busy}
+			<div data-entry class="flex w-fit items-center gap-3 rounded-bubble rounded-bl-md border border-line bg-card px-4 py-3" role="status" data-testid="busy">
+				<span class="flex gap-1" aria-hidden="true">
+					<span class="size-2.5 animate-bounce rounded-full bg-primary-strong"></span>
+					<span class="size-2.5 animate-bounce rounded-full bg-primary-strong [animation-delay:150ms]"></span>
+					<span class="size-2.5 animate-bounce rounded-full bg-primary-strong [animation-delay:300ms]"></span>
+				</span>
+				<span class="text-lg">Pensando{slow ? ' tu respuesta, un momento…' : '…'}</span>
+			</div>
+		{/if}
 	</main>
 
 	<div class="flex flex-col items-center gap-2 border-t border-line bg-card p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
