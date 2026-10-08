@@ -21,7 +21,10 @@ Idea: Generative UI omnichannel. Personalized exp per brand/customer type. Cross
 value/impact 30 | tech 25 | novelty 20 | viability 15 | demo 10
 
 ## Stack
-TBD. Keep small. Ship working demo > features.
+- app/: SvelteKit 3 + Svelte 5 + Tailwind 4 PWA. Static (adapter-static, SPA fallback). Native SvelteKit SW.
+- Host: AWS Amplify Hosting manual deploy (`app/deploy.sh`).
+- AI: AWS Bedrock planned (max 1 RPS). Now all mocked: app/src/lib/mock.
+- Keep small. Ship working demo > features.
 
 ## Context hygiene
 - Read only what task needs.
