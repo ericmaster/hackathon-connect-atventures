@@ -1,0 +1,14 @@
+{
+  "name": "fv-playwright-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "E2E Playwright suite for Farmacéutico Virtual PWA (synthetic data only)",
+  "scripts": {
+    "test": "playwright test",
+    "test:demo": "playwright test --project=demo",
+    "test:live": "playwright test --project=live"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest"
+  }
+}
