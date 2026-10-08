@@ -32,13 +32,13 @@ Si el tiempo aprieta: saltar el paso 4 o decir "en un minuto más le llega la fa
 Toco **Nueva consulta** y digo 🎤 "tengo dolor de pecho fuerte y me cuesta respirar". Sale la tarjeta roja "Atención urgente" con ECU 911 y ningún producto.
 No es un chatbot que responde texto: la interfaz se genera para cada persona. Es fidelizar con datos, por marca y arquetipo, como pide su reto. Personaliza por lo que compras y nunca menciona tu condición. Solo venta libre, nunca diagnostica, y ante una señal de alarma muestra una alerta roja con el ECU 911 y te pasa con un farmacéutico humano.
 
-**[2:00–2:15] Real vs simulado**
-Lo real: Claude Haiku en Bedrock genera la interfaz, GLiNER entiende qué pides, y la voz es de AWS. Lo simulado: catálogo, SmartClub y clientes; todos los datos son sintéticos. En nuestras pruebas, todas las respuestas salieron válidas y seguras, a menos de un centavo cada una.
+**[2:00–2:20] Arquitectura: real vs simulado**
+Por dentro, no dejamos todo a un solo LLM. Un modelo de decisión, GLiNER, entiende qué pides. Reglas y guardrails deciden qué se puede ofrecer. Recién ahí Claude Haiku arma la pantalla, y se valida antes de mostrarse. Menos alucinaciones, más rápido y más barato. Lo simulado son las APIs de Farmaenlace, con datos sintéticos.
 
-**[2:15–2:40] Piloto contra sus KPIs**
+**[2:20–2:45] Piloto contra sus KPIs**
 ¿Cómo llega a producción? No reemplaza nada: es una app nueva, opcional, sobre las APIs que Farmaenlace ya tiene. Primero, el uno por ciento de la web. Luego, QR en unas pocas farmacias contra farmacias de control. El KPI es su KPI: recompra a treinta y sesenta días contra ese control. Escalamos solo con datos.
 
-**[2:40–2:55] Siguiente paso y cierre**
+**[2:45–3:00] Siguiente paso y cierre**
 Lo que proponemos: un piloto con Farmaenlace para validar este MVP contra sus números. Que esa señora vuelva, y vuelva otra vez. Tu farmacéutico más cercano, en el celular. ¿Cuál es el siguiente paso?
 
 ---

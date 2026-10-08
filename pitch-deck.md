@@ -48,11 +48,25 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 - Guardrails: solo OTC, sin diagnóstico, alarma → alerta roja ECU 911, hand-off a farmacéutico humano.
 - Visual: 3 íconos. Máx. 3 bullets.
 
-### 6. Real vs simulado — 15 s · técnico
-- **Mensaje:** IA real hoy; datos sintéticos.
-- Real: Claude Haiku 4.5 (Bedrock) genera A2UI · GLiNER (Lambda) intención/entidades · Transcribe + Polly.
-- Simulado: catálogo, stock, SmartClub, CRM, pedidos, factura (SIMULADA).
-- Prueba: 100% checks en 6 fixtures (A2UI válido, OTC, alarma, sin condición), ~4 s, ~USD 0,005/respuesta (tests/llm/results/BENCHMARK.md). Evidencia técnica, no tracción.
+### 6. Arquitectura: real vs simulado — 20 s · técnico, novedad
+- **Mensaje:** no dejamos todo a un LLM: un modelo de decisión decide, el LLM solo arma la pantalla.
+- Visual: diagrama simple (abajo). Real en color, simulado en gris.
+
+```mermaid
+flowchart LR
+  U["🎤 Voz / texto"] --> D["GLiNER: decide intención y entidades"]
+  D --> G["Guardrails + reglas: solo venta libre, alarma → ECU 911"]
+  G --> H["Claude Haiku 4.5: arma la pantalla (A2UI)"]
+  H --> V["Validador: si falla, plantilla segura"]
+  V --> P["PWA / web"]
+  G <-->|"HTTP firmado"| F["API simulada Farmaenlace: CRM, catálogo, stock, SmartClub, pedidos, factura"]
+  classDef sim fill:#ddd,stroke:#999,color:#333
+  class F sim
+```
+
+- Por qué así: decisión determinista + LLM acotado → menos alucinaciones, más rápido y barato que un LLM que decide y arma todo.
+- Real: GLiNER (Lambda), Haiku 4.5 (Bedrock), Transcribe + Polly, AWS. Simulado: APIs Farmaenlace con datos sintéticos.
+- Prueba: 100% checks en 6 fixtures (A2UI válido, OTC, alarma, sin condición), ~USD 0,005/respuesta (tests/llm/results/BENCHMARK.md).
 - Repo: https://github.com/ericmaster/hackathon-connect-atventures · web híbrida: https://main.dfsvbpju4hwi2.amplifyapp.com
 
 ### 7. Piloto contra sus KPIs — 25 s · factibilidad, valor
@@ -76,7 +90,7 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 | 3 | Propuesta de valor | 15 | valor |
 | 4 | Demo | 50 | técnico, claridad |
 | 5 | Diferenciador | 20 | novedad |
-| 6 | Real vs simulado | 15 | técnico |
+| 6 | Arquitectura: real vs simulado | 20 | técnico |
 | 7 | Piloto contra KPIs | 25 | factibilidad, valor |
 | 8 | Siguiente paso + cierre | 15 | factibilidad, claridad |
 | | **Total** (+5 s colchón) | **175** | |
