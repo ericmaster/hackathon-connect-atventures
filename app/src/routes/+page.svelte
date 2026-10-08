@@ -166,7 +166,7 @@
 			<span class="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary text-white" aria-hidden="true">
 				<svg viewBox="0 0 24 24" class="size-6" fill="currentColor"><path d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6z" /></svg>
 			</span>
-			<h1 class="min-w-0 flex-1 text-xl leading-tight font-bold">Farmacéutico Virtual</h1>
+			<h1 class="min-w-0 flex-1 text-[20px] leading-tight font-bold">Farmacéutico Virtual</h1>
 			<button
 				type="button"
 				onclick={() => (senior = !senior)}
@@ -177,18 +177,18 @@
 				Aa
 			</button>
 		</div>
-		<div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+		<div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px] font-semibold">
 			<span class="rounded-full bg-cream px-2.5 py-0.5 text-secondary">Demo · datos simulados</span>
 			{#if simulated}
 				<span class="rounded-full bg-warning px-2.5 py-0.5 text-ink" data-testid="mode-badge">IA y servicios simulados</span>
 			{:else}
 				<span class="rounded-full bg-success-strong px-2.5 py-0.5 text-white" data-testid="mode-badge">IA real · datos sintéticos</span>
 			{/if}
-			<button type="button" onclick={reset} class="ml-auto rounded-full border-2 border-secondary px-3 py-1 text-sm font-bold text-secondary" data-testid="reset">
+			<button type="button" onclick={reset} class="ml-auto rounded-full border-2 border-secondary px-3 py-1 text-[14px] font-bold text-secondary" data-testid="reset">
 				↺ Reiniciar demo
 			</button>
 		</div>
-		<p class="mt-1 text-xs text-muted">Solo productos de venta libre · No diagnostica · No reemplaza la consulta médica</p>
+		<p class="mt-1 text-[12px] leading-tight text-muted">Solo productos de venta libre · No diagnostica · No reemplaza la consulta médica</p>
 	</header>
 
 	<main bind:this={list} class="relative flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
@@ -232,7 +232,7 @@
 				</svg>
 			</button>
 			<div class="min-w-0 flex-1">
-				<p class="mb-1 text-sm font-semibold text-muted">
+				<p class="mb-1 text-[13px] font-semibold text-muted">
 					{listening ? 'Te escucho…' : 'Toca para hablar'}{voice.simulated ? ' (voz simulada)' : ''}
 				</p>
 				<form class="flex gap-2" onsubmit={(ev) => (ev.preventDefault(), send(input))}>
@@ -240,7 +240,7 @@
 						bind:value={input}
 						placeholder="O escribe aquí…"
 						aria-label="Escribe tu pregunta"
-						class="min-w-0 flex-1 rounded-full border-2 border-line bg-bg px-4 py-2.5 text-lg outline-none placeholder:text-muted focus:border-primary-strong"
+						class="min-w-0 flex-1 rounded-full border-2 border-line bg-bg px-4 py-2.5 text-[18px] outline-none placeholder:text-muted focus:border-primary-strong"
 					/>
 					<button type="submit" class="rounded-full bg-ink px-4 font-semibold text-white disabled:opacity-40" disabled={!input.trim() || busy}>Enviar</button>
 				</form>

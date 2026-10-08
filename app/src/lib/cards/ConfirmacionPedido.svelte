@@ -12,6 +12,6 @@
 			{#if pickupTime}<p class="text-muted">{pickupTime}</p>{/if}
 			<p class="mt-2 text-sm font-semibold">Pagas al retirar. Muestra este QR.</p>
 		</div>
-		<FakeQr value={qrValue ?? orderNumber} />
+		<FakeQr value={qrValue ?? orderNumber} size="size-[112px]" />
 	</div>
 </article>
