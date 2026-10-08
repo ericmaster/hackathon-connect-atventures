@@ -241,7 +241,6 @@
 			</button>
 		</div>
 		<div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px] font-semibold">
-			<span class="rounded-full bg-cream px-2.5 py-0.5 text-secondary">Demo · datos simulados</span>
 			{#if simulated}
 				<span class="rounded-full bg-warning px-2.5 py-0.5 text-ink" data-testid="mode-badge">IA y servicios simulados</span>
 			{:else}
