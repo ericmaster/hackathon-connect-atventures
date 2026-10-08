@@ -20,7 +20,7 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 
 ### 1. Portada + hook — 15 s · claridad
 - **Mensaje:** Tu farmacéutico más cercano, en el celular.
-- Eric Aguayo (solo). "Farmacéutico Virtual". Reto: Fidelización transversal.
+- Eric Aguayo, Co-fundador y Director de IA Aplicada, Nimblersoft (solo). "Farmacéutico Virtual". Reto: Fidelización transversal.
 - Visual: celular con botón mic. Sin fecha.
 
 ### 2. Problema (en palabras de Farmaenlace) — 20 s · valor

@@ -3,7 +3,7 @@
 Hablar despacio. Mirar al jurado, no a la pantalla. Demo: narrar mientras se toca.
 
 **[0:00–0:15] Portada**
-Hola, soy Eric Aguayo. Piensen en una señora mayor que va a Medicity cada mes por su vitamina. La app le pide catálogos, filtros, formularios. Así que no la usa. Para ella hice el Farmacéutico Virtual: tu farmacéutico más cercano, en el celular.
+Hola, soy Eric Aguayo, co-fundador y director de IA aplicada en Nimblersoft. Piensen en una señora mayor que va a Medicity cada mes por su vitamina. La app le pide catálogos, filtros, formularios. Así que no la usa. Para ella hice el Farmacéutico Virtual: tu farmacéutico más cercano, en el celular.
 
 **[0:15–0:35] Problema**
 Farmaenlace lo dice en su propio reto: en cuatro de cinco marcas, más de la mitad de los clientes compra una sola vez. Y solo cerca del dos por ciento de las ventas es online. Ustedes quieren pasar de la transacción a la relación. La puerta digital existe, pero cuesta cruzarla.
