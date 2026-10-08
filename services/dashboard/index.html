@@ -2,7 +2,7 @@
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Connect atVentures · Master control</title>
 <style>
-:root{--bg:#0f1419;--card:#18202a;--fg:#e6edf3;--mut:#8b98a5;--ok:#3fb950;--wip:#d29922;--todo:#6e7681;--acc:#58a6ff;--bad:#f85149}
+:root{--bg:#0f1419;--card:#18202a;--fg:#e6edf3;--mut:#8b98a5;--ok:#3fb950;--wip:#d29922;--todo:#6e7681;--acc:#58a6ff;--bad:#f85149;--rose:#ff7b9c}
 *{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
 main{max-width:1200px;margin:auto;padding:16px}
 h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
@@ -16,17 +16,30 @@ th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase}td.n
 ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .s{display:inline-block;width:1.3em;text-align:center}.done{color:var(--ok)}.doing{color:var(--wip)}.todo{color:var(--todo)}
 .ev{color:var(--mut);font-size:13px}.err{color:var(--bad)}
+.nm{font-size:17px;font-weight:600;margin-top:2px}.card.k-checkpoint{box-shadow:inset 4px 0 var(--wip)}.card.k-deadline{box-shadow:inset 4px 0 var(--rose)}
+.ag td{padding:6px}.ag tr.k-checkpoint td{background:rgba(210,153,34,.13)}.ag tr.k-deadline td{background:rgba(255,123,156,.15)}
+.ag tr.k-checkpoint td:first-child{box-shadow:inset 3px 0 var(--wip)}.ag tr.k-deadline td:first-child{box-shadow:inset 3px 0 var(--rose)}
+.ag tr.past{opacity:.5}.ag tr.cur td{background:rgba(88,166,255,.15);font-weight:600}.ag .st-cur{color:var(--acc)}.ag .st-past{color:var(--mut)}
 @media(max-width:760px){thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
 td{display:flex;gap:8px;border:0;padding:4px 8px}td:before{content:attr(data-l);color:var(--mut);min-width:110px;font-size:12px;text-transform:uppercase}
-td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{background:none;padding:0}}
+td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{background:none;padding:0}
+.ag thead{display:table-header-group}.ag tr{display:table-row;background:none;border-radius:0;margin:0;padding:0}
+.ag td{display:table-cell;padding:5px 4px;border-bottom:1px solid #2d3640;font-size:13px}.ag td:before{content:none}.ag .ev{display:none}}
 </style></head><body><main>
 <h1>Connect atVentures 2026 · Master control</h1>
 <div class="sub">Actualizado: <span id="upd">—</span> · refresco auto 30 s</div>
+<div class="grid">
+ <div class="card" id="nowc"><h2>Ahora</h2><div class="big" id="nowcd">—</div><div class="nm" id="nown">—</div><div class="sub" id="nowh"></div></div>
+ <div class="card" id="nextc"><h2>Próximo hito</h2><div class="big" id="nextcd">—</div><div class="nm" id="nextn">—</div><div class="sub" id="nexth"></div></div>
+</div>
 <div class="grid">
  <div class="card"><h2>Freeze 15:45</h2><div class="big" id="cd">—</div><div class="sub">2026-10-08 15:45 (UTC-5)</div></div>
  <div class="card"><h2>Puntaje estimado</h2><div class="big"><span id="tot">0</span> / <span id="goal">100</span></div><div class="bar"><i id="totbar" style="width:0"></i></div><div class="sub" id="totsub"></div></div>
  <div class="card"><h2>Entregables</h2><ul id="deliv"></ul></div>
  <div class="card"><h2>Infra</h2><ul id="infra"></ul><div class="sub" id="infrat"></div></div>
+</div>
+<div class="card ag" style="margin-bottom:12px"><h2>Agenda oficial · jue 8 oct (UTC-5)</h2>
+<table><thead><tr><th>Horario</th><th>Bloque</th><th>Estado</th><th>Cuenta</th></tr></thead><tbody id="agrows"></tbody></table>
 </div>
 <div class="card tablecard"><h2>Objetivos (rúbrica)</h2>
 <table><thead><tr><th>Criterio</th><th>Peso</th><th>Qué evalúa</th><th>Nota (1–5)</th><th>Puntos</th><th>Meta</th><th>Progreso</th><th>Sub-objetivos</th></tr></thead><tbody id="rows"></tbody></table>
@@ -36,13 +49,30 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 const ICON={done:'✔',doing:'◐',todo:'○'},esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const li=i=>`<li><span class="s ${esc(i.s)}">${ICON[i.s]||'○'}</span> ${esc(i.t)}</li>`;
 const fmt=d=>new Date(d).toLocaleString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
-let freeze=Date.parse('2026-10-08T15:45:00-05:00');
-function tick(){const ms=freeze-Date.now(),el=document.getElementById('cd');
- if(ms<=0){el.textContent='FREEZE';el.className='big err';return}
- const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
- el.textContent=`${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;el.className='big'+(ms<36e5?' err':'')}
+const hm=d=>new Date(d).toLocaleTimeString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const dur=ms=>{const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`};
+let freeze=Date.parse('2026-10-08T15:45:00-05:00'),ag=[];
+function tick(){const now=Date.now(),ms=freeze-now,el=document.getElementById('cd');
+ if(ms<=0){el.textContent='FREEZE';el.className='big err'}
+ else{el.textContent=dur(ms);el.className='big'+(ms<36e5?' err':'')}
+ tickAg(now)}
+function tickAg(now){const $=id=>document.getElementById(id),SL={past:'pasado',cur:'en curso',next:'próximo'};
+ const B=ag.map(a=>({...a,s:Date.parse(a.start),e:Date.parse(a.end||a.start)})),st=b=>now<b.s?'next':now<b.e?'cur':'past';
+ const hor=b=>b.e>b.s?`${hm(b.s)}–${hm(b.e)}`:hm(b.s),cur=B.filter(b=>st(b)==='cur').pop(),
+  nx=B.find(b=>(b.kind==='checkpoint'||b.kind==='deadline')&&b.s>now);
+ if(cur){$('nowcd').textContent=dur(cur.e-now);$('nown').textContent=cur.name;$('nowh').textContent=`Restante del bloque · ${hor(cur)}${cur.note?' · '+cur.note:''}`}
+ else{const pre=B.length&&now<B[0].s;$('nowcd').textContent=pre?dur(B[0].s-now):'—';
+  $('nown').textContent=!B.length?'—':pre?'Antes del inicio':'Evento finalizado';$('nowh').textContent=pre?'Inicia '+hm(B[0].s):''}
+ $('nowc').className='card'+(cur?' k-'+cur.kind:'');
+ if(nx){$('nextcd').textContent=dur(nx.s-now);$('nextn').textContent=nx.name;$('nexth').textContent=`${hor(nx)}${nx.note?' · '+nx.note:''}`}
+ else{$('nextcd').textContent='—';$('nextn').textContent=B.length?'Sin hitos pendientes':'—';$('nexth').textContent=''}
+ $('nextc').className='card'+(nx?' k-'+nx.kind:'');
+ $('agrows').innerHTML=B.map(b=>{const t=st(b);return `<tr class="k-${esc(b.kind)} ${t}"><td class="n">${hor(b)}</td>
+  <td>${esc(b.name)}${b.note?`<div class="ev">${esc(b.note)}</div>`:''}</td><td class="st-${t}">${SL[t]}</td>
+  <td class="n">${t==='past'?'✓':dur((t==='cur'?b.e:b.s)-now)}</td></tr>`}).join('')}
 async function load(){try{const p=await (await fetch('api/state',{cache:'no-store'})).json();if(p.error)throw new Error(p.error);
  if(p.freeze)freeze=Date.parse(p.freeze);
+ ag=Array.isArray(p.agenda)?p.agenda:[];tick();
  document.getElementById('upd').textContent=p.updated_at?fmt(p.updated_at):'—';
  const goal=p.goal||100;document.getElementById('goal').textContent=goal;document.getElementById('tot').textContent=p.total;
  document.getElementById('totbar').style.width=Math.min(100,p.total/goal*100)+'%';

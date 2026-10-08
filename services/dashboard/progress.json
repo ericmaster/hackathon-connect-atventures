@@ -1,6 +1,26 @@
 {
   "updated_at": "2026-10-08T08:50:00-05:00",
   "freeze": "2026-10-08T15:45:00-05:00",
+  "agenda": [
+    { "start": "2026-10-08T08:00:00-05:00", "end": "2026-10-08T09:00:00-05:00", "name": "Registro y desayuno", "kind": "event", "note": "Check-in, credenciales, Wi-Fi, instalación" },
+    { "start": "2026-10-08T09:00:00-05:00", "end": "2026-10-08T09:10:00-05:00", "name": "Bienvenida y arranque", "kind": "event" },
+    { "start": "2026-10-08T09:10:00-05:00", "end": "2026-10-08T11:15:00-05:00", "name": "Sprint 1: Problema → solución", "kind": "sprint" },
+    { "start": "2026-10-08T11:15:00-05:00", "end": "2026-10-08T11:30:00-05:00", "name": "Checkpoint #1 con mentores", "kind": "checkpoint", "note": "¿Qué problema, para quién, qué solución?" },
+    { "start": "2026-10-08T11:30:00-05:00", "end": "2026-10-08T13:00:00-05:00", "name": "Sprint 2: Construcción", "kind": "sprint" },
+    { "start": "2026-10-08T13:00:00-05:00", "end": "2026-10-08T13:45:00-05:00", "name": "Almuerzo + build", "kind": "sprint", "note": "La competencia no para" },
+    { "start": "2026-10-08T13:45:00-05:00", "end": "2026-10-08T14:45:00-05:00", "name": "Sprint 3: Producto + demo", "kind": "sprint" },
+    { "start": "2026-10-08T14:45:00-05:00", "end": "2026-10-08T15:00:00-05:00", "name": "Checkpoint #2 Demo readiness", "kind": "checkpoint", "note": "¿Funciona?, ¿se entiende?, ¿qué eliminar o terminar?" },
+    { "start": "2026-10-08T15:00:00-05:00", "end": "2026-10-08T15:45:00-05:00", "name": "Sprint final: ajustes, demo, publicación, pitch", "kind": "sprint" },
+    { "start": "2026-10-08T15:45:00-05:00", "end": "2026-10-08T15:45:00-05:00", "name": "Cierre definitivo de entregas (freeze)", "kind": "deadline", "note": "El proyecto se congela" },
+    { "start": "2026-10-08T15:45:00-05:00", "end": "2026-10-08T16:30:00-05:00", "name": "Evaluación del jurado", "kind": "event" },
+    { "start": "2026-10-08T16:30:00-05:00", "end": "2026-10-08T16:40:00-05:00", "name": "Deliberación", "kind": "event" },
+    { "start": "2026-10-08T16:40:00-05:00", "end": "2026-10-08T16:45:00-05:00", "name": "Traslado al escenario", "kind": "event" },
+    { "start": "2026-10-08T16:45:00-05:00", "end": "2026-10-08T16:50:00-05:00", "name": "Apertura", "kind": "event" },
+    { "start": "2026-10-08T16:50:00-05:00", "end": "2026-10-08T17:06:00-05:00", "name": "Pitches finalistas (3 min)", "kind": "event" },
+    { "start": "2026-10-08T17:06:00-05:00", "end": "2026-10-08T17:15:00-05:00", "name": "Deliberación", "kind": "event" },
+    { "start": "2026-10-08T17:15:00-05:00", "end": "2026-10-08T17:25:00-05:00", "name": "Premiación", "kind": "event" },
+    { "start": "2026-10-08T17:25:00-05:00", "end": "2026-10-08T17:30:00-05:00", "name": "Foto y cierre", "kind": "event" }
+  ],
   "goal": 100,
   "criteria": [
     {
