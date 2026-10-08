@@ -40,10 +40,10 @@ for RID in $(aws apigatewayv2 get-routes --api-id "$API_ID" --query "Items[?Auth
 done
 if ! aws apigatewayv2 get-stage --api-id "$API_ID" --stage-name '$default' >/dev/null 2>&1; then
   aws apigatewayv2 create-stage --api-id "$API_ID" --stage-name '$default' --auto-deploy \
-    --default-route-settings ThrottlingRateLimit=5,ThrottlingBurstLimit=10 --tags project=connect-atventures >/dev/null
+    --default-route-settings ThrottlingRateLimit=20,ThrottlingBurstLimit=40 --tags project=connect-atventures >/dev/null
 else
   aws apigatewayv2 update-stage --api-id "$API_ID" --stage-name '$default' \
-    --default-route-settings ThrottlingRateLimit=5,ThrottlingBurstLimit=10 >/dev/null
+    --default-route-settings ThrottlingRateLimit=20,ThrottlingBurstLimit=40 >/dev/null
 fi
 aws lambda add-permission --function-name $FN --statement-id apigw-$API_ID --action lambda:InvokeFunction \
   --principal apigateway.amazonaws.com --source-arn "arn:aws:execute-api:$R:$ACCT:$API_ID/*/*" >/dev/null 2>&1 || true

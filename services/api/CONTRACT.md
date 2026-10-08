@@ -158,7 +158,7 @@ Confirmación: ConfirmacionPedido + FacturaMock (label SIMULADA) + Cupon (if app
 - Identity Pool ID: `us-east-1:8434d4ed-e17e-4082-ad26-42b59e004e3e` (guest only, classic flow OFF; role `connect-atv-guest-role`
   can only `execute-api:Invoke` this API)
 - Sign with service `execute-api`, region `us-east-1`. Unsigned → 403 `{"message":"Forbidden"}` from API Gateway (not our shape).
-- Stage throttling: 5 rps, burst 10 → 429 from API Gateway.
+- Stage throttling: 20 rps, burst 40 → 429 from API Gateway (raised from 5/10 on 8 oct after load test, docs/LOAD-TEST.md; PWA retries 429 with backoff). Bedrock stays capped by the global 1.1 s slot.
 - Browser sketch:
 ```js
 import { CognitoIdentityClient, GetIdCommand, GetCredentialsForIdentityCommand } from '@aws-sdk/client-cognito-identity';

@@ -41,12 +41,30 @@ def cedula_valida(rng):
 
 class HttpInvoker:
     """Drop-in for smoke.Invoker: turns the smoke event into a SigV4-signed HTTPS call with its own guest identity."""
-    def __init__(self, think, retry429, log):
+    def __init__(self, think, retry429, log, tts=False):
         ci = boto3.client("cognito-identity", region_name="us-east-1", config=Config(signature_version=UNSIGNED))
         iid = ci.get_id(IdentityPoolId=POOL)["IdentityId"]
         c = ci.get_credentials_for_identity(IdentityId=iid)["Credentials"]
         self.creds = Credentials(c["AccessKeyId"], c["SecretKey"], c["SessionToken"])
-        self.think, self.retry429, self.log, self.n = think, retry429, log, 0
+        self.think, self.retry429, self.log, self.n, self.tts = think, retry429, log, 0, tts
+
+    def _post(self, path, data):
+        r = AWSRequest(method="POST", url=URL + path, data=data, headers={"Content-Type": "application/json"})
+        SigV4Auth(self.creds, "execute-api", "us-east-1").add_auth(r)
+        t0 = time.perf_counter()
+        try:
+            resp = urllib.request.urlopen(urllib.request.Request(URL + path, data=data, method="POST", headers=dict(r.headers)), timeout=35)
+            st, raw = resp.status, resp.read()
+        except urllib.error.HTTPError as e:
+            st, raw = e.code, e.read()
+        except Exception as e:  # noqa: BLE001
+            st, raw = 599, b""
+        return st, raw, (time.perf_counter() - t0) * 1000
+
+    def _speak(self, text):
+        """Like the PWA: fire-and-forget POST /voice/tts with spokenText (adds API Gateway load)."""
+        st, _, ms = self._post("/voice/tts", json.dumps({"text": text[:400]}).encode())
+        self.log.append({"path": "/voice/tts", "status": st, "ms": round(ms), "attempt": 0, "t": time.time()})
 
     def __call__(self, ev):
         if self.n:  # human think time between steps
@@ -74,6 +92,8 @@ class HttpInvoker:
             body = json.loads(raw) if raw else {}
         except ValueError:
             body = {"raw": raw[:120].decode(errors="replace")}
+        if self.tts and st == 200 and isinstance(body, dict) and body.get("spokenText"):
+            threading.Thread(target=self._speak, args=(body["spokenText"],), daemon=True).start()
         return st, body, ms
 
 
@@ -82,7 +102,7 @@ def judge(i, cedula, text, args, out):
     out.append(rec)
     try:
         time.sleep(random.uniform(0, args.spread))
-        inv = HttpInvoker(args.think, args.retry429, rec["http"])
+        inv = HttpInvoker(args.think, args.retry429, rec["http"], args.tts)
         c = smoke.Client(inv)
         c.onboard(cedula, True)
         st, b = c.turn(text)
@@ -149,6 +169,7 @@ def main():
     ap.add_argument("--retry429", type=int, default=0, help="client retries on HTTP 429 (0 = report raw)")
     ap.add_argument("--tag", default="")
     ap.add_argument("--no-logs", action="store_true")
+    ap.add_argument("--tts", action="store_true", help="also call /voice/tts after each response, like the PWA")
     args = ap.parse_args()
     args.think = tuple(float(x) for x in args.think.split(","))
     rng = random.Random()
@@ -159,6 +180,7 @@ def main():
         th = threading.Thread(target=judge, args=(i, ced, TEXTS[i % len(TEXTS)], args, out)); th.start(); threads.append(th)
     for th in threads:
         th.join()
+    time.sleep(3 if args.tts else 0)  # let last fire-and-forget TTS calls land
     t1 = time.time()
 
     by = {}
@@ -177,6 +199,9 @@ def main():
         "http_429": sum(h["status"] == 429 for h in http), "http_403": sum(h["status"] == 403 for h in http),
         "http_5xx": sum(h["status"] >= 500 for h in http), "http_4xx_other": sum(400 <= h["status"] < 500 and h["status"] not in (403, 429) for h in http),
         "requests": len(http),
+        "tts": {"n": sum(h["path"] == "/voice/tts" for h in http), "non200": sum(h["path"] == "/voice/tts" and h["status"] != 200 for h in http),
+                "p95": pct([h["ms"] for h in http if h["path"] == "/voice/tts"], 95)},
+        "status_by_path": {f'{h["path"]} {h["status"]}': sum(1 for x in http if x["path"] == h["path"] and x["status"] == h["status"]) for h in http if h["status"] != 200},
         "per_step": {k: {"p50": pct(v, 50), "p95": pct(v, 95), "max": max(v), "n": len(v)} for k, v in by.items()},
         "errors": [f"j{r['judge']}: {r['error']}" for r in out if r.get("error")],
     }
