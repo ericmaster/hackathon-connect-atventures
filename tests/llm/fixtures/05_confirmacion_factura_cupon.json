@@ -1,0 +1,25 @@
+{
+  "id": "confirmacion_factura_cupon",
+  "title": "Compra completada: confirmación + factura mock + cupón",
+  "context": {
+    "surfaceId": "done-001",
+    "step": "compra_completada",
+    "channel": "pwa",
+    "user_utterance": "listo, confirma nomás",
+    "intent": {"label": "confirmar_reserva", "source": "gliner"},
+    "data": {
+      "order": {"orderNumber": "FV-000123", "pharmacy": "Medicity La Carolina", "pickupTime": "Hoy desde las 16:30", "qrValue": "FV-000123-RETIRO"},
+      "invoice": {"number": "001-002-000004567", "customerName": "CONSUMIDOR FINAL", "customerId": "9999999999999",
+        "items": [{"name": "Antigripal Día y Noche", "qty": 1, "price": "$4,50"}, {"name": "Vitamina C 1 g efervescente", "qty": 2, "price": "$7,80"}],
+        "subtotal": "$10,98", "iva": "$1,32", "total": "$12,30", "simulada": true},
+      "coupon": {"title": "Beneficio de bienvenida SmartClub", "code": "QR-BIENVENIDA-7F3K", "until": "Válido 30 días · demo"}
+    },
+    "customer": {"name": "Andrea", "consent": false},
+    "guardrails": {"redFlag": false}
+  },
+  "expect": {
+    "required": ["ConfirmacionPedido", "FacturaMock", "Cupon"],
+    "forbidden": ["AlertaRoja", "ProductCard"],
+    "must_match": ["SIMULADA", "FV-000123", "QR-BIENVENIDA-7F3K"]
+  }
+}

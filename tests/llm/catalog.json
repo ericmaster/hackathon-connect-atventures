@@ -1,0 +1,19 @@
+{
+  "catalogId": "https://farmaenlace.ec/a2ui/fv/v1",
+  "version": "v0.9.1",
+  "basic": ["Text", "Image", "Icon", "Video", "AudioPlayer", "Row", "Column", "List", "Card", "Tabs",
+            "Modal", "Divider", "Button", "CheckBox", "TextField", "DateTimeInput", "ChoicePicker", "Slider"],
+  "custom": {
+    "ProductCard": ["name", "price"],
+    "PharmacyCard": ["name"],
+    "SugerenciaPersonalizada": ["product"],
+    "Reposicion": ["product"],
+    "AvisoSalud": ["text"],
+    "ResumenPedido": ["items", "total"],
+    "ConfirmacionPedido": ["orderNumber"],
+    "FacturaMock": ["total"],
+    "Cupon": ["code"],
+    "HandoffCard": [],
+    "AlertaRoja": ["text"]
+  }
+}

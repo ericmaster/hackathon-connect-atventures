@@ -1,0 +1,30 @@
+{
+  "id": "resumen_pedido",
+  "title": "Resumen del pedido antes de reservar",
+  "context": {
+    "surfaceId": "cart-001",
+    "step": "resumen_pedido",
+    "channel": "pwa",
+    "user_utterance": "ya, eso nomás, lo retiro en la más cerca",
+    "intent": {"label": "confirmar_pedido", "source": "gliner"},
+    "data": {
+      "cart": {
+        "items": [
+          {"sku": "FV-1001", "name": "Antigripal Día y Noche", "qty": 1, "price": "$4,50"},
+          {"sku": "FV-1003", "name": "Vitamina C 1 g efervescente", "qty": 2, "price": "$7,80"}
+        ],
+        "total": "$12,30",
+        "cashback": "$0,62",
+        "consumidor_final_disponible": true
+      },
+      "pickup_pharmacy": {"pharmacyId": "MED-UIO-014", "name": "Medicity La Carolina", "distance": "350 m", "hours": "Abierto hasta las 22:00", "stock": "Tiene todo tu pedido"}
+    },
+    "customer": {"name": "Andrea", "consent": false},
+    "guardrails": {"redFlag": false}
+  },
+  "expect": {
+    "required": ["ResumenPedido"],
+    "forbidden": ["AlertaRoja", "FacturaMock", "ConfirmacionPedido"],
+    "must_match": ["12,30|12\\.30"]
+  }
+}

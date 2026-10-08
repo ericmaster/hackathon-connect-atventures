@@ -1,0 +1,28 @@
+{
+  "id": "gripe_otc",
+  "title": "Consulta: 'algo para la gripe' → 3 OTC + farmacia cercana",
+  "context": {
+    "surfaceId": "q-gripe-001",
+    "step": "consulta",
+    "channel": "pwa",
+    "user_utterance": "quiero algo para la gripe",
+    "intent": {"label": "consulta_producto", "entities": {"sintoma": "gripe"}, "source": "gliner"},
+    "data": {
+      "products": [
+        {"sku": "FV-1001", "name": "Antigripal Día y Noche", "detail": "Caja x 12 tabletas", "price": "$4,50", "cashback": "5% cashback · $0,23", "stock": "Hay stock a 350 m", "ventaLibre": true},
+        {"sku": "FV-1002", "name": "Paracetamol 500 mg", "detail": "Genérico · 20 tabletas", "price": "$2,40", "cashback": "5% cashback · $0,12", "stock": "Hay stock a 350 m", "ventaLibre": true},
+        {"sku": "FV-1003", "name": "Vitamina C 1 g efervescente", "detail": "Tubo x 10", "price": "$3,90", "cashback": "5% cashback · $0,20", "stock": "Hay stock a 350 m", "ventaLibre": true},
+        {"sku": "FV-9001", "name": "Oseltamivir 75 mg", "detail": "Caja x 10 cápsulas", "price": "$28,00", "cashback": "—", "stock": "Hay stock a 350 m", "ventaLibre": false}
+      ],
+      "nearest_pharmacy": {"pharmacyId": "MED-UIO-014", "name": "Medicity La Carolina", "distance": "350 m", "hours": "Abierto hasta las 22:00", "stock": "Tiene los 3 productos", "phone": "+593 2 000 0000", "mapsUrl": "https://maps.example/medicity-carolina"}
+    },
+    "customer": {"name": "Andrea", "consent": false},
+    "guardrails": {"redFlag": false}
+  },
+  "expect": {
+    "required": ["ProductCard", "PharmacyCard"],
+    "min_count": {"ProductCard": 3},
+    "forbidden": ["AlertaRoja", "FacturaMock"],
+    "rx_terms": ["FV-9001", "Oseltamivir"]
+  }
+}

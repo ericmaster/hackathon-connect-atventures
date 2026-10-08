@@ -1,0 +1,21 @@
+{
+  "id": "onboarding_cedula",
+  "title": "Onboarding: pedir la cédula (entra por QR)",
+  "context": {
+    "surfaceId": "onb-001",
+    "step": "pedir_cedula",
+    "channel": "pwa",
+    "user_utterance": "hola, escaneé el código de la farmacia",
+    "intent": {"label": "saludo", "source": "gliner"},
+    "data": {"beneficio_qr": "Beneficio de bienvenida SmartClub (lo define Farmaenlace)"},
+    "customer": null,
+    "guardrails": {"redFlag": false},
+    "instructions": "Saluda y pide SOLO la cédula: un TextField numérico enlazado a /cedula con checks required y cedulaEc, y un botón Continuar (event validar_cedula)."
+  },
+  "expect": {
+    "required": ["TextField", "Button"],
+    "forbidden": ["ProductCard", "AlertaRoja", "SugerenciaPersonalizada", "FacturaMock"],
+    "required_calls": ["cedulaEc"],
+    "must_match": ["c[ée]dula"]
+  }
+}

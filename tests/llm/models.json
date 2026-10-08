@@ -1,0 +1,48 @@
+{
+  "_doc": "Precios USD por 1M tokens, on-demand us-east-1 (aws.amazon.com/bedrock/pricing, revisado 8 oct 2026). Aproximados.",
+  "haiku-4.5": {
+    "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "label": "Claude Haiku 4.5",
+    "invoke": "solo inference profile (us. o global.); el ID base no es on-demand",
+    "price_in": 1.0,
+    "price_out": 5.0
+  },
+  "nova-2-lite": {
+    "model_id": "us.amazon.nova-2-lite-v1:0",
+    "label": "Amazon Nova 2 Lite",
+    "invoke": "solo inference profile (us. o global.)",
+    "price_in": 0.33,
+    "price_out": 2.75
+  },
+  "gemma-3-27b": {
+    "model_id": "google.gemma-3-27b-it",
+    "label": "Google Gemma 3 27B",
+    "invoke": "on-demand con el ID base (no hay inference profile)",
+    "price_in": 0.23,
+    "price_out": 0.38
+  },
+  "gpt-oss-120b": {
+    "model_id": "openai.gpt-oss-120b-1:0",
+    "label": "OpenAI gpt-oss-120b",
+    "invoke": "on-demand con el ID base; devuelve bloques reasoningContent",
+    "price_in": 0.15,
+    "price_out": 0.6
+  },
+  "haiku-4.5-so": {
+    "model_id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "label": "Claude Haiku 4.5 + structured outputs",
+    "invoke": "igual que haiku-4.5 + outputConfig.textFormat json_schema (ver structured.py); devuelve {messages:[...]} y no JSONL",
+    "structured": true,
+    "price_in": 1.0,
+    "price_out": 5.0
+  },
+  "haiku-5.5": {
+    "model_id": "us.anthropic.claude-haiku-5-5",
+    "label": "Claude Haiku 5.5",
+    "invoke": "solo inference profile (us./global.); NO acepta temperature. 8 oct 2026: AccessDenied por private marketplace (agreementAvailability NOT_AVAILABLE) en la cuenta del evento",
+    "available": false,
+    "no_temperature": true,
+    "price_in": 0.1,
+    "price_out": 0.5
+  }
+}
