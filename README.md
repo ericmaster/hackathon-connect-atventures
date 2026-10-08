@@ -16,6 +16,11 @@ Hackathon Connect atVentures 2026 (BuenTrip + Endeavor), reto Farmaenlace «Fide
 
 Guion (Cuidador, cédula sintética `1710034065`): aceptar → reposición + «¿Por qué me sugieres esto?» → «algo para la gripe» → pregunta de seguridad → agregar → retirar aquí → resumen con cupón → consumidor final + email → reserva con QR + factura SIMULADA. Reiniciar → «dolor de pecho» → alerta roja. Contraste: Práctico `1712456787`.
 
+## Presentación
+
+- **Deck impress.js**: https://main.d3mdmicmjnjme4.amplifyapp.com
+- **PDF de respaldo**: https://main.d3mdmicmjnjme4.amplifyapp.com/FarmaceuticoVirtual-pitch.pdf
+
 ## Qué es real vs simulado
 
 | Real | Simulado |
@@ -26,6 +31,8 @@ Guion (Cuidador, cédula sintética `1710034065`): aceptar → reposición + «�
 | Llamadas HTTP + SigV4 servidor a servidor, como en producción | API simulada de Farmaenlace (7 servicios, DynamoDB); farmacias con nombres/direcciones públicas de Quito |
 
 AWS es la única API externa. API simulada de Farmaenlace: [`services/farmaenlace-mock/README.md`](services/farmaenlace-mock/README.md).
+
+Audit log de conversación en DynamoDB `connect-atv-data` (query en [`services/api/CONTRACT.md`](services/api/CONTRACT.md)).
 
 ## Arquitectura
 

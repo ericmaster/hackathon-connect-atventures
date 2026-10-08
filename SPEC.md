@@ -279,6 +279,7 @@ Estado al 8 oct.
 | Insights CRM (arquetipo, preferencias, condiciones probables, productos frecuentes) | Simulado (sintético) |
 | Pedidos, retiro y factura | Simulado (factura marcada SIMULADA) |
 | Hand-off a farmacéutico | Simulado |
+| Audit log de conversación | **Hecho**: tabla DynamoDB `connect-atv-data` (query en `services/api/CONTRACT.md`) |
 
 AWS es la única API externa. Todo lo demás está simulado.
 
@@ -302,7 +303,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - Diseño de arquitectura en detalle (va en un documento aparte).
 
 **Backlog (post-MVP, Eric 8 oct):**
-- Integración con pasarela de pago (pago en la app).
+- Integración con pasarela de pago (pago en la app); hoy reserva + pago al retirar.
 - Entrega a domicilio.
 - Canal WhatsApp (Eric 8 oct 12:34): mismo asistente/orquestador vía WhatsApp Business API.
 - Diferido del MVP (decisiones 8 oct): notificaciones push de reposición (§6.2); flywheel CRM + señales de demanda implementado (§6.3); reset por inactividad en producción (§7.8); canal real del hand-off (§18.4); upgrade a Haiku 5.5 si AWS lo habilita (§10); integraciones reales (§17).

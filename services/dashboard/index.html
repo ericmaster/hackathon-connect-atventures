@@ -32,6 +32,12 @@ ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .vpg .blk h3{flex:1 1 100%;color:var(--fg);font-size:14px}.tpl{color:var(--mut);font-size:12px;margin-bottom:6px}.vtx{white-space:pre-wrap;cursor:pointer}.tag{background:#2d3640;color:var(--mut);font-size:11px;padding:1px 6px;border-radius:6px}
 .cnt{font-size:12px;margin-top:8px;color:var(--mut)}.cnt b{color:var(--ok)}.cnt b.err{color:var(--bad)}.vnote{font-size:12px;color:var(--mut);margin-top:6px;font-style:italic}
 .chk{overflow-x:auto}.chk td,.chk th{padding:5px 6px;font-size:13px}.chk td.c{text-align:center;cursor:pointer;font-size:15px}
+.lnk{display:grid;gap:6px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:0}
+.lnk a{display:block;background:#121820;border:1px solid #2d3640;border-radius:8px;padding:10px 12px;color:var(--acc);text-decoration:none}
+.lnk a:hover{border-color:var(--acc);text-decoration:underline}
+.lnk .lt{display:block;font-weight:600;color:var(--fg);font-size:13px;margin-bottom:2px}
+.lnk .lu{display:block;font-size:11px;color:var(--mut);word-break:break-all}
+.lnk .ln{display:block;font-size:11px;color:var(--wip);margin-top:2px}
 .ph{display:flex;flex-wrap:wrap;gap:8px;margin:0}.ph .pi{flex:1 1 140px;background:#121820;border-radius:8px;padding:10px;min-width:0;border:1px solid #2d3640}.ph .pi.done{border-color:rgba(63,185,80,.45)}.ph .pi.doing{border-color:rgba(210,153,34,.55)}.ph .nm2{font-weight:600;font-size:14px;margin:2px 0 4px}.ph .links a{color:var(--acc);text-decoration:none;font-size:12px;margin-right:8px}.ph .links a:hover{text-decoration:underline}
 @media(max-width:900px){.cv{grid-template-columns:1fr;grid-template-areas:"seg" "pro" "uvp" "sol" "can" "ing" "cos" "met" "ven"}}
 @media(max-width:760px){.vpg{grid-template-columns:1fr}thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
@@ -57,6 +63,9 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 </div>
 <div class="card ag" style="margin-bottom:12px"><h2>Agenda oficial · jue 8 oct (UTC-5)</h2>
 <table><thead><tr><th>Horario</th><th>Bloque</th><th>Estado</th><th>Cuenta</th></tr></thead><tbody id="agrows"></tbody></table>
+</div>
+<div class="card" style="margin-bottom:12px"><h2>Enlaces / Entregables</h2>
+<div class="lnk" id="links"></div>
 </div>
 <div class="card" style="margin-bottom:12px"><h2>Hitos del producto</h2>
 <div class="ph" id="phases"></div>
@@ -117,6 +126,8 @@ async function load(){try{const p=await (await fetch('api/state',{cache:'no-stor
   <td class="n" data-l="Progreso">${c.progress}%<div class="bar"><i style="width:${c.progress}%"></i></div></td>
   <td class="chk" data-l="Sub-objetivos"><ul>${(c.items||[]).map(li).join('')}</ul></td></tr>`).join('');
  document.getElementById('deliv').innerHTML=(p.deliverables||[]).map(li).join('');
+ document.getElementById('links').innerHTML=(p.links||[]).map(l=>`<a href="${esc(l.u)}"${ext(l.u)}><span class="lt">${esc(l.t)}</span><span class="lu">${esc(l.u)}</span>${l.note?`<span class="ln">${esc(l.note)}</span>`:''}</a>`).join('');
+
  document.getElementById('phases').innerHTML=(p.phases||[]).map(ph=>{
   const links=(ph.links||[]).map(l=>lnk(l.u,l.t,'')).join(' ');
   return `<div class="pi ${esc(ph.s)}"><span class="s ${esc(ph.s)}">${ICON[ph.s]||'○'}</span><div class="nm2">${esc(ph.t)}</div><div class="sub">${esc(ph.note||'')}</div>`+(links?`<div class="links">${links}</div>`:'')+`</div>`}).join('');

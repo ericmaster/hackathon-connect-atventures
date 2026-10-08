@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T12:27:00-05:00",
+  "updated_at": "2026-10-08T15:25:00-05:00",
   "freeze": "2026-10-08T15:45:00-05:00",
   "agenda": [
     {
@@ -160,8 +160,12 @@
     {
       "t": "Construcción",
       "s": "doing",
-      "note": "Prototipos + IA AWS; falta backend/orquestador y A2UI",
+      "note": "Mock API + orquestador listos; PWA simplificación y remember-user en curso",
       "links": [
+        {
+          "t": "PWA IA real",
+          "u": "https://main.d2bloxc35rzfqy.amplifyapp.com"
+        },
         {
           "t": "PWA demo",
           "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
@@ -174,8 +178,8 @@
     },
     {
       "t": "Demo",
-      "s": "todo",
-      "note": "E2E, reset, voz en browser, guardrails",
+      "s": "doing",
+      "note": "PWA + web live; simplificación PWA / remember-user en curso",
       "links": [
         {
           "t": "PWA",
@@ -189,9 +193,18 @@
     },
     {
       "t": "Pitch",
-      "s": "todo",
-      "note": "PPT + pitch 3 min",
-      "links": []
+      "s": "done",
+      "note": "Deck impress.js + PDF de respaldo en Amplify",
+      "links": [
+        {
+          "t": "Presentación",
+          "u": "https://main.d3mdmicmjnjme4.amplifyapp.com"
+        },
+        {
+          "t": "PDF",
+          "u": "https://main.d3mdmicmjnjme4.amplifyapp.com/FarmaceuticoVirtual-pitch.pdf"
+        }
+      ]
     }
   ],
   "criteria": [
@@ -244,8 +257,8 @@
           "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
         },
         {
-          "t": "Declarar real vs simulado (SPEC + mocks)",
-          "s": "doing"
+          "t": "Declarar real vs simulado (SPEC + mock API)",
+          "s": "done"
         }
       ]
     },
@@ -274,12 +287,12 @@
       "nota": null,
       "items": [
         {
-          "t": "Ruta a piloto (SPEC + PLAN en curso)",
-          "s": "doing"
+          "t": "Ruta a piloto (SPEC + PLAN)",
+          "s": "done"
         },
         {
-          "t": "Datos/integraciones accesibles (mock API 7 servicios pendiente)",
-          "s": "doing"
+          "t": "Datos/integraciones accesibles (mock API 7 servicios)",
+          "s": "done"
         },
         {
           "t": "Costos razonables (Haiku + Lambda GLiNER)",
@@ -300,7 +313,7 @@
       "items": [
         {
           "t": "Pitch 3 min",
-          "s": "todo"
+          "s": "doing"
         },
         {
           "t": "Demo fluida (PWA + web híbrida; falta e2e)",
@@ -308,8 +321,9 @@
           "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
         },
         {
-          "t": "PPT corto",
-          "s": "todo"
+          "t": "PPT / impress.js + PDF",
+          "s": "done",
+          "u": "https://main.d3mdmicmjnjme4.amplifyapp.com"
         }
       ]
     }
@@ -317,10 +331,16 @@
   "deliverables": [
     {
       "t": "Repo público",
-      "s": "todo"
+      "s": "done",
+      "u": "https://github.com/ericmaster/hackathon-connect-atventures"
     },
     {
-      "t": "Demo PWA (Amplify)",
+      "t": "Demo PWA (Amplify, IA real)",
+      "s": "done",
+      "u": "https://main.d2bloxc35rzfqy.amplifyapp.com"
+    },
+    {
+      "t": "Demo PWA modo simulado",
       "s": "done",
       "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
     },
@@ -335,6 +355,11 @@
       "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
     },
     {
+      "t": "Plan de implementación",
+      "s": "done",
+      "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/plan-implementacion-mvp"
+    },
+    {
       "t": "SPEC.md + DESIGN.md",
       "s": "done"
     },
@@ -343,20 +368,81 @@
       "s": "done"
     },
     {
-      "t": "Backend/orquestador + mock API 7 svc + admin",
-      "s": "todo"
+      "t": "Mock API Farmaenlace (7 svc, IAM)",
+      "s": "done",
+      "u": "https://5droecak17.execute-api.us-east-1.amazonaws.com"
     },
     {
-      "t": "A2UI renderer + guardrails + voz browser + e2e",
-      "s": "todo"
+      "t": "Audit log (connect-atv-data)",
+      "s": "done"
     },
     {
-      "t": "PPT corto",
-      "s": "todo"
+      "t": "Bugfixes MVP",
+      "s": "done"
+    },
+    {
+      "t": "Deck impress.js + PDF",
+      "s": "done",
+      "u": "https://main.d3mdmicmjnjme4.amplifyapp.com"
+    },
+    {
+      "t": "PDF enlaces (1 pág.)",
+      "s": "done"
+    },
+    {
+      "t": "PWA simplificación",
+      "s": "doing"
+    },
+    {
+      "t": "Remember-user",
+      "s": "doing"
     },
     {
       "t": "Pitch 3 min",
-      "s": "todo"
+      "s": "doing"
+    }
+  ],
+  "links": [
+    {
+      "t": "PWA, IA real",
+      "u": "https://main.d2bloxc35rzfqy.amplifyapp.com"
+    },
+    {
+      "t": "PWA, modo simulado",
+      "u": "https://main.d2bloxc35rzfqy.amplifyapp.com/?demo"
+    },
+    {
+      "t": "Web híbrida",
+      "u": "https://main.dfsvbpju4hwi2.amplifyapp.com"
+    },
+    {
+      "t": "Presentación (impress.js)",
+      "u": "https://main.d3mdmicmjnjme4.amplifyapp.com"
+    },
+    {
+      "t": "PDF de respaldo",
+      "u": "https://main.d3mdmicmjnjme4.amplifyapp.com/FarmaceuticoVirtual-pitch.pdf"
+    },
+    {
+      "t": "PDF enlaces (1 pág.)",
+      "u": "https://github.com/ericmaster/hackathon-connect-atventures/blob/main/entregables/FarmaceuticoVirtual-enlaces.pdf"
+    },
+    {
+      "t": "Repo",
+      "u": "https://github.com/ericmaster/hackathon-connect-atventures"
+    },
+    {
+      "t": "Plan de implementación",
+      "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/plan-implementacion-mvp"
+    },
+    {
+      "t": "Arquitectura y flujo",
+      "u": "https://am-huayna.ericmaster.ninja/project/hackathon-connect/artifact/arquitectura-flujo-mvp"
+    },
+    {
+      "t": "API simulada Farmaenlace (IAM)",
+      "u": "https://5droecak17.execute-api.us-east-1.amazonaws.com",
+      "note": "IAM only, not public"
     }
   ]
 }
