@@ -48,10 +48,22 @@ def _crm_items():
     return out
 
 
+def _smartclub_items():
+    # Evita store.query(pk, "") (DynamoDB rechaza begins_with con prefijo vacío).
+    from store import get_store
+    s = get_store()
+    return s.query("PROMO", "CPNDEF#") + s.query("PROMO", "PROMO#") + s.scan_prefix("CPN#")
+
+
 def service_items(service: str) -> list:
     if service not in SERVICES:
         raise KeyError(service)
-    items = _crm_items() if service == "crm" else _mock().admin_list(service)
+    if service == "crm":
+        items = _crm_items()
+    elif service == "smartclub":
+        items = _smartclub_items()
+    else:
+        items = _mock().admin_list(service)
     return _jsonable((items or [])[:MAX_ITEMS])
 
 
@@ -62,8 +74,22 @@ def list_service(service: str) -> dict:
 
 
 def list_logs(limit: int = 100) -> list:
+    """Últimos logs (hoy y ayer, hora EC). sk = '<epoch_ms>#rnd' → prefijo '1' (evita begins_with vacío)."""
+    from datetime import datetime, timedelta
+    from store import get_store
     limit = max(1, min(int(limit or 100), 200))
-    return _jsonable(_mock().recent_logs(limit) or [])
+    now = datetime.now(_mock().EC_TZ)
+    out = []
+    for d in (now, now - timedelta(days=1)):
+        if len(out) >= limit:
+            break
+        out += get_store().query("LOG#" + d.strftime("%Y-%m-%d"), "1", desc=True, limit=limit - len(out))
+    return _jsonable(out)
+
+
+def logs_body(limit: int = 100) -> dict:
+    items = list_logs(limit)
+    return {"service": "logs", "items": items, "count": len(items)}
 
 
 def _jsonable(x):
