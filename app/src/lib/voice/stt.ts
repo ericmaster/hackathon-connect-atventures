@@ -3,6 +3,7 @@ import { audioEvent, decodeJson } from './eventstream';
 import { VoiceError } from './errors';
 import { postJson } from './fetcher';
 import { startMic, TARGET_RATE, type MicHandle } from './mic';
+import { stopSpeaking } from './tts';
 
 export interface ListenOptions {
 	/** Corte automático tras este silencio después de un resultado final (ms). 0 = solo manual. */
@@ -191,6 +192,7 @@ export async function startListening(
 	opts: ListenOptions = {}
 ): Promise<void> {
 	if (session) throw new VoiceError('busy');
+	stopSpeaking(); // no grabar nuestra propia voz
 	const s = new Session(onPartial, onFinal, { endSilenceMs: 1500, maxMs: 20000, ...opts });
 	session = s;
 	try {

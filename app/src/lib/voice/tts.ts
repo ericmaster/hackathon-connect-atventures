@@ -23,6 +23,17 @@ function el(): HTMLAudioElement {
 	return audioEl;
 }
 
+// Desbloqueo automático con el primer toque/tecla del usuario (políticas de autoplay).
+if (typeof window !== 'undefined') {
+	const once = () => {
+		unlockAudio();
+		window.removeEventListener('pointerdown', once, true);
+		window.removeEventListener('keydown', once, true);
+	};
+	window.addEventListener('pointerdown', once, true);
+	window.addEventListener('keydown', once, true);
+}
+
 /** Llamar desde un toque del usuario (p. ej. el primer botón) para desbloquear audio en iOS/Chrome. */
 export function unlockAudio(): void {
 	const a = el();
