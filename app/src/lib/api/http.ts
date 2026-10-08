@@ -18,8 +18,11 @@ async function post(path: string, body: unknown, signal?: AbortSignal): Promise<
 	// 403 (identidad distinta / firma rechazada, ya reintentada en signedFetch) o sesión borrada: el shell re-crea identidad + sesión.
 	if (r.status === 403 || (r.status === 404 && data?.error?.code === 'not_found'))
 		throw new SessionLostError(`API ${path} → ${r.status}`);
-	// Errores 4xx/5xx traen la misma forma + error; si hay surface la mostramos (p.ej. stale_revision re-renderiza).
-	if (data && (r.ok || (data.messages && data.sessionId))) return data;
+	// Solo aceptamos cuerpos con revisión numérica. 4xx con surface (p.ej. stale_revision) se muestran; un 500 con
+	// `messages: []` / `revision: null` se trata como error: la tarjeta actual queda y el shell pide reintentar.
+	const usable = !!data && typeof data.revision === 'number';
+	if (usable && r.ok) return data!;
+	if (usable && Array.isArray(data!.messages) && data!.messages.length > 0) return data!;
 	throw new Error(`API ${path} → ${r.status}`);
 }
 

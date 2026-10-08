@@ -37,3 +37,13 @@
 - Secrets: no AKIA/ASIA/private keys found in tracked HEAD (scoped grep).
 - Bedrock: app throttle retries are capped (2) and checked against the deadline; the slot lock is a conditional DDB write (no mutex held); fails closed to the `T.products`/message template.
 - Earlier Cursor fixes are in: request generation (`+page.svelte:110-122`), queued voice, 403/not_found → new identity + session, `clients.claim()`, deploy `.env`.
+
+## Status (fixes Oct 8 ~13:30–13:45 Bogotá, workstream A)
+- O-P0-1 **FIXED**: `free_turn` returns the fixed AlertaRoja when `s["blocked"]` (after handoff/diagnosis checks). Offline test `test_red_flag_sticks_on_next_free_turn`; live smoke step "free turn after red flag" → AlertaRoja.
+- O-P0-2 **FIXED (template, no extra LLM call)**: one safety question per session before the first product suggestion ("¿Tienes alergia a algún medicamento o estás tomando otro?", buttons `seguridad {ok}` "No, ninguno"/"Sí", or free-text answer). Any answer continues with the pending query; the answer lives in the session only; "sí" adds a pharmacist note to each ProductCard and drops products the user named; the LLM gets only a boolean flag, never the user's words or a condition. Matches the `?demo` labels. CONTRACT.md updated; e2e smoke and Playwright helper answer it.
+- O-P1-2 **FIXED**: Bedrock and GLiNER clients use `retries={"total_max_attempts":1,"mode":"standard"}`; Bedrock `read_timeout=10`; an LLM attempt (incl. the validation retry and throttle retry) only starts with ≥11 s left of the 25 s budget → fail closed to the template, well under 29 s.
+- O-P1-3 **FIXED (500 part)**: `app/src/lib/api/http.ts` only accepts bodies with a numeric `revision` (non-2xx also need a non-empty surface), otherwise throws → shell shows "Uy, no pude responder…"; `+page.svelte handle()` never overwrites revision/state/mode/sessionId with null. Playwright `live/11-error-500.spec.ts` (mocked 500, then real tap succeeds without 409). 4xx surface-id reuse: still open (P2).
+- O-P1-4 **FIXED**: idempotency key includes `lastOrder`; test `test_same_cart_can_be_ordered_again`.
+- Verified: offline 22/22, `smoke.py --local handler` 12/12, live `tests/e2e/smoke.py` 12/12, `services/api/smoke.py` ALL OK, `npm run check` 0 errors, build + Amplify deploy OK, Playwright demo 9/9 + live 7/7. Lambda env still has `FV_TRANSCRIBE_VOCABULARY=connect-atv-meds` after deploy.
+- Still open: O-P0-3 (Plan B only), O-P1-1 (admin open to guests unless `FV_ADMIN_IDENTITIES` set), FakeQr, extra P2s.
+

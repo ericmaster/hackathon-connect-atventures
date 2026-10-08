@@ -90,10 +90,11 @@
 	}
 
 	function handle(res: FvResponse) {
-		sessionId = res.sessionId;
-		revision = res.revision;
-		fsmState = res.state;
-		mode = res.mode ?? 'simulado';
+		if (res.sessionId) sessionId = res.sessionId;
+		// Nunca pisar revisión/estado con null (cuerpos de error): la tarjeta vigente sigue siendo accionable.
+		if (typeof res.revision === 'number') revision = res.revision;
+		if (res.state) fsmState = res.state;
+		if (res.mode) mode = res.mode;
 		const msgs = parseMessages(res.messages);
 		const { created, deleted } = store.apply(msgs);
 		if (deleted.length) entries = entries.filter((e) => !(e.kind === 'surface' && deleted.includes(e.id!)));
