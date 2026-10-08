@@ -20,7 +20,7 @@ ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .ag td{padding:6px}.ag tr.k-checkpoint td{background:rgba(210,153,34,.13)}.ag tr.k-deadline td{background:rgba(255,123,156,.15)}
 .ag tr.k-checkpoint td:first-child{box-shadow:inset 3px 0 var(--wip)}.ag tr.k-deadline td:first-child{box-shadow:inset 3px 0 var(--rose)}
 .ag tr.past{opacity:.5}.ag tr.cur td{background:rgba(88,166,255,.15);font-weight:600}.ag .st-cur{color:var(--acc)}.ag .st-past{color:var(--mut)}
-.tabs{display:flex;gap:4px;margin:14px 0 0;border-bottom:1px solid #2d3640}.tabs a{padding:8px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:2px solid transparent}.tabs a.on{color:var(--fg);border-color:var(--acc)}
+.tabs{display:flex;gap:4px;margin:14px 0 0;border-bottom:1px solid #2d3640;overflow-x:auto}.tabs a{white-space:nowrap;padding:8px 12px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:2px solid transparent}.tabs a.on{color:var(--fg);border-color:var(--acc)}
 .cv{display:grid;gap:8px;margin:14px 0;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-areas:"pro pro sol sol uvp uvp ven ven seg seg" "pro pro met met uvp uvp can can seg seg" "cos cos cos cos cos ing ing ing ing ing"}
 .box{background:var(--card);border-radius:10px;padding:12px;min-width:0}.blk+.blk{border-top:1px dashed #2d3640;margin-top:10px;padding-top:10px}
 .blk header{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px}.blk h3{font-size:13px;margin:0;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;flex:1}
@@ -28,12 +28,17 @@ ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .badge{background:var(--wip);color:#111;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;letter-spacing:.04em}
 .btn{background:#2d3640;color:var(--fg);border:0;border-radius:6px;padding:3px 9px;font:inherit;font-size:12px;cursor:pointer}.btn.pri{background:var(--acc);color:#0b1220}
 .blk textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--acc);border-radius:6px;font:inherit;font-size:14px;padding:6px;resize:vertical}.acts{display:flex;gap:6px;margin-top:6px}
+.vpg{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin:14px 0}.vpg .blk{background:var(--card);border-radius:10px;padding:14px;margin:0;border:0}
+.vpg .blk h3{flex:1 1 100%;color:var(--fg);font-size:14px}.tpl{color:var(--mut);font-size:12px;margin-bottom:6px}.vtx{white-space:pre-wrap;cursor:pointer}.tag{background:#2d3640;color:var(--mut);font-size:11px;padding:1px 6px;border-radius:6px}
+.cnt{font-size:12px;margin-top:8px;color:var(--mut)}.cnt b{color:var(--ok)}.cnt b.err{color:var(--bad)}.vnote{font-size:12px;color:var(--mut);margin-top:6px;font-style:italic}
+.chk{overflow-x:auto}.chk td,.chk th{padding:5px 6px;font-size:13px}.chk td.c{text-align:center;cursor:pointer;font-size:15px}
 @media(max-width:900px){.cv{grid-template-columns:1fr;grid-template-areas:"seg" "pro" "uvp" "sol" "can" "ing" "cos" "met" "ven"}}
-@media(max-width:760px){thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
+@media(max-width:760px){.vpg{grid-template-columns:1fr}thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
 td{display:flex;gap:8px;border:0;padding:4px 8px}td:before{content:attr(data-l);color:var(--mut);min-width:110px;font-size:12px;text-transform:uppercase}
 td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{background:none;padding:0}
 .ag thead{display:table-header-group}.ag tr{display:table-row;background:none;border-radius:0;margin:0;padding:0}
-.ag td{display:table-cell;padding:5px 4px;border-bottom:1px solid #2d3640;font-size:13px}.ag td:before{content:none}.ag .ev{display:none}}
+.ag td{display:table-cell;padding:5px 4px;border-bottom:1px solid #2d3640;font-size:13px}.ag td:before{content:none}.ag .ev{display:none}
+.chk thead{display:table-header-group}.chk tr{display:table-row;background:none;margin:0;padding:0}.chk td{display:table-cell;border-bottom:1px solid #2d3640}.chk td:before{content:none}}
 </style></head><body><main>
 <h1>Connect atVentures 2026 · Master control</h1>
 <div class="sub">Actualizado: <span id="upd">—</span> · refresco auto 30 s</div>
@@ -41,7 +46,7 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
  <div class="card" id="nowc"><h2>Ahora</h2><div class="big" id="nowcd">—</div><div class="nm" id="nown">—</div><div class="sub" id="nowh"></div></div>
  <div class="card" id="nextc"><h2>Próximo hito</h2><div class="big" id="nextcd">—</div><div class="nm" id="nextn">—</div><div class="sub" id="nexth"></div></div>
 </div>
-<nav class="tabs"><a href="#progreso" id="t-progreso">Progreso</a><a href="#canvas" id="t-canvas">Lean Canvas</a></nav>
+<nav class="tabs"><a href="#progreso" id="t-progreso">Progreso</a><a href="#canvas" id="t-canvas">Lean Canvas</a><a href="#propuesta" id="t-propuesta">Propuesta de valor</a></nav>
 <section id="tab-progreso">
 <div class="grid">
  <div class="card"><h2>Freeze 15:45</h2><div class="big" id="cd">—</div><div class="sub">2026-10-08 15:45 (UTC-5)</div></div>
@@ -59,6 +64,11 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 <section id="tab-canvas" hidden>
 <div class="sub" style="margin-top:10px">Clic en un bloque o «Editar» (una línea por ítem; Ctrl+Enter guarda, Esc cancela) · <span id="cvupd">—</span> · <span id="cvmsg"></span></div>
 <div class="cv" id="cv"></div>
+</section>
+<section id="tab-propuesta" hidden>
+<div class="sub" style="margin-top:10px"><span id="vpsrc"></span> · <span id="vpupd">—</span> · <span id="vpmsg"></span></div>
+<div class="vpg" id="vp"></div>
+<div class="card chk"><h2>Checklist Montero (clic para marcar ✔)</h2><table><thead id="vpchh"></thead><tbody id="vpchb"></tbody></table><div class="sub" id="vpmantra" style="margin-top:8px"></div></div>
 </section>
 </main>
 <script>
@@ -108,13 +118,21 @@ async function load(){try{const p=await (await fetch('api/state',{cache:'no-stor
  document.getElementById('infrat').textContent=i.checked_at?'Chequeo: '+fmt(i.checked_at)+' (cache 60 s)':'';
 }catch(e){document.getElementById('upd').innerHTML=`<span class="err">error: ${esc(e.message)}</span>`}}
 // --- tabs ---
-function showTab(){const t=location.hash==='#canvas'?'canvas':'progreso';
- for(const k of ['progreso','canvas']){document.getElementById('tab-'+k).hidden=k!==t;document.getElementById('t-'+k).className=k===t?'on':''}}
+function showTab(){const t=({'#canvas':'canvas','#propuesta':'propuesta'})[location.hash]||'progreso';
+ for(const k of ['progreso','canvas','propuesta']){document.getElementById('tab-'+k).hidden=k!==t;document.getElementById('t-'+k).className=k===t?'on':''}}
 addEventListener('hashchange',showTab);showTab();
 // --- lean canvas (GET/PUT api/canvas; PUT merges the given blocks) ---
 const BOX=[['pro',['problema','alternativas']],['sol',['solucion']],['met',['metricas']],['uvp',['propuesta','concepto']],
  ['ven',['ventaja']],['can',['canales']],['seg',['segmentos','early_adopters']],['cos',['costos']],['ing',['ingresos']]];
-let cv=null;const editing=new Set(),cvEl=document.getElementById('cv'),cvMsg=(t,bad)=>{const m=document.getElementById('cvmsg');m.textContent=t;m.className=bad?'err':''};
+const hhmm=()=>new Date().toLocaleTimeString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+const say=(id,t,bad)=>{const m=document.getElementById(id);m.textContent=t;m.className=bad?'err':''};
+async function getDoc(url){const r=await fetch(url,{cache:'no-store'}),c=await r.json();if(!r.ok||c.error)throw new Error(c.error||r.status);return c}
+async function putDoc(url,coll,k,obj,msgId){ // PUT merges one entry; returns full doc or null
+ try{const r=await fetch(url,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({[coll]:{[k]:obj}})}),c=await r.json().catch(()=>({error:'HTTP '+r.status}));
+  if(!r.ok||c.error)throw new Error(c.error||'HTTP '+r.status);say(msgId,'Guardado '+hhmm());return c}
+ catch(e){say(msgId,'Error al guardar: '+e.message,1);return null}}
+const updLine=d=>d.updated_at?`Actualizado ${fmt(d.updated_at)}${d.updated_by?' por '+d.updated_by:''}`:'—';
+let cv=null;const editing=new Set(),cvEl=document.getElementById('cv'),cvMsg=(t,bad)=>say('cvmsg',t,bad);
 function renderBlock(k){const el=document.getElementById('b-'+k),b=cv.blocks[k];if(!el)return;
  if(!b){el.innerHTML='';return}
  const ta=el.querySelector('textarea'),draft=ta?ta.value:b.items.join('\n'),bor=b.status==='borrador';
@@ -125,15 +143,11 @@ function renderBlock(k){const el=document.getElementById('b-'+k),b=cv.blocks[k];
   :`<ul data-act="ed">${b.items.length?b.items.map(i=>`<li>${esc(i)}</li>`).join(''):'<li class="sub">(vacío)</li>'}</ul>`)}
 function renderCanvas(){if(!cvEl.children.length)cvEl.innerHTML=BOX.map(([a,ks])=>`<div class="box" style="grid-area:${a}">${ks.map(k=>`<div class="blk" id="b-${k}" data-k="${k}"></div>`).join('')}</div>`).join('');
  for(const [,ks] of BOX)for(const k of ks)renderBlock(k);
- document.getElementById('cvupd').textContent=cv.updated_at?`Actualizado ${fmt(cv.updated_at)}${cv.updated_by?' por '+cv.updated_by:''}`:'—'}
+ document.getElementById('cvupd').textContent=updLine(cv)}
 async function loadCanvas(){if(editing.size)return; // don't wipe in-progress edits
- try{const r=await fetch('api/canvas',{cache:'no-store'}),c=await r.json();if(!r.ok||c.error)throw new Error(c.error||r.status);if(!editing.size){cv=c;renderCanvas()}}
+ try{const c=await getDoc('api/canvas');if(!editing.size){cv=c;renderCanvas()}}
  catch(e){cvMsg('error: '+e.message,1)}}
-async function saveBlock(k,patch){const b={...cv.blocks[k],...patch};
- try{const r=await fetch('api/canvas',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({blocks:{[k]:b}})}),c=await r.json().catch(()=>({error:'HTTP '+r.status}));
-  if(!r.ok||c.error)throw new Error(c.error||'HTTP '+r.status);
-  cv=c;return cvMsg('Guardado '+new Date().toLocaleTimeString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})),true}
- catch(e){cvMsg('Error al guardar: '+e.message,1);return false}}
+async function saveBlock(k,patch){const c=await putDoc('api/canvas','blocks',k,{...cv.blocks[k],...patch},'cvmsg');if(c)cv=c;return !!c}
 cvEl.addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),blk=e.target.closest('.blk');if(!a||!blk)return;const k=blk.dataset.k;
  if(a.dataset.act==='ed'){editing.add(k);renderBlock(k);blk.querySelector('textarea').focus()}
  else if(a.dataset.act==='cx'){editing.delete(k);blk.querySelector('textarea').value=cv.blocks[k].items.join('\n');renderBlock(k);if(!editing.size)loadCanvas()}
@@ -142,5 +156,41 @@ cvEl.addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),b
  else if(a.dataset.act==='st'){a.disabled=true;if(await saveBlock(k,{status:cv.blocks[k].status==='borrador'?'base':'borrador'}))renderCanvas();else a.disabled=false}});
 cvEl.addEventListener('keydown',e=>{const blk=e.target.closest('.blk');if(!blk||e.target.tagName!=='TEXTAREA')return;
  if(e.key==='Escape')blk.querySelector('[data-act=cx]').click();if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))blk.querySelector('[data-act=sv]').click()});
-tick();setInterval(tick,1000);load();loadCanvas();setInterval(()=>{load();loadCanvas()},30000);
+// --- propuesta de valor (GET/PUT api/value-prop; same edit pattern as canvas) ---
+let vp=null;const vEdit=new Set(),vpEl=document.getElementById('vp'),AUD={cliente:'cliente',Farmaenlace:'Farmaenlace',jurado:'jurado'};
+const count=t=>{const w=t.trim()?t.trim().split(/\s+/).length:0,sec=Math.round(w/2.5);return `${w} palabras · ${t.length} caracteres · <b class="${sec>20?'err':''}">~${sec} s</b>${sec>20?' (&gt;20 s)':''}`};
+function renderVersion(k){const el=document.getElementById('v-'+k),v=vp.versions[k];if(!el||!v)return;
+ const ta=el.querySelector('textarea'),draft=ta?ta.value:v.text,bor=v.status==='borrador',ed=vEdit.has(k),rs=vp.rules||[],ok=rs.filter(r=>(v.checks||{})[r.id]==='ok').length;
+ el.className='blk'+(bor?' borrador':'');
+ el.innerHTML=`<header><h3>${esc(v.name)}</h3>${bor?'<span class="badge">BORRADOR</span>':''}<span class="tag">${esc(AUD[v.audience]||v.audience)}</span>
+  <button class="btn" data-act="st">${bor?'→ base':'→ borrador'}</button>${ed?'':'<button class="btn" data-act="ed">Editar</button>'}</header>
+  ${v.template?`<div class="tpl">${esc(v.template)}</div>`:''}`+
+  (ed?`<textarea>${esc(draft)}</textarea><div class="acts"><button class="btn pri" data-act="sv">Guardar</button><button class="btn" data-act="cx">Cancelar</button></div>`
+  :`<div class="vtx" data-act="ed">${esc(v.text)||'<span class="sub">(vacío)</span>'}</div>`)+
+  `<div class="cnt">${count(ed?draft:v.text)} · checklist ${ok}/${rs.length}</div>${v.note?`<div class="vnote">${esc(v.note)}</div>`:''}`}
+function renderVP(){const ks=Object.keys(vp.versions||{});
+ if([...vpEl.children].map(e=>e.dataset.k).join()!==ks.join())vpEl.innerHTML=ks.map(k=>`<div class="blk" id="v-${k}" data-k="${k}"></div>`).join('');
+ ks.forEach(renderVersion);
+ const rs=vp.rules||[];document.getElementById('vpchh').innerHTML=`<tr><th>Regla</th>${ks.map((k,i)=>`<th title="${esc(vp.versions[k].name)}">V${i+1}</th>`).join('')}</tr>`;
+ document.getElementById('vpchb').innerHTML=rs.map(r=>`<tr><td>${esc(r.text)}</td>${ks.map(k=>{const c=(vp.versions[k].checks||{})[r.id]==='ok';
+  return `<td class="c ${c?'done':'todo'}" data-k="${k}" data-r="${esc(r.id)}" title="${esc(vp.versions[k].name)}">${c?'✔':'○'}</td>`}).join('')}</tr>`).join('')+
+  `<tr><td class="sub" colspan="${ks.length+1}">${ks.map((k,i)=>`V${i+1} = ${esc(vp.versions[k].name)}`).join(' · ')}</td></tr>`;
+ document.getElementById('vpsrc').textContent=vp.method?.source?'Método: '+vp.method.source:'';
+ document.getElementById('vpmantra').textContent=vp.method?.mantra?'«'+vp.method.mantra+'»':'';
+ document.getElementById('vpupd').textContent=updLine(vp)}
+async function loadVP(){if(vEdit.size)return;try{const c=await getDoc('api/value-prop');if(!vEdit.size){vp=c;renderVP()}}catch(e){say('vpmsg','error: '+e.message,1)}}
+async function saveVersion(k,patch){const c=await putDoc('api/value-prop','versions',k,{...vp.versions[k],...patch},'vpmsg');if(c){vp=c;renderVP()}return !!c}
+vpEl.addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),el=e.target.closest('.blk');if(!a||!el)return;const k=el.dataset.k;
+ if(a.dataset.act==='ed'){vEdit.add(k);renderVersion(k);el.querySelector('textarea').focus()}
+ else if(a.dataset.act==='cx'){vEdit.delete(k);el.querySelector('textarea').value=vp.versions[k].text;renderVersion(k);if(!vEdit.size)loadVP()}
+ else if(a.dataset.act==='sv'){a.disabled=true;const text=el.querySelector('textarea').value.trim();vEdit.delete(k);
+  if(await saveVersion(k,{text}))return;vEdit.add(k);a.disabled=false}
+ else if(a.dataset.act==='st'){a.disabled=true;if(!await saveVersion(k,{status:vp.versions[k].status==='borrador'?'base':'borrador'}))a.disabled=false}});
+vpEl.addEventListener('input',e=>{const el=e.target.closest('.blk');if(el&&e.target.tagName==='TEXTAREA'){const v=vp.versions[el.dataset.k],rs=vp.rules||[];
+ el.querySelector('.cnt').innerHTML=`${count(e.target.value)} · checklist ${rs.filter(r=>(v.checks||{})[r.id]==='ok').length}/${rs.length}`}});
+vpEl.addEventListener('keydown',e=>{const el=e.target.closest('.blk');if(!el||e.target.tagName!=='TEXTAREA')return;
+ if(e.key==='Escape')el.querySelector('[data-act=cx]').click();if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))el.querySelector('[data-act=sv]').click()});
+document.getElementById('vpchb').addEventListener('click',e=>{const td=e.target.closest('td.c');if(!td)return;const v=vp.versions[td.dataset.k];
+ saveVersion(td.dataset.k,{checks:{...(v.checks||{}),[td.dataset.r]:(v.checks||{})[td.dataset.r]==='ok'?'todo':'ok'}})});
+tick();setInterval(tick,1000);load();loadCanvas();loadVP();setInterval(()=>{load();loadCanvas();loadVP()},30000);
 </script></body></html>

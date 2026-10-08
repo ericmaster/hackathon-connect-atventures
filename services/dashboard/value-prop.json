@@ -1,0 +1,150 @@
+{
+  "updated_at": "2026-10-08T09:45:00-05:00",
+  "method": {
+    "source": "J.D. Montero (NEST.Lab), «Establecer la propuesta de valor», NEST Program 2025 — vía NotebookLM",
+    "mantra": "No te enamores de tu solución, enamórate del problema."
+  },
+  "rules": [
+    {
+      "id": "r20",
+      "text": "Menos de 20 s: mensaje simple y directo (si toma más, es muy complejo)"
+    },
+    {
+      "id": "beneficios",
+      "text": "Beneficios > características: habla de resultados, no de funcionalidades"
+    },
+    {
+      "id": "lenguaje",
+      "text": "Lenguaje del cliente: sin jerga técnica, palabras que usaría el usuario"
+    },
+    {
+      "id": "especifico",
+      "text": "Cliente específico: segmenta (p. ej. «pymes de retail», no «todas las empresas»)"
+    },
+    {
+      "id": "top3",
+      "text": "Dolor Top 3 del cliente: ganar dinero, ahorrar tiempo/costos, moverse más rápido o evitar riesgos"
+    },
+    {
+      "id": "status_quo",
+      "text": "Compara contra la alternativa real de hoy (status quo), no solo contra startups"
+    },
+    {
+      "id": "por_que",
+      "text": "Responde «¿por qué elegirte a ti?»: promesa central, no eslogan"
+    },
+    {
+      "id": "validado",
+      "text": "Testable/validado con clientes (observar, no suponer); si no lo entienden, iterar"
+    }
+  ],
+  "versions": {
+    "w3": {
+      "name": "W3: WHO / WHAT / WHY",
+      "template": "WHO: tu usuario específico · WHAT: su problema real · WHY: por qué tu solución importa",
+      "text": "WHO: toda la audiencia Farmaenlace que evita apps/web por complejidad o poca familiaridad con tech. Meta: bajar barreras de entrada. Decisor: Farmaenlace (canal digital / SmartClub).\nWHAT: online = catálogos, filtros, forms → no lo usa. ~2% ventas online. Beneficios cross-marca no se ven.\nWHY: habla o escribe → app arma la pantalla justa (producto, dónde, beneficio SmartClub). Sin forms.",
+      "audience": "jurado",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      },
+      "note": "Estructura interna (de PITCH.md); base para las demás versiones."
+    },
+    "formula_cliente": {
+      "name": "Fórmula — versión cliente (usuario)",
+      "template": "Para [cliente objetivo] que enfrentan [problema], ofrecemos [solución], que a diferencia de [alternativa], logra [beneficio único].",
+      "text": "Para los clientes de Farmaenlace que evitan las apps porque les resultan complicadas o poco familiares, ofrecemos un asistente al que simplemente le hablas y te arma en el momento la pantalla que necesitas, que a diferencia de las tiendas online llenas de catálogos y formularios, hace que comprar sea tan fácil como preguntarle al dependiente de tu farmacia.",
+      "audience": "cliente",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      }
+    },
+    "formula_farmaenlace": {
+      "name": "Fórmula — versión Farmaenlace (comprador/decisor)",
+      "template": "Para [cliente objetivo] que enfrentan [problema], ofrecemos [solución], que a diferencia de [alternativa], logra [beneficio único].",
+      "text": "Para Farmaenlace, que vende ~2% online y busca 100k socios SmartClub, ofrecemos una capa conversacional que genera la interfaz para cada cliente en web y móvil, que a diferencia de rediseñar el e-commerce, sube frecuencia, ticket y share of wallet entre marcas sin cambiar su core.",
+      "audience": "Farmaenlace",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      },
+      "note": "Montero separa usuario y comprador/decisor en el WHO, sin fórmula distinta por audiencia. «100k socios» viene de PITCH.md: verificar fuente (deck: 75.377 socios actuales)."
+    },
+    "high_concept": {
+      "name": "High-concept pitch",
+      "template": "[Tu producto] es el [empresa/producto conocido] de [categoría]",
+      "text": "Tu dependiente de farmacia de confianza, en el celular.",
+      "audience": "jurado",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      },
+      "note": "No sigue literal la plantilla «X es el Y de Z»; variante por validar con mentores."
+    },
+    "one_liner": {
+      "name": "One-liner «Ayudamos a…»",
+      "template": "Ayudamos a [audiencia] a [lograr objetivo / resolver problema] con [mecanismo amigable o interfaz simple].",
+      "text": "Ayudamos a los clientes de Farmaenlace que evitan las apps a comprar en su farmacia con solo hablar o escribir, sin catálogos ni formularios.",
+      "audience": "cliente",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      },
+      "note": "Redactado a partir de PITCH.md (WHO/WHY)."
+    },
+    "voz_cliente": {
+      "name": "Problema en palabras del cliente",
+      "template": "Palabras exactas del usuario, sin jerga técnica (observar, no preguntar)",
+      "text": "[frase real de cliente — por validar]",
+      "audience": "cliente",
+      "status": "borrador",
+      "checks": {
+        "r20": "todo",
+        "beneficios": "todo",
+        "lenguaje": "todo",
+        "especifico": "todo",
+        "top3": "todo",
+        "status_quo": "todo",
+        "por_que": "todo",
+        "validado": "todo"
+      },
+      "note": "Llenar con una frase real escuchada en farmacia o con mentores; no inventar."
+    }
+  }
+}

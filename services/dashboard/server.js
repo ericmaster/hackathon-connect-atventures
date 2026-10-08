@@ -7,8 +7,7 @@ const { execFile } = require('child_process');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || 41830);
 const DATA = path.join(__dirname, 'progress.json');
-const CANVAS = path.join(__dirname, 'canvas.json');
-const CANVAS_MAX = 64 * 1024;
+const CANVAS_MAX = 64 * 1024; // per editable doc (canvas.json, value-prop.json)
 const INFRA_TTL = 60_000;
 const W = { todo: 0, doing: 0.5, done: 1 };
 
@@ -59,7 +58,7 @@ function getInfra() {
 }
 getInfra();
 
-// --- lean canvas: GET full doc, PUT {blocks:{key:{title,items,status}}} merges given blocks ---
+// --- editable docs (lean canvas, value prop): GET full doc, PUT {<coll>:{key:{...}}} merges given entries ---
 const bogotaNow = () => new Date(Date.now() - 5 * 36e5).toISOString().slice(0, 19) + '-05:00';
 const httpErr = (status, msg) => Object.assign(new Error(msg), { status });
 function readBody(req, max) {
@@ -76,6 +75,20 @@ function validBlock(b) {
     Array.isArray(b.items) && b.items.length <= 40 && b.items.every(i => typeof i === 'string' && i.length <= 500) &&
     (b.status === 'base' || b.status === 'borrador');
 }
+const optStr = (v, n) => v === undefined || (typeof v === 'string' && v.length <= n);
+function validVersion(v) {
+  return v && typeof v === 'object' && typeof v.name === 'string' && v.name.length <= 80 && optStr(v.template, 300) &&
+    typeof v.text === 'string' && v.text.length <= 2000 && ['cliente', 'Farmaenlace', 'jurado'].includes(v.audience) &&
+    (v.status === 'base' || v.status === 'borrador') && optStr(v.note, 300) &&
+    (v.checks === undefined || (v.checks && typeof v.checks === 'object' && Object.keys(v.checks).length <= 20 &&
+      Object.entries(v.checks).every(([k, c]) => /^[a-z0-9_]{1,32}$/.test(k) && (c === 'todo' || c === 'ok'))));
+}
+const DOCS = {
+  '/api/canvas': { file: path.join(__dirname, 'canvas.json'), coll: 'blocks', valid: validBlock,
+    pick: ({ title, items, status }) => ({ title, status, items }) },
+  '/api/value-prop': { file: path.join(__dirname, 'value-prop.json'), coll: 'versions', valid: validVersion,
+    pick: ({ name, template, text, audience, status, checks, note }) => ({ name, template, text, audience, status, checks, note }) },
+};
 function putAuth(req) { // CF Access identity, or direct localhost (not proxied through Cloudflare/tunnel)
   const email = String(req.headers['cf-access-authenticated-user-email'] || '').trim().slice(0, 200);
   if (email) return email;
@@ -83,24 +96,25 @@ function putAuth(req) { // CF Access identity, or direct localhost (not proxied 
   if (local && !req.headers['cf-ray'] && !req.headers['cf-connecting-ip']) return 'localhost';
   return null;
 }
-async function putCanvas(req) {
+async function putDoc(req, d) {
   const by = putAuth(req);
   if (!by) throw httpErr(403, 'no autorizado');
   let body;
   try { body = JSON.parse(await readBody(req, CANVAS_MAX)); } catch (e) { throw e.status ? e : httpErr(400, 'JSON inválido'); }
-  const keys = body && body.blocks && typeof body.blocks === 'object' && !Array.isArray(body.blocks) ? Object.keys(body.blocks) : [];
-  if (!keys.length || keys.length > 30) throw httpErr(400, 'se espera {blocks:{...}}');
-  for (const k of keys) if (!/^[a-z_]{1,32}$/.test(k) || !validBlock(body.blocks[k])) throw httpErr(400, `bloque inválido: ${k.slice(0, 32)}`);
-  let cur = { blocks: {} };
-  try { cur = JSON.parse(fs.readFileSync(CANVAS, 'utf8')); } catch {}
-  if (!cur.blocks || typeof cur.blocks !== 'object') cur.blocks = {};
-  for (const k of keys) { const { title, items, status } = body.blocks[k]; cur.blocks[k] = { title, status, items }; }
-  if (Object.keys(cur.blocks).length > 30) throw httpErr(400, 'demasiados bloques');
+  const C = d.coll, src = body && body[C];
+  const keys = src && typeof src === 'object' && !Array.isArray(src) ? Object.keys(src) : [];
+  if (!keys.length || keys.length > 30) throw httpErr(400, `se espera {${C}:{...}}`);
+  for (const k of keys) if (!/^[a-z0-9_]{1,32}$/.test(k) || !d.valid(src[k])) throw httpErr(400, `entrada inválida: ${k.slice(0, 32)}`);
+  let cur = { [C]: {} };
+  try { cur = JSON.parse(fs.readFileSync(d.file, 'utf8')); } catch {}
+  if (!cur[C] || typeof cur[C] !== 'object') cur[C] = {};
+  for (const k of keys) cur[C][k] = d.pick(src[k]);
+  if (Object.keys(cur[C]).length > 30) throw httpErr(400, 'demasiadas entradas');
   cur.updated_at = bogotaNow(); cur.updated_by = by;
   const out = JSON.stringify(cur, null, 2) + '\n';
-  if (Buffer.byteLength(out) > CANVAS_MAX * 2) throw httpErr(413, 'canvas demasiado grande');
-  const tmp = `${CANVAS}.tmp-${process.pid}-${Date.now()}`;
-  fs.writeFileSync(tmp, out); fs.renameSync(tmp, CANVAS);
+  if (Buffer.byteLength(out) > CANVAS_MAX * 2) throw httpErr(413, 'documento demasiado grande');
+  const tmp = `${d.file}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, out); fs.renameSync(tmp, d.file);
   return out;
 }
 
@@ -114,9 +128,10 @@ http.createServer(async (req, res) => {
       p.infra = await getInfra();
       return send(res, 200, 'application/json; charset=utf-8', JSON.stringify(p));
     }
-    if (url === '/api/canvas') {
-      if (req.method === 'GET') return send(res, 200, 'application/json; charset=utf-8', fs.readFileSync(CANVAS, 'utf8'));
-      if (req.method === 'PUT') return send(res, 200, 'application/json; charset=utf-8', await putCanvas(req));
+    const doc = DOCS[url];
+    if (doc) {
+      if (req.method === 'GET') return send(res, 200, 'application/json; charset=utf-8', fs.readFileSync(doc.file, 'utf8'));
+      if (req.method === 'PUT') return send(res, 200, 'application/json; charset=utf-8', await putDoc(req, doc));
       return send(res, 405, 'text/plain', 'method not allowed');
     }
     if (url === '/' || url === '/index.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
