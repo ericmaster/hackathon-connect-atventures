@@ -1,0 +1,65 @@
+{
+  "updated_at": "2026-10-08T08:50:00-05:00",
+  "freeze": "2026-10-08T15:45:00-05:00",
+  "goal": 100,
+  "criteria": [
+    {
+      "id": "valor", "name": "Propuesta de valor e impacto", "weight": 30,
+      "evalua": "Problema relevante, usuario definido, beneficio concreto, cómo medir impacto",
+      "nota": null,
+      "items": [
+        { "t": "Problema relevante", "s": "doing" },
+        { "t": "Usuario definido", "s": "doing" },
+        { "t": "Beneficio concreto", "s": "doing" },
+        { "t": "Métrica de impacto", "s": "todo" }
+      ]
+    },
+    {
+      "id": "tecnica", "name": "Calidad técnica y ejecución", "weight": 25,
+      "evalua": "Flujo principal funcional, APIs reales, arquitectura apropiada, qué es real vs simulado",
+      "nota": null,
+      "items": [
+        { "t": "Flujo principal funcional", "s": "todo" },
+        { "t": "Integraciones reales con APIs", "s": "todo" },
+        { "t": "Arquitectura apropiada", "s": "todo" },
+        { "t": "Declarar real vs simulado", "s": "todo" }
+      ]
+    },
+    {
+      "id": "novedad", "name": "Novedad y diferenciación", "weight": 20,
+      "evalua": "Combinar IA, APIs, datos o herramientas de forma creativa",
+      "nota": null,
+      "items": [
+        { "t": "Combinación creativa IA/APIs/datos", "s": "todo" },
+        { "t": "Diferenciación vs status quo", "s": "todo" }
+      ]
+    },
+    {
+      "id": "viabilidad", "name": "Viabilidad e implementación", "weight": 15,
+      "evalua": "Ruta realista a piloto, datos/integraciones accesibles, costos, encaje con la operación",
+      "nota": null,
+      "items": [
+        { "t": "Ruta a piloto", "s": "todo" },
+        { "t": "Datos/integraciones accesibles", "s": "todo" },
+        { "t": "Costos razonables", "s": "todo" },
+        { "t": "Encaje con la operación", "s": "todo" }
+      ]
+    },
+    {
+      "id": "demo", "name": "Claridad de presentación y demo", "weight": 10,
+      "evalua": "Buen uso de los 3 min",
+      "nota": null,
+      "items": [
+        { "t": "Pitch 3 min", "s": "todo" },
+        { "t": "Demo fluida", "s": "todo" },
+        { "t": "PPT corto", "s": "todo" }
+      ]
+    }
+  ],
+  "deliverables": [
+    { "t": "Repo público", "s": "todo" },
+    { "t": "Demo pública desplegada", "s": "todo" },
+    { "t": "PPT corto", "s": "todo" },
+    { "t": "Pitch 3 min", "s": "todo" }
+  ]
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect atVentures · Master control</title>
+<style>
+:root{--bg:#0f1419;--card:#18202a;--fg:#e6edf3;--mut:#8b98a5;--ok:#3fb950;--wip:#d29922;--todo:#6e7681;--acc:#58a6ff;--bad:#f85149}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
+main{max-width:1200px;margin:auto;padding:16px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+.sub{color:var(--mut);font-size:13px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:14px 0}
+.card{background:var(--card);border-radius:10px;padding:14px}
+.big{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:10px;background:#2d3640;border-radius:5px;overflow:hidden;margin-top:6px}.bar>i{display:block;height:100%;background:var(--acc)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid #2d3640;vertical-align:top}
+th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase}td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
+.s{display:inline-block;width:1.3em;text-align:center}.done{color:var(--ok)}.doing{color:var(--wip)}.todo{color:var(--todo)}
+.ev{color:var(--mut);font-size:13px}.err{color:var(--bad)}
+@media(max-width:760px){thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
+td{display:flex;gap:8px;border:0;padding:4px 8px}td:before{content:attr(data-l);color:var(--mut);min-width:110px;font-size:12px;text-transform:uppercase}
+td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{background:none;padding:0}}
+</style></head><body><main>
+<h1>Connect atVentures 2026 · Master control</h1>
+<div class="sub">Actualizado: <span id="upd">—</span> · refresco auto 30 s</div>
+<div class="grid">
+ <div class="card"><h2>Freeze 15:45</h2><div class="big" id="cd">—</div><div class="sub">2026-10-08 15:45 (UTC-5)</div></div>
+ <div class="card"><h2>Puntaje estimado</h2><div class="big"><span id="tot">0</span> / <span id="goal">100</span></div><div class="bar"><i id="totbar" style="width:0"></i></div><div class="sub" id="totsub"></div></div>
+ <div class="card"><h2>Entregables</h2><ul id="deliv"></ul></div>
+ <div class="card"><h2>Infra</h2><ul id="infra"></ul><div class="sub" id="infrat"></div></div>
+</div>
+<div class="card tablecard"><h2>Objetivos (rúbrica)</h2>
+<table><thead><tr><th>Criterio</th><th>Peso</th><th>Qué evalúa</th><th>Nota (1–5)</th><th>Puntos</th><th>Meta</th><th>Progreso</th><th>Sub-objetivos</th></tr></thead><tbody id="rows"></tbody></table>
+</div>
+</main>
+<script>
+const ICON={done:'✔',doing:'◐',todo:'○'},esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const li=i=>`<li><span class="s ${esc(i.s)}">${ICON[i.s]||'○'}</span> ${esc(i.t)}</li>`;
+const fmt=d=>new Date(d).toLocaleString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+let freeze=Date.parse('2026-10-08T15:45:00-05:00');
+function tick(){const ms=freeze-Date.now(),el=document.getElementById('cd');
+ if(ms<=0){el.textContent='FREEZE';el.className='big err';return}
+ const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+ el.textContent=`${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;el.className='big'+(ms<36e5?' err':'')}
+async function load(){try{const p=await (await fetch('api/state',{cache:'no-store'})).json();if(p.error)throw new Error(p.error);
+ if(p.freeze)freeze=Date.parse(p.freeze);
+ document.getElementById('upd').textContent=p.updated_at?fmt(p.updated_at):'—';
+ const goal=p.goal||100;document.getElementById('goal').textContent=goal;document.getElementById('tot').textContent=p.total;
+ document.getElementById('totbar').style.width=Math.min(100,p.total/goal*100)+'%';
+ const ap=p.criteria.reduce((a,c)=>a+c.progress*c.weight,0)/p.criteria.reduce((a,c)=>a+c.weight,0);
+ document.getElementById('totsub').textContent=`Progreso ponderado de sub-objetivos: ${Math.round(ap)}%`;
+ document.getElementById('rows').innerHTML=p.criteria.map(c=>`<tr>
+  <td data-l="Criterio"><b>${esc(c.name)}</b></td><td class="n" data-l="Peso">${c.weight}</td>
+  <td class="ev" data-l="Qué evalúa">${esc(c.evalua)}</td><td class="n" data-l="Nota">${c.nota==null?'—':c.nota}</td>
+  <td class="n" data-l="Puntos">${c.nota==null?'—':c.pts} / ${c.weight}</td><td class="n" data-l="Meta">5/5 (${c.weight})</td>
+  <td class="n" data-l="Progreso">${c.progress}%<div class="bar"><i style="width:${c.progress}%"></i></div></td>
+  <td class="chk" data-l="Sub-objetivos"><ul>${(c.items||[]).map(li).join('')}</ul></td></tr>`).join('');
+ document.getElementById('deliv').innerHTML=(p.deliverables||[]).map(li).join('');
+ const i=p.infra||{},a=i.aws||{},b=i.bedrock||{};
+ document.getElementById('infra').innerHTML=
+  `<li><span class="s ${a.ok?'done':'err'}">${a.ok?'✔':'✖'}</span> AWS: ${a.ok?`cuenta ${esc(a.account)} · rol ${esc(a.role)}`:esc(a.err||'—')}</li>`+
+  `<li><span class="s ${b.ok?'done':'err'}">${b.ok?'✔':'✖'}</span> Bedrock us-east-1: ${b.ok?`${b.models} modelos`:esc(b.err||'—')}</li>`;
+ document.getElementById('infrat').textContent=i.checked_at?'Chequeo: '+fmt(i.checked_at)+' (cache 60 s)':'';
+}catch(e){document.getElementById('upd').innerHTML=`<span class="err">error: ${esc(e.message)}</span>`}}
+tick();setInterval(tick,1000);load();setInterval(load,30000);
+</script></body></html>
