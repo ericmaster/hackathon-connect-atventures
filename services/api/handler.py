@@ -57,7 +57,7 @@ def _voice(fn, body):
         return 502, {"error": {"code": "voice_failed", "message": type(e).__name__}}
 
 
-def route(method, path, body, caller):
+def route(method, path, body, caller, event=None):
     if method == "POST" and path == "/session":
         return 200, fsm.create_session(caller, body)
     if method == "POST" and path == "/turn":
@@ -70,17 +70,16 @@ def route(method, path, body, caller):
         return _voice("handle_tts", body)
     if method == "POST" and path == "/voice/stt-url":
         return _voice("handle_stt_url", body)
-    if method == "GET" and path == "/admin/logs":
-        return 200, {"service": "logs", "items": mock.recent_logs(100)}
     if method == "GET" and path.startswith("/admin/"):
         svc = path.split("/")[2]
+        try:
+            import admin  # helpers de C (allowlist + redacción)
+            return admin.handle(svc, event)
+        except ImportError:
+            pass
+        if svc == "logs":
+            return 200, {"service": "logs", "items": mock.recent_logs(100)}
         if svc in ADMIN_SERVICES:
-            try:
-                import admin  # helpers opcionales de C
-                if hasattr(admin, "list_service"):
-                    return 200, admin.list_service(svc)
-            except ImportError:
-                pass
             return 200, {"service": svc, "items": mock.admin_list(svc)}
         return 404, {"error": {"code": "not_found", "message": "servicio desconocido"}}
     if method == "POST" and path == "/internal/seed" and caller == "direct":
@@ -101,7 +100,7 @@ def handler(event, context=None):
     try:
         method, path, req, http = _parse(event)
         sid = (req or {}).get("sessionId")
-        status, body = route(method, path, req or {}, _caller(event))
+        status, body = route(method, path, req or {}, _caller(event), event)
     except fsm.ApiError as e:
         status = e.status
         s = e.session
