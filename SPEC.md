@@ -270,6 +270,7 @@ Estado al 8 oct.
 | STT (Transcribe) y TTS (Polly) | **Real**: probados |
 | PWA y web híbrida (AWS Amplify) | **Desplegadas** con API real (IA real, datos sintéticos); `?demo` = mock |
 | Admin de solo lectura | **Real**, sobre datos simulados |
+| API de Farmaenlace (7 servicios) | Simulada: API separada (Lambda + DynamoDB) que el orquestador llama por HTTP + SigV4; ver `services/farmaenlace-mock/README.md` |
 | Catálogo, stock y precios | Simulado (sintético) |
 | SmartClub (socio, cashback, beneficios) | Simulado |
 | Farmacias cercanas | Simulado |

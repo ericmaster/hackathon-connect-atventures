@@ -23,8 +23,9 @@ Guion (Cuidador, cédula sintética `1710034065`): aceptar → reposición + «�
 | Claude Haiku 4.5 (Bedrock); GLiNER2.5-multi-Decide (Lambda) | Catálogo, stock, precios; SmartClub; farmacias; cupones |
 | Transcribe streaming `es-US` + Polly (Lupe) | Identidad; CRM / insights |
 | Validación módulo 10; admin read-only | Pedidos / factura **SIMULADA**; hand-off |
+| Llamadas HTTP + SigV4 servidor a servidor, como en producción | API simulada de Farmaenlace (7 servicios, DynamoDB); farmacias con nombres/direcciones públicas de Quito |
 
-AWS es la única API externa.
+AWS es la única API externa. API simulada de Farmaenlace: [`services/farmaenlace-mock/README.md`](services/farmaenlace-mock/README.md).
 
 ## Arquitectura
 
@@ -37,7 +38,8 @@ flowchart LR
     NLU --> GR["Guardrails"] --> DSP["Dispatcher determinista"]
     DSP --> LLM["Claude Haiku 4.5 (Bedrock) → A2UI v0.9"] --> VAL["Validación de forma (1 reintento, fail closed)"]
   end
-  DSP <--> DDB[("DynamoDB: mocks de 7 servicios Farmaenlace")]
+  DSP -->|"HTTP + SigV4"| FE["API simulada de Farmaenlace (Lambda, 7 servicios)"]
+  FE <--> DDB[("DynamoDB")]
   VAL -->|"A2UI JSONL"| PWA
   PWA -->|"URL prefirmada"| STT["Transcribe streaming es-US"]
   PWA --> TTS["Polly (Lupe)"]
