@@ -7,6 +7,7 @@ BRANCH="${AMPLIFY_BRANCH:-main}"
 export AWS_REGION="${AWS_REGION:-us-east-1}"
 export PATH="$HOME/.nvm/versions/node/v24.21.0/bin:$PATH"
 
+[ -f .env ] || cp .env.example .env   # fresh clone: public IDs/URL only (no secrets)
 npm run build
 ZIP="$(mktemp -d)/build.zip"
 (cd build && python3 -c 'import os,sys,zipfile

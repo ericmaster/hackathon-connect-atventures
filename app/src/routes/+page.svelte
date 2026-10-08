@@ -5,7 +5,8 @@
 	import { parseMessages } from '#lib/a2ui/surfaces.svelte.js';
 	import type { A2uiAction } from '#lib/a2ui/types.js';
 	import { pickTransport, fakeTransport, type Transport } from '#lib/api/index.js';
-	import { toActionBody, type FvResponse } from '#lib/api/transport.js';
+	import { toActionBody, SessionLostError, type FvResponse } from '#lib/api/transport.js';
+	import { clearAuth } from '#lib/api/auth.js';
 	import { FV_CACHE_KEY, fakeTranscript } from '#lib/api/fake.js';
 	import { fakeVoice, loadVoice, setFakePhrase, type VoiceClient } from '#lib/voice-client.js';
 
@@ -34,6 +35,7 @@
 	let list: HTMLElement;
 	let ac: AbortController | null = null;
 	let k = 0;
+	let pendingVoice = ''; // frase dicha mientras pensaba: se envía al terminar
 	let gen = 0; // generación de petición: reset/start invalidan respuestas pendientes
 
 	const simulated = $derived(transport.kind === 'fake' || mode === 'simulado');
@@ -53,13 +55,32 @@
 		const g = ++gen;
 		busy = true;
 		try {
-			const res = await transport.start();
+			let res: FvResponse;
+			try {
+				res = await transport.start();
+			} catch (e) {
+				if (transport.kind !== 'http' || g !== gen) throw e;
+				clearAuth(); // identidad invitada/Cognito fallida: identidad nueva y un reintento
+				res = await transport.start();
+			}
 			if (g === gen) handle(res);
 		} catch (e) {
 			startError = `No pude conectar con la API (${(e as Error).message}).`;
 		} finally {
 			if (g === gen) busy = false;
 		}
+	}
+
+	/** 403 / sesión perdida: limpiar identidad guardada, nueva sesión (start reintenta una vez; si falla, Reintentar / modo simulado). */
+	async function relogin() {
+		clearAuth();
+		sessionId = null;
+		entries = [];
+		store.clear();
+		senior = false;
+		pendingVoice = '';
+		entries.push({ key: k++, kind: 'error', text: 'Tu sesión expiró. Empecemos de nuevo; no se hizo ningún cambio.' });
+		await start();
 	}
 
 	async function useFake() {
@@ -89,11 +110,13 @@
 		const g = gen;
 		busy = true;
 		const ctl = (ac = new AbortController());
+		let lost = false;
 		try {
 			const res = await fn(ctl.signal);
 			if (g === gen) handle(res); // respuesta de antes de Reiniciar: se descarta
 		} catch (e) {
-			if (g === gen && (e as Error).name !== 'AbortError')
+			if (g === gen && e instanceof SessionLostError) lost = true;
+			else if (g === gen && (e as Error).name !== 'AbortError')
 				entries.push({ key: k++, kind: 'error', text: 'Uy, no pude responder. Intenta de nuevo. No se hizo ningún cambio.' });
 		} finally {
 			if (g === gen) {
@@ -101,6 +124,12 @@
 				ac = null;
 				scrollToLast();
 			}
+		}
+		if (lost) return relogin();
+		if (g === gen && pendingVoice) {
+			const p = pendingVoice;
+			pendingVoice = '';
+			send(p);
 		}
 	}
 
@@ -131,7 +160,9 @@
 				(f) => {
 					listening = false;
 					partial = '';
-					if (f.trim()) send(f);
+					if (!f.trim()) return;
+					if (busy) pendingVoice = f; // no se pierde: se envía al terminar la respuesta
+					else send(f);
 				}
 			);
 		} catch (e) {
@@ -149,6 +180,7 @@
 		voice.stopListening();
 		listening = false;
 		partial = '';
+		pendingVoice = '';
 		entries = [];
 		store.clear();
 		input = '';
@@ -165,6 +197,11 @@
 			if (g === gen) startError = 'No pude reiniciar la sesión.';
 		} finally {
 			if (g === gen) busy = false;
+		}
+		if (g === gen && startError && transport.kind === 'http') {
+			clearAuth(); // p. ej. 403 en /demo/reset: identidad + sesión nuevas
+			sessionId = null;
+			await start();
 		}
 	}
 
@@ -246,11 +283,12 @@
 			<button
 				type="button"
 				onclick={mic}
+				disabled={busy && !listening}
 				aria-label={listening ? 'Dejar de escuchar' : 'Hablar'}
 				aria-pressed={listening}
 				class="flex size-20 shrink-0 items-center justify-center rounded-full text-white shadow-mic ring-8 transition {listening
 					? 'animate-pulse bg-secondary ring-secondary/20'
-					: 'bg-primary-strong ring-primary/25 active:scale-95'}"
+					: 'bg-primary-strong ring-primary/25 active:scale-95'} disabled:opacity-40 disabled:shadow-none"
 			>
 				<svg viewBox="0 0 24 24" class="size-10" fill="currentColor" aria-hidden="true">
 					<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z" />
@@ -258,7 +296,7 @@
 			</button>
 			<div class="min-w-0 flex-1">
 				<p class="mb-1 text-[13px] font-semibold text-muted">
-					{listening ? 'Te escucho…' : 'Toca para hablar'}{voice.simulated ? ' (voz simulada)' : ''}
+					{listening ? 'Te escucho…' : busy ? 'Espera un momento…' : 'Toca para hablar'}{voice.simulated ? ' (voz simulada)' : ''}
 				</p>
 				<form class="flex gap-2" onsubmit={(ev) => (ev.preventDefault(), send(input))}>
 					<input

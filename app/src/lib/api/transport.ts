@@ -24,3 +24,8 @@ export interface Transport {
 export function toActionBody(a: A2uiAction): ActionBody {
 	return { name: a.name, context: a.context, surfaceId: a.surfaceId, sourceComponentId: a.sourceComponentId, timestamp: a.timestamp };
 }
+
+/** La sesión/identidad ya no sirve (403 forbidden o sesión no encontrada): hay que pedir identidad y sesión nuevas. */
+export class SessionLostError extends Error {
+	override name = 'SessionLostError';
+}

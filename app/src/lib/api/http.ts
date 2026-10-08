@@ -1,6 +1,6 @@
 // Transporte http: API Gateway (IAM) firmado con SigV4 vía Cognito Identity Pool (ver auth.ts y CONTRACT.md).
 import { API_URL, signedFetch } from './auth.js';
-import type { ActionBody, FvResponse, Transport } from './transport.js';
+import { SessionLostError, type ActionBody, type FvResponse, type Transport } from './transport.js';
 
 async function post(path: string, body: unknown, signal?: AbortSignal): Promise<FvResponse> {
 	const r = await signedFetch(API_URL + path, {
@@ -15,6 +15,9 @@ async function post(path: string, body: unknown, signal?: AbortSignal): Promise<
 	} catch {
 		/* sin cuerpo JSON */
 	}
+	// 403 (identidad distinta / firma rechazada, ya reintentada en signedFetch) o sesión borrada: el shell re-crea identidad + sesión.
+	if (r.status === 403 || (r.status === 404 && data?.error?.code === 'not_found'))
+		throw new SessionLostError(`API ${path} → ${r.status}`);
 	// Errores 4xx/5xx traen la misma forma + error; si hay surface la mostramos (p.ej. stale_revision re-renderiza).
 	if (data && (r.ok || (data.messages && data.sessionId))) return data;
 	throw new Error(`API ${path} → ${r.status}`);
