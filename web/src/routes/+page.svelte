@@ -5,12 +5,23 @@
 	import Cupon from '#lib/cards/Cupon.svelte';
 	import type { Card as CardT } from '#lib/cards/types.js';
 	import { respond, MOCK_TRANSCRIPT } from '#lib/mock/respond.js';
+	import { SurfaceStore, parseMessages } from '#lib/a2ui/surfaces.svelte.js';
+	import SurfaceView from '#lib/a2ui/Surface.svelte';
+	import type { A2uiAction } from '#lib/a2ui/types.js';
+	import { useLive, httpTransport } from '#lib/api/index.js';
+	import { toActionBody, SessionLostError, type FvResponse } from '#lib/api/transport.js';
+	import { clearAuth } from '#lib/api/auth.js';
 
 	const CHIPS = ['Algo para la gripe', 'Farmacia más cercana con stock', 'Mis cupones SmartClub', 'Reponer mis productos frecuentes'];
 	const BRANDS = ['Medicity', 'Farmacias Económicas', 'Wellderma', 'Ambiente', 'Mascotas', 'BYD'];
+	const PAST_CONSENT = new Set(['consulta', 'productos', 'farmacia', 'resumen', 'facturacion', 'confirmacion']);
+
+	const live = useLive();
+
+	type LiveEntry = { key: number; kind: 'user' | 'error' | 'surface'; text?: string; id?: string };
 
 	let input = $state('');
-	let prompt = $state(''); // última pregunta
+	let prompt = $state(''); // última pregunta (demo)
 	let phase: 'idle' | 'thinking' | 'streaming' | 'done' = $state('idle');
 	let text = $state('');
 	let cards: CardT[] = $state([]);
@@ -20,8 +31,24 @@
 	let results: HTMLElement | undefined = $state();
 	let heroForm: HTMLElement | undefined = $state();
 	let headerH = $state(64);
-	let stuck = $state(false); // barra compacta fija bajo el header cuando el prompt del hero sale de vista
+	let stuck = $state(false);
 	let run = 0;
+
+	// Live mode state
+	const store = new SurfaceStore();
+	let entries: LiveEntry[] = $state([]);
+	let sessionId: string | null = null;
+	let revision = 0;
+	let fsmState = $state('');
+	let busy = $state(false);
+	let pending: string | null = null;
+	let liveError = $state('');
+	let ac: AbortController | null = null;
+	let k = 0;
+	let gen = 0;
+
+	const latestSurface = $derived([...entries].reverse().find((e) => e.kind === 'surface')?.id);
+	const showResults = $derived(live ? entries.length > 0 || busy || !!liveError : phase !== 'idle');
 
 	const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -48,8 +75,121 @@
 		if (q) ask(q);
 	});
 
+	function handleLive(res: FvResponse) {
+		if (res.sessionId) sessionId = res.sessionId;
+		if (typeof res.revision === 'number') revision = res.revision;
+		if (res.state) fsmState = res.state;
+		const msgs = parseMessages(res.messages);
+		const { created, deleted } = store.apply(msgs);
+		if (deleted.length) entries = entries.filter((e) => !(e.kind === 'surface' && deleted.includes(e.id!)));
+		for (const id of created) entries.push({ key: k++, kind: 'surface', id });
+		if (msgs.some((m) => m.createSurface?.theme?.senior === true || m.createSurface?.theme?.fontScale === 'large')) senior = true;
+		if (res.error) liveError = res.error.message;
+		else liveError = '';
+	}
+
+	async function liveCall(fn: (signal: AbortSignal) => Promise<FvResponse>) {
+		const g = gen;
+		busy = true;
+		liveError = '';
+		const ctl = (ac = new AbortController());
+		try {
+			let res: FvResponse;
+			try {
+				res = await fn(ctl.signal);
+			} catch (e) {
+				if (!(e instanceof SessionLostError) || g !== gen) throw e;
+				// Identidad/sesión perdida: limpiar y nueva sesión una vez (como la PWA).
+				clearAuth();
+				sessionId = null;
+				revision = 0;
+				fsmState = '';
+				entries = [];
+				store.clear();
+				res = await httpTransport.start();
+			}
+			if (g !== gen) return;
+			handleLive(res);
+			// Tras consentimiento → consulta: enviar la pregunta pendiente automáticamente.
+			while (pending && sessionId && PAST_CONSENT.has(fsmState) && g === gen) {
+				const q = pending;
+				pending = null;
+				res = await httpTransport.turn(sessionId, q, ctl.signal);
+				if (g !== gen) return;
+				handleLive(res);
+			}
+			await tick();
+			const els = results?.querySelectorAll('[data-entry]');
+			(els?.length ? els[els.length - 1] : results)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		} catch (e) {
+			if (g === gen && (e as Error).name !== 'AbortError') {
+				liveError = 'Uy, no pude responder. Intenta de nuevo.';
+			}
+		} finally {
+			if (g === gen) {
+				busy = false;
+				ac = null;
+			}
+		}
+	}
+
+	async function askLive(q: string) {
+		q = q.trim();
+		if (!q || busy) return;
+		input = '';
+		entries.push({ key: k++, kind: 'user', text: q });
+		await tick();
+		results?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+		if (!sessionId) {
+			pending = q;
+			await liveCall(() => httpTransport.start());
+			return;
+		}
+		if (PAST_CONSENT.has(fsmState)) {
+			await liveCall((signal) => httpTransport.turn(sessionId!, q, signal));
+			return;
+		}
+		// Pre-consulta (cedula / consentimiento): digits → turn as cédula; else keep pending
+		if (fsmState === 'cedula' && /^\d+$/.test(q.replace(/\s/g, ''))) {
+			await liveCall((signal) => httpTransport.turn(sessionId!, q, signal));
+			return;
+		}
+		pending = q;
+	}
+
+	function onAction(a: A2uiAction) {
+		if (busy || !sessionId) return;
+		liveCall((signal) => httpTransport.action(sessionId!, revision, toActionBody(a), signal));
+	}
+
+	async function resetLive() {
+		ac?.abort();
+		const g = ++gen;
+		ac = null;
+		entries = [];
+		store.clear();
+		pending = null;
+		liveError = '';
+		senior = false;
+		busy = true;
+		try {
+			const res = await httpTransport.reset(sessionId);
+			if (g === gen) handleLive(res);
+		} catch {
+			if (g === gen) {
+				sessionId = null;
+				revision = 0;
+				fsmState = '';
+				liveError = 'Uy, no pude responder. Intenta de nuevo.';
+			}
+		} finally {
+			if (g === gen) busy = false;
+		}
+	}
+
 	// Simula streaming: pensando → texto palabra a palabra → tarjetas escalonadas.
-	async function ask(q: string) {
+	async function askDemo(q: string) {
 		q = q.trim();
 		if (!q) return;
 		const id = ++run;
@@ -79,7 +219,16 @@
 		phase = 'done';
 	}
 
+	function ask(q: string) {
+		if (live) return askLive(q);
+		return askDemo(q);
+	}
+
 	async function mic() {
+		if (live) {
+			(document.querySelector('input[aria-label="Escribe tu pregunta"]:not([tabindex="-1"])') as HTMLInputElement | null)?.focus();
+			return;
+		}
 		if (listening || phase === 'thinking' || phase === 'streaming') return;
 		listening = true; // MOCK: sin STT real todavía
 		await wait(1300);
@@ -101,12 +250,13 @@
 		placeholder={listening ? 'Te escucho…' : '¿Qué necesitas hoy?'}
 		aria-label="Escribe tu pregunta"
 		tabindex={big && stuck ? -1 : 0}
-		class="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted {big ? 'py-3 text-lg md:text-xl' : 'py-1.5 text-lg'}"
+		disabled={live && busy}
+		class="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted disabled:opacity-60 {big ? 'py-3 text-lg md:text-xl' : 'py-1.5 text-lg'}"
 	/>
 	<button
 		type="button"
 		onclick={mic}
-		aria-label={listening ? 'Escuchando' : 'Hablar (demo)'}
+		aria-label={live ? 'Escribir' : listening ? 'Escuchando' : 'Hablar (demo)'}
 		aria-pressed={listening}
 		class="grid shrink-0 place-items-center rounded-full text-white transition {big ? 'size-12 ring-4 md:size-14' : 'size-11 ring-2'} {listening
 			? 'animate-pulse bg-secondary ring-secondary/20'
@@ -116,7 +266,7 @@
 			<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z" />
 		</svg>
 	</button>
-	<button type="submit" disabled={!input.trim()} class="hidden shrink-0 rounded-full bg-ink px-6 font-semibold text-white disabled:opacity-40 sm:block {big ? 'h-12 md:h-14' : 'h-11'}">
+	<button type="submit" disabled={!input.trim() || (live && busy)} class="hidden shrink-0 rounded-full bg-ink px-6 font-semibold text-white disabled:opacity-40 sm:block {big ? 'h-12 md:h-14' : 'h-11'}">
 		Preguntar
 	</button>
 {/snippet}
@@ -131,7 +281,11 @@
 			</span>
 			<div class="min-w-0 flex-1 md:flex-none">
 				<p class="text-lg leading-tight font-bold">Farmacéutico Virtual</p>
-				<span class="inline-block rounded-full bg-cream px-2.5 py-0.5 text-xs font-semibold text-secondary">Demo · datos simulados</span>
+				{#if live}
+					<span class="inline-block rounded-full bg-success-strong px-2.5 py-0.5 text-xs font-semibold text-white">IA real · datos sintéticos</span>
+				{:else}
+					<span class="inline-block rounded-full bg-cream px-2.5 py-0.5 text-xs font-semibold text-secondary">Demo · datos simulados</span>
+				{/if}
 			</div>
 			<nav class="ml-auto hidden items-center gap-6 font-semibold text-muted md:flex">
 				<a href="#como-funciona" class="hover:text-primary-strong">Cómo funciona</a>
@@ -191,36 +345,72 @@
 
 			<!-- UI generada -->
 			<div bind:this={results} class="relative mx-auto max-w-6xl scroll-mt-40" aria-live="polite">
-				{#if phase !== 'idle'}
+				{#if showResults}
 					<div class="mt-10 rounded-[2rem] border border-line bg-card/60 p-4 md:p-6" in:fade>
-						<div class="flex flex-wrap items-center gap-2">
-							<span class="rounded-bubble rounded-br-md bg-primary-strong px-4 py-2 text-lg text-white">{prompt}</span>
-							<span class="text-xs font-semibold tracking-wider text-muted uppercase">UI generada · respuesta simulada</span>
-						</div>
-						{#if phase === 'thinking'}
-							<div class="mt-4 grid gap-3 md:grid-cols-3" aria-label="Generando">
-								{#each [0, 1, 2] as i (i)}<div class="h-40 animate-pulse rounded-card bg-cream"></div>{/each}
+						{#if live}
+							<div class="mb-4 flex flex-wrap items-center gap-2">
+								<span class="text-xs font-semibold tracking-wider text-muted uppercase">UI generada por IA</span>
+								<button
+									type="button"
+									onclick={resetLive}
+									disabled={busy}
+									class="ml-auto rounded-full border-2 border-secondary px-3 py-1 text-sm font-bold text-secondary disabled:opacity-40"
+									data-testid="reset"
+								>
+									↺ Reiniciar
+								</button>
+							</div>
+							<div class="space-y-3">
+								{#each entries as e (e.key)}
+									{#if e.kind === 'surface' && store.surfaces[e.id!]}
+										<div data-entry class="max-w-3xl scroll-mt-40 transition-opacity {e.id === latestSurface && !busy ? '' : 'opacity-60'}" inert={e.id !== latestSurface || busy}>
+											<SurfaceView surface={store.surfaces[e.id!]} {onAction} />
+										</div>
+									{:else if e.kind === 'user'}
+										<div class="ml-auto w-fit max-w-[85%] rounded-bubble rounded-br-md bg-primary-strong px-4 py-2.5 text-lg leading-snug text-white">{e.text}</div>
+									{:else if e.kind === 'error'}
+										<div class="w-fit max-w-[85%] rounded-bubble rounded-bl-md border-2 border-danger bg-card px-4 py-2.5 text-lg" role="alert">{e.text}</div>
+									{/if}
+								{/each}
+								{#if busy}
+									<div class="mt-2 grid gap-3 md:grid-cols-3" aria-label="Generando" role="status" data-testid="busy">
+										{#each [0, 1, 2] as i (i)}<div class="h-40 animate-pulse rounded-card bg-cream"></div>{/each}
+									</div>
+								{/if}
+								{#if liveError && !busy}
+									<div class="w-fit max-w-[85%] rounded-bubble rounded-bl-md border-2 border-danger bg-card px-4 py-2.5 text-lg" role="alert">{liveError}</div>
+								{/if}
 							</div>
 						{:else}
-							<p class="mt-4 max-w-3xl rounded-bubble rounded-bl-md border border-line bg-card px-4 py-3 text-lg leading-snug">
-								{text}{#if phase === 'streaming' && cards.length === 0}<span class="ml-0.5 inline-block h-5 w-1.5 animate-pulse bg-primary-strong align-middle"></span>{/if}
-							</p>
-							{#if cards.length}
-								<div class="mt-4 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
-									{#each cards as c, i (i)}
-										<div class={c.kind === 'alerta' ? 'md:col-span-2 lg:col-span-2' : ''} in:fly={{ y: 16, duration: 300 }}>
-											<Card card={c} />
-										</div>
-									{/each}
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="rounded-bubble rounded-br-md bg-primary-strong px-4 py-2 text-lg text-white">{prompt}</span>
+								<span class="text-xs font-semibold tracking-wider text-muted uppercase">UI generada · respuesta simulada</span>
+							</div>
+							{#if phase === 'thinking'}
+								<div class="mt-4 grid gap-3 md:grid-cols-3" aria-label="Generando" data-testid="busy">
+									{#each [0, 1, 2] as i (i)}<div class="h-40 animate-pulse rounded-card bg-cream"></div>{/each}
 								</div>
-							{/if}
-							{#if follow.length}
-								<div class="mt-4 flex flex-wrap gap-2" in:fade>
-									<span class="self-center text-sm font-semibold text-muted">También puedes:</span>
-									{#each follow as f (f)}
-										<button type="button" onclick={() => ask(f)} class="min-h-11 rounded-full border border-primary-strong px-4 py-2 font-semibold text-primary-strong hover:bg-cream">{f}</button>
-									{/each}
-								</div>
+							{:else}
+								<p class="mt-4 max-w-3xl rounded-bubble rounded-bl-md border border-line bg-card px-4 py-3 text-lg leading-snug">
+									{text}{#if phase === 'streaming' && cards.length === 0}<span class="ml-0.5 inline-block h-5 w-1.5 animate-pulse bg-primary-strong align-middle"></span>{/if}
+								</p>
+								{#if cards.length}
+									<div class="mt-4 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+										{#each cards as c, i (i)}
+											<div class={c.kind === 'alerta' ? 'md:col-span-2 lg:col-span-2' : ''} in:fly={{ y: 16, duration: 300 }}>
+												<Card card={c} />
+											</div>
+										{/each}
+									</div>
+								{/if}
+								{#if follow.length}
+									<div class="mt-4 flex flex-wrap gap-2" in:fade>
+										<span class="self-center text-sm font-semibold text-muted">También puedes:</span>
+										{#each follow as f (f)}
+											<button type="button" onclick={() => ask(f)} class="min-h-11 rounded-full border border-primary-strong px-4 py-2 font-semibold text-primary-strong hover:bg-cream">{f}</button>
+										{/each}
+									</div>
+								{/if}
 							{/if}
 						{/if}
 					</div>
