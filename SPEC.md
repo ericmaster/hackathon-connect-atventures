@@ -1,7 +1,8 @@
 # Farmacéutico Virtual: especificación de producto
 
 > Estado: borrador del 8 oct 2026. **Decidido** = acordado con Eric. **Propuesta** = falta que Eric lo confirme. **Por definir** = no está decidido. **En prueba** = se está probando.
-> Fuentes: `PITCH.md`, `services/dashboard/canvas.json`, `services/dashboard/value-prop.json` y `docs/DRIVE-SUMMARY.md`.
+> Fuentes: `PITCH.md`, `services/dashboard/canvas.json`, `services/dashboard/value-prop.json` y `docs/DRIVE-SUMMARY.md`. Requisitos SRI: fuentes oficiales en §7.4.
+> Actualizado 8 oct 12:06 con la revisión de Eric (§19).
 
 ## 1. Resumen
 El Farmacéutico Virtual es un asistente de Farmaenlace al que le hablas o le escribes y que **arma en el momento la pantalla que necesitas**: productos, la farmacia más cercana y tu beneficio SmartClub, sin catálogos ni formularios. Está pensado para los clientes que hoy evitan las apps y la web. Entran por un QR en la farmacia que les da un beneficio y se identifican solo con su cédula. Los datos de facturación se piden una sola vez, justo antes de la primera compra.
@@ -50,10 +51,10 @@ Asumimos que el CRM de Farmaenlace ya tiene insights por cliente. El mock los in
 
 ### 6.1 UI generativa adaptada al arquetipo (decidido, incluido)
 La UI no solo cambia las sugerencias: **se adapta al arquetipo** (letra, prioridad de voz, cantidad de opciones, tipo de productos). Arquetipos del mock: §6.6.
-**Momento de demo:** la misma pregunta hecha por dos clientes distintos → dos UIs distintas.
+**Momento de demo (decidido 8 oct):** **2 arquetipos contrastantes**; la misma pregunta → dos UIs distintas. Propuesta: Cuidador vs Práctico (los más opuestos de §6.6).
 
 ### 6.2 Reposición proactiva (decidido, incluido)
-Solo por **ritmo de compra** de productos frecuentes; no se infiere ninguna condición. Ej.: lo compra cada mes → ~3 días antes de la fecha esperada, el asistente ofrece reservarlo en su farmacia habitual: "Sueles llevar tu multivitamínico cada mes, ¿te lo reservo en tu farmacia de siempre?". Recompra + adherencia = fidelización. Chat vs push: por definir (§18).
+Solo por **ritmo de compra** de productos frecuentes; no se infiere ninguna condición. Ej.: lo compra cada mes → ~3 días antes de la fecha esperada, el asistente ofrece reservarlo en su farmacia habitual: "Sueles llevar tu multivitamínico cada mes, ¿te lo reservo en tu farmacia de siempre?". Recompra + adherencia = fidelización. **Solo en el chat** (decidido 8 oct; sin push). **Beneficio: doble cashback SmartClub** en la reposición (sintético).
 → UI: tarjeta `SugerenciaPersonalizada` / `Reposicion` con acción de reservar y affordance "¿por qué me sugieres esto?" (§9).
 
 ### 6.3 Volante (flywheel) (decidido, incluido)
@@ -86,13 +87,13 @@ Cada paso indica lo que hace el usuario y, después de "→ UI:", lo que genera 
 
 ### 7.1 Onboarding: QR + cédula (pseudo-FSM guiado por IA)
 La IA conversa, pero una máquina de estados decide el paso y no avanza hasta cumplirlo: `saludo → pedir_cedula → validar → consentimiento → buscar_crm → (confirmar_datos) → listo`.
-1. En la farmacia, el cliente ve un QR con un beneficio por instalar la app. **El beneficio queda abierto: lo define Farmaenlace** (ej. descuento o bonificación en la próxima compra). → UI: ninguna (material físico).
+1. En la farmacia, el cliente ve un QR con un beneficio por instalar la app. **Decidido (8 oct):** cupón de bienvenida que se aplica a la **primera reserva** (monto sintético en el demo; el real lo define Farmaenlace). → UI: ninguna (material físico).
 2. Escanea el QR y se abre la PWA, sin pasar por la tienda de apps. → UI: saludo del Farmacéutico Virtual, botón grande para hablar y la opción de instalar en la pantalla de inicio.
 3. El asistente pide la cédula; el usuario la dice o la escribe. **Es el único dato del onboarding.** → UI: una pregunta y un campo numérico grande (o la captura por voz).
 4. Se valida el dígito verificador (módulo 10) **en el dispositivo** y otra vez **en el backend**. Si falla, la pide de nuevo sin culpar ("¿me la repites?"); al tercer intento ofrece el hand-off. → UI: aviso corto en el mismo campo.
 5. **Consentimiento (mock, §6.5):** un toque/checkbox "Acepto que Farmaenlace use mi historial de compras para darme sugerencias personalizadas". Se guarda booleano + timestamp en el CRM. Sin aceptar, sigue sin personalización. → UI: texto corto + checkbox + "Continuar".
-6. Busca la cédula en el CRM. Si hay datos cruzados, los muestra para confirmar ("¿Eres …?", Sí/No). **El MVP asume que no hay datos cruzados**: este paso se salta.
-7. El beneficio del QR queda asociado a la cédula en SmartClub y se entrega al completar la compra (§7.5). → UI: "Listo, ya tienes tu beneficio" y pasa a la consulta.
+6. Busca la cédula en el CRM. **Sin perfil → se crea un perfil nuevo** (decidido 8 oct). Si hay datos cruzados, los muestra para confirmar ("¿Eres …?", Sí/No). **El MVP asume que no hay datos cruzados**: este paso se salta.
+7. El cupón del QR queda asociado a la cédula en SmartClub y se aplica a la primera reserva (§7.5). → UI: "Listo, ya tienes tu beneficio" y pasa a la consulta.
 
 **Módulo 10 (cédula):** 10 dígitos; provincia 01–24 (30 = registrados en el exterior); tercer dígito < 6; coeficientes 2-1-2-1-2-1-2-1-2 sobre los 9 primeros (si el producto pasa de 9, se resta 9); verificador = (10 − suma mód 10) mód 10. Ejemplo sintético válido: `1710034065`.
 
@@ -106,24 +107,52 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 ### 7.3 Pedido y retiro
 1. El usuario agrega productos. → UI: resumen del pedido (productos, cantidades, total y cashback).
 2. Elige retirar en la farmacia más cercana (u otra). → UI: tarjeta de farmacia con stock, distancia y horario, y botones "Retirar aquí", "Cómo llegar" y "Llamar".
-3. Sin entrega a domicilio.
+3. **Cierre MVP (decidido 8 oct):** reservar y retirar en la farmacia; **se paga al retirar**. Sin entrega a domicilio ni pago en la app (backlog, §17).
+4. **Ninguna acción comercial** (agregar, reservar, facturar) se ejecuta sin pasar los guardrails (§8) y sin **confirmación explícita** del usuario (botón A2UI → `action`).
 
 ### 7.4 Datos de facturación (solo antes del checkout)
-1. Antes de pagar, el asistente pide **solo los datos que falten**, una pregunta a la vez: nombre o razón social, cédula o RUC, email, dirección y teléfono. → UI: una pregunta y un campo grande por dato; al final, una tarjeta para confirmar.
+1. Antes de confirmar la reserva, si el total es ≤ USD 50 el asistente ofrece **"consumidor final"** como opción rápida. Si supera (o el usuario prefiere factura con datos), pide **solo los datos que falten**, una pregunta a la vez: **nombre o razón social, cédula/RUC/pasaporte y email**. No pide dirección ni teléfono. → UI: una pregunta y un campo grande por dato; al final, una tarjeta para confirmar.
 2. Se guardan **de forma permanente en el CRM** y en **caché en el dispositivo**. La próxima vez no se piden.
-3. **Requisitos SRI (verificado):** la factura electrónica exige nombre o razón social e identificación (cédula, RUC o pasaporte) del comprador. Dirección, email y teléfono son opcionales en el comprobante, pero el email sirve para enviar la factura. Se puede facturar a **"consumidor final"** (ID `9999999999999`) solo hasta **USD 50 con IVA**; sobre ese monto hay que identificar al comprador. Desde 2026 una factura a consumidor final no se puede anular, y no sirve para deducir gastos personales (las medicinas son deducibles).
-4. **Decidido:** si el total es ≤ USD 50 con IVA, ofrecer "consumidor final" como opción rápida; si supera, pedir nombre + identificación + email.
+3. **Requisitos SRI del comprador (verificado 8 oct con fuentes oficiales):**
+   - **Obligatorios:** `tipoIdentificacionComprador` (04 RUC, 05 cédula, 06 pasaporte, 07 consumidor final, 08 exterior; se deriva, no se pregunta), `razonSocialComprador` (nombres y apellidos o razón social) e `identificacionComprador`. [F1 p. 13 y 49; F2; F3 art. 19 num. 1]
+   - **Opcionales:** `direccionComprador` ("obligatorio cuando corresponda"; `minOccurs="0"` en el XSD; solo se exige en la factura comercial negociable, Anexo 11, que no aplica). Email y teléfono van en `infoAdicional/campoAdicional`, también opcional. El email sirve para enviar la factura; sin email se entrega el RIDE. [F1 p. 49 y 109; F2; F4 preg. 16]
+   - **Dirección o sector del comprador: NO es obligatorio** → no se agrega a los datos pedidos. El art. 19 no la incluye.
+   - **Consumidor final:** tipo `07`, ID `9999999999999`, leyenda "CONSUMIDOR FINAL"; solo si la transacción **no supera USD 50** y el comprador no necesita sustentar costos o gastos. [F1 p. 13; F3 art. 19 num. 1; F4 preg. 34]
+   - **Desde 1 ene 2026:** una factura a consumidor final transmitida al SRI **no se puede anular** ni modificar con nota de crédito. [F5; F6]
+   - ⚠️ **No confirmado:** (a) que el tope de USD 50 sea "con IVA": la norma dice "la transacción"; usamos el total con IVA (lectura conservadora). (b) Reformas al art. 19 posteriores a la compilación del SRI (RO 496, 9 feb 2024); la FAQ del SRI coincide con USD 50. (c) Que la factura a consumidor final no sirva para deducir gastos personales: se infiere porque no identifica al comprador; no se revisó la fuente.
+   - Fuentes:
+     - F1 Ficha técnica comprobantes electrónicos offline v2.34 (jul 2026): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/f8d9bb36-5632-4f96-b463-b9265b55338c/FICHA%20TE%cc%81CNICA%20COMPROBANTES%20ELECTRO%cc%81NICOS%20ESQUEMA%20OFFLINE%20Versio%cc%81n%202.34.pdf
+     - F2 XSD factura v2.1.0: https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/05546998-6f29-4870-be3b-62650f312a6c/XML%20y%20XSD%20Factura.zip
+     - F3 Reglamento de Comprobantes de Venta, Retención y Documentos Complementarios (art. 19): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/fc9f2c55-fc0d-41d1-a834-797b202b4d11/Reglamento_comprobantes_ventaydc_ultima%20modificacion_09022024.pdf
+     - F4 Preguntas frecuentes facturación electrónica: https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/cef82829-f261-4374-a45c-96adb2c3ace8/Preguntas+frecuentes+facturaci%F3n+electr%F3nica.pdf
+     - F5 Boletín SRI 033 (anulación): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar/142630d3-569f-4cd2-a5a5-58557b7fc342/BOLET%C3%8DN%20033%20-%20SRI%20ESTABLECE%20NUEVAS%20REGLAS%20PARA%20LA%20ANULACI%C3%93N%20DE%20COMPROBANTES%20ELECTR%C3%93NICOS%20COMO%20PARTE%20DE%20SU%20ESTRATEGIA%20DE%20CONTROL.pdf
+     - F6 Res. NAC-DGERCGC25-00000017 (vigencia 1 ene 2026): https://www.sri.gob.ec/o/sri-portlet-biblioteca-alfresco-internet/descargar?id=e98fc8a6-299e-4ea9-8de7-2f6c70dbb4f5&nombre=NAC-DGERCGC25-00000017.pdf
+     - Índice: https://www.sri.gob.ec/web/intersri/facturacion-electronica
+4. **Decidido (única regla):** total ≤ USD 50 con IVA → ofrecer "consumidor final"; si supera → nombre + identificación + email.
 
 ### 7.5 Compra completada
-1. → UI: confirmación del pedido (número, farmacia, hora y código QR de retiro).
-2. → UI: factura (mock, marcada **SIMULADA**).
-3. → UI: cupón o beneficio con el texto "Muéstralo al farmacéutico". El beneficio lo define Farmaenlace.
-4. Cómo se paga está **por definir** (§18).
+1. → UI: confirmación de la reserva (número, farmacia, hora y código QR de retiro).
+2. → UI: factura (mock, marcada **SIMULADA**), **emitida al confirmar** la reserva.
+3. → UI: cupón de bienvenida aplicado (primera reserva) y cashback SmartClub (doble si es reposición), con el texto "Muéstralo al farmacéutico".
+4. **Pago al retirar en la farmacia** (decidido 8 oct). Sin pago en la app (backlog, §17).
 
 ### 7.6 Hand-off a un farmacéutico humano
 1. Está disponible en todo momento. Hay tres disparadores: el usuario lo pide, el producto requiere receta, o aparece un síntoma de alarma (ver §8).
 2. → UI: tarjeta "Habla con un farmacéutico" con la farmacia cercana y los botones Llamar / Cómo llegar. Si hay una señal de alarma, la UI muestra en cambio una **alerta roja** de atención médica urgente (ECU 911).
 3. La conversación queda resumida para que el cliente no tenga que repetir nada. El canal real está por definir; en el demo es simulado.
+
+### 7.7 Casos borde (decidido 8 oct, fallback más simple)
+| Caso | Fallback |
+|---|---|
+| Cédula válida sin perfil CRM | Crear perfil nuevo (§7.1). |
+| Dato desconocido (ubicación, etc.) | El asistente lo pregunta. |
+| Micrófono bloqueado | Pedir que lo habilite; la entrada de texto sigue disponible. |
+| JSON A2UI inválido o throttling de Bedrock | Reintento con backoff exponencial; tras N intentos (propuesta: 3), **fail closed**: mensaje fijo seguro y **ninguna acción ejecutada**. |
+| Cold start de GLiNER | Pings de warm-up antes del demo; por ahora se toleran demoras. |
+
+### 7.8 Reinicio de la conversación (decidido 8 oct)
+- **Demo:** botón "Reiniciar" (solo demo).
+- **Producción:** la conversación se reinicia tras un periodo de inactividad (por definir); se conservan perfil, ítems del carrito y similares.
 
 ## 8. Farmacéutico Virtual: alcance y guardrails
 **Decidido:**
@@ -132,7 +161,7 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 - **Nunca asume ni afirma una condición** (regla dura, §6): sugiere solo por comportamiento ("como sueles llevar X…"); las condiciones probables del CRM solo filtran sugerencias y nunca se verbalizan.
 - Ante un "¿qué tomo para…?", sugiere y recomienda ver a un médico si el problema persiste.
 - Debe ser flexible y no un muro de negativas. Contexto: en la permacrisis de Ecuador, mucha gente no tiene tiempo de ir al médico.
-- **Los guardrails son una capa propia, no solo el prompt.** Corren antes de generar la respuesta, sobre lo que dijo el usuario y sobre los productos que devuelve el catálogo. Detectan síntomas de alarma, pedidos de diagnóstico y medicamentos con receta. Si se activan, la respuesta usa un componente fijo (alerta roja, hand-off) y no la decide el LLM.
+- **Los guardrails son una capa propia, no solo el prompt.** Corren antes de generar la respuesta y **antes de cualquier acción comercial** (que además exige confirmación del usuario, §7.3), sobre lo que dijo el usuario y sobre los productos que devuelve el catálogo. Detectan síntomas de alarma, pedidos de diagnóstico y medicamentos con receta. Si se activan, la respuesta usa un componente fijo (alerta roja, hand-off) y no la decide el LLM.
 
 **Propuesta — confirmar con Eric** (guardrails mínimos que mantienen esa flexibilidad):
 - Solo sugiere productos **OTC / de venta libre** (el catálogo marca venta libre vs receta).
@@ -171,10 +200,12 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 | Señal de alarma | — | `AlertaRoja` (urgencia, ECU 911, hand-off) |
 
 ## 10. IA y voz
-- **Turno:** voz → STT → **GLiNER2.5-Decide** (intención + tool calling contra la API mock) → **guardrails** → **LLM de Bedrock** que genera la respuesta en A2UI → se valida contra el schema → TTS de la frase corta.
-- **GLiNER2.5-Decide** (decidido, **en prueba**): detecta la intención y llama funciones. Alojado en AWS.
-- **LLM de Bedrock** (decidido): solo genera la respuesta en el schema A2UI. El modelo está por definir. **Propuesta:** los pasos fijos del FSM (onboarding, facturación) usan plantillas A2UI sin LLM.
-- **Límite de Bedrock (máx. 1 RPS, decidido):** una pequeña pausa entre llamadas encadenadas a Bedrock y reintentos con backoff exponencial ante throttling. Transcribe y Polly no cuentan para ese límite.
+- **Turno (orden decidido 8 oct):** voz → STT → **GLiNER2.5-multi-Decide** (solo clasifica intención y extrae entidades) → **guardrails** → **dispatcher determinista propio** (solo lecturas a la API mock: catálogo, stock, farmacias, CRM) → **LLM de Bedrock** genera la respuesta en A2UI → se valida contra el schema → TTS de la frase corta. **Acciones comerciales** (agregar, reservar, facturar): solo después de guardrails + **confirmación del usuario** (`action` A2UI), y las ejecuta el dispatcher.
+- **GLiNER2.5-multi-Decide** (decidido, **funciona en Lambda**: contenedor, pesos desde S3): clasifica y extrae; **no** despacha acciones. **Cold start:** pings de warm-up antes del demo; por ahora se toleran demoras.
+- **Dispatch de acciones** (decidido): código determinista propio, no el modelo.
+- **LLM de Bedrock** (decidido): solo genera la respuesta en el schema A2UI, con **temperatura baja**. **Modelo pendiente del benchmark** (corre aparte). Candidatos: **Claude Haiku 4.5**, **Nova 2 Lite** (si está disponible) y **Gemma 3 27B**. Gemini 3.8 Flash **no está en Bedrock** (de Google solo aparecen Gemma 3 4B/12B/27B). **Propuesta:** los pasos fijos del FSM (onboarding, facturación) usan plantillas A2UI sin LLM.
+- **Consistencia (requisito decidido, 8 oct):** no se exigen respuestas idénticas, sí comportamiento consistente. **Suite de pruebas** de los casos más comunes sobre contextos pre-armados (fixtures sintéticos: perfiles, carritos, estados de conversación). Verifica comportamiento, no texto exacto: JSON A2UI válido, componentes correctos, guardrails respetados, ninguna condición verbalizada (§6).
+- **Límite de Bedrock (máx. 1 RPS, decidido):** una pequeña pausa entre llamadas encadenadas a Bedrock y reintentos con backoff exponencial ante throttling o A2UI inválido; tras N intentos, fail closed (§7.7). Transcribe y Polly no cuentan para ese límite.
 - **Voz (decidido, Eric 8 oct 10:38 — lo más simple):**
   - **STT: Amazon Transcribe streaming, `es-US`.** No existe locale ecuatoriano ni es-419; es-US es el locale en español con más funciones (vocabulario personalizado, modelos de lenguaje personalizados, redacción de datos). El vocabulario personalizado (en formato tabla) sirve para nombres de productos. Transcribe Medical solo existe en inglés. Prueba sintética (Polly → streaming): cédula y frase exactas, resultado final ~0,2 s después de terminar el audio; marcas (Buprex, Tempra, Finalín) bien reconocidas. Voxtral (Bedrock) fue más lento y confundió marcas, además de gastar RPS. Nova 2 Sonic es speech-to-speech y no sirve solo para transcribir.
   - **TTS: Amazon Polly, voz Lupe (es-US), motor generative**; Lupe neural si hace falta menos latencia. Alternativa masculina: Pedro.
@@ -189,14 +220,15 @@ Todos los servicios viven detrás de **una sola API mock** con datos sintéticos
 | Inventario | Stock por farmacia |
 | Farmacias | Sucursales, ubicación, horarios |
 | SmartClub / Promociones | Cashback, beneficios, cupón del onboarding |
-| Pedidos | Carrito, reserva y retiro |
+| Pedidos | Carrito, reserva y retiro (pago al retirar) |
 | Facturación | Factura mock |
 
 **Admin liviano (decidido):** UI de solo lectura para revisar todos los registros de cada servicio mock y las últimas llamadas a la API (logs).
 
 ## 12. Componentes del sistema
 - PWA (SvelteKit) con el shell de voz/chat y un **renderer A2UI Svelte mínimo propio** (Basic + catálogo FV).
-- Orquestador conversacional: FSM de onboarding y facturación, GLiNER2.5-Decide, guardrails y LLM A2UI.
+- Orquestador conversacional: FSM de onboarding y facturación, GLiNER2.5-multi-Decide (clasificación/extracción), guardrails, dispatcher determinista de acciones y LLM A2UI.
+- Suite de pruebas de comportamiento con fixtures sintéticos (§10).
 - API mock única (§11) + admin de solo lectura.
 - Voz: Transcribe streaming (URL firmada por el backend; las credenciales nunca van al navegador) y Polly.
 
@@ -206,10 +238,10 @@ La arquitectura de despliegue se diseña después (orden de Eric: diseño de pro
 | Canal | Descripción | Estado |
 |---|---|---|
 | PWA móvil | Prompt + chat + botón grande de audio. Sin formularios. Placeholder desplegado en https://main.d2bloxc35rzfqy.amplifyapp.com (AWS Amplify) | Decidido |
-| Web híbrida | La web clásica más un prompt que genera la UI (referencia: nimblersoft.com) | Decidido |
+| Web híbrida | La web clásica más un prompt que genera la UI (referencia: nimblersoft.com). Visión omnicanal de Eric. Prototipo en https://main.dfsvbpju4hwi2.amplifyapp.com (AWS Amplify) | Decidido (se mantiene, 8 oct) |
 | Punto de venta | QR en la farmacia con beneficio (onboarding, §7.1) | Decidido |
 
-**Stack del placeholder:** SvelteKit 3 + Svelte 5 + Tailwind 4, PWA estática en Amplify.
+**Stack del placeholder:** SvelteKit 3 + Svelte 5 + Tailwind 4, PWA estática en Amplify. PWA y web híbrida desplegadas como mocks.
 
 ## 14. Métricas
 | KPI | Por qué |
@@ -225,12 +257,14 @@ La arquitectura de despliegue se diseña después (orden de Eric: diseño de pro
 Secundaria, tomada del canvas: % de sesiones completadas por voz (inferido). Línea base: retención por marca del deck (por ejemplo, Económicas 63,37% y Medicity 49,34%).
 
 ## 15. Real vs simulado
+Estado al 8 oct.
+
 | Componente | Demo |
 |---|---|
-| LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real** |
-| GLiNER2.5-Decide (AWS) | **Real** (en prueba) |
-| STT (Transcribe) y TTS (Polly) | **Real** (decidido) |
-| Hosting PWA (AWS Amplify) | **Real** |
+| LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real** (modelo pendiente del benchmark, §10) |
+| GLiNER2.5-multi-Decide (AWS Lambda) | **Real**: funciona en Lambda (contenedor, pesos desde S3) |
+| STT (Transcribe) y TTS (Polly) | **Real**: probados |
+| PWA y web híbrida (AWS Amplify) | **Desplegadas** en Amplify como mocks |
 | Admin de solo lectura | **Real**, sobre datos simulados |
 | Catálogo, stock y precios | Simulado (sintético) |
 | SmartClub (socio, cashback, beneficios) | Simulado |
@@ -249,34 +283,43 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
   - Voz: Transcribe streaming `es-US` + Polly Lupe (§10).
   - Renderer A2UI: Svelte mínimo propio (§9).
   - Facturación: "consumidor final" si total ≤ USD 50 c/IVA; si no, nombre + ID + email (§7.4).
-- **Flujo principal:** QR → cédula + consentimiento (§7.1) → hablar → productos + beneficio SmartClub + farmacia cercana (§7.2) → pedido con retiro (§7.3) → facturación (§7.4) → confirmación + factura mock + cupón (§7.5). Personalización / reposición CRM cuando haya perfil y consentimiento (§6).
+  - Cierre: reservar y retirar; pago al retirar; factura mock al confirmar (§7.3, §7.5).
+  - Casos borde: fallback más simple de §7.7.
+- **Demo:** 2 arquetipos contrastantes (§6.1); reposición solo en el chat (§6.2); botón de reinicio solo en el demo (§7.8); GLiNER caliente con warm-up (§10).
+- **Calidad:** temperatura baja + suite de pruebas de comportamiento con fixtures (§10).
+- **Flujo principal:** QR → cédula + consentimiento (§7.1) → hablar → productos + beneficio SmartClub + farmacia cercana (§7.2) → reserva con retiro (§7.3) → facturación (§7.4) → confirmación + factura mock + cupón (§7.5) → pago al retirar. Personalización / reposición CRM cuando haya perfil y consentimiento (§6).
 
 ## 17. Fuera de alcance
 - Diagnóstico médico y venta o sugerencia de medicamentos con receta.
-- Pagos reales, emisión real de facturas al SRI y entrega a domicilio.
+- Pagos reales y emisión real de facturas al SRI.
 - Integraciones reales: SAP, VTEX/Pardux, SmartClub, FarmaPOS, identidad.
 - Cualquier dato real (personal, de salud o de pago). Solo se usan datos sintéticos.
 - Diseño de arquitectura en detalle (va en un documento aparte).
 
+**Backlog (post-MVP, Eric 8 oct):**
+- Integración con pasarela de pago (pago en la app).
+- Entrega a domicilio.
+
 ## 18. Preguntas abiertas
-1. **Pago:** ¿se paga al retirar en la farmacia o hay un pago simulado en la app antes de la factura?
-2. **Modelo de Bedrock para generar A2UI** (§9).
+1. ~~**Pago**~~ **Cerrada (8 oct):** se paga al retirar; factura mock al confirmar (§7.5).
+2. **Modelo de Bedrock para generar A2UI:** pendiente del benchmark. Candidatos: Claude Haiku 4.5, Nova 2 Lite (si está disponible), Gemma 3 27B (§10).
 3. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
 4. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
 5. **Guardrails propuestos en §8:** falta la confirmación de Eric.
 6. **Beneficio cross-marca en el demo:** ¿se muestra o no (por ejemplo, otras marcas SmartClub)?
 7. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
 8. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
-9. **Reposición proactiva en el MVP:** ¿solo en el chat o también push notification de la PWA?
+9. ~~**Reposición proactiva: chat o push**~~ **Cerrada (8 oct):** solo en el chat (§6.2).
+10. **Periodo de inactividad** para reiniciar la conversación en producción (§7.8) y **N** de reintentos antes del fail closed (§7.7).
 
 ## 19. Decisiones registradas
-- **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia).
+- **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia). En el demo: cupón de bienvenida en la primera reserva (8 oct).
 - **Propiedad intelectual:** el código que generemos es nuestro (confirmado por Fernando Rivera, 8 oct).
 - **Onboarding:** pseudo-FSM guiado por IA; solo pide y valida la cédula (módulo 10 en dispositivo + backend) + un toque de consentimiento. El MVP asume que no hay datos cruzados.
 - **Facturación:** los datos se piden solo antes del checkout; se guardan en el CRM y en caché del dispositivo.
 - **"Confirmar":** agregar al pedido y reservar para retirar en la farmacia.
 - **Backend:** una API mock con 7 servicios + admin de solo lectura.
-- **IA:** GLiNER2.5-Decide (intención + tool calling, en prueba) + LLM de Bedrock solo para A2UI; guardrails como capa propia; pausa + backoff por el límite de 1 RPS.
+- **IA:** GLiNER2.5-multi-Decide (clasificación/extracción; el tool calling pasa al dispatcher determinista, 8 oct) + LLM de Bedrock solo para A2UI; guardrails como capa propia; pausa + backoff por el límite de 1 RPS.
 - **UI generativa:** A2UI v0.9.1 con Basic Catalog + catálogo FV.
 - **Voz (Eric 8 oct 10:38):** Transcribe streaming `es-US` + Polly Lupe generative (neural si latencia). Cierra la pregunta abierta.
 - **Renderer A2UI (Eric 8 oct 10:38):** renderer Svelte mínimo propio de los componentes que usamos; sin lib comunitaria. Criterio: lo más simple.
@@ -287,3 +330,15 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - **Regla dura (Eric 8 oct):** nunca asumir ni afirmar una condición; personalizar solo por comportamiento; las condiciones probables solo filtran sugerencias, nunca se verbalizan (§6, §8).
 - **Consentimiento (Eric 8 oct):** mock de un toque en el onboarding, tras validar la cédula; booleano + timestamp en el CRM; sin consentimiento, solo respuestas genéricas (§6.5, §7.1). Cierra la pregunta abierta.
 - **Arquetipos del mock CRM (Eric 8 oct):** Cuidador, Cuidador del hogar, Práctico y Ahorrador inteligente, tomados del deck (Medicity p. 12, Económicas p. 13); detalles sintéticos (§6.6). Cierra la pregunta abierta.
+- **Consistencia (Eric 8 oct 12:06):** LLM de respuesta con temperatura baja; suite de pruebas de comportamiento con fixtures sintéticos (A2UI válido, componentes correctos, guardrails, ninguna condición verbalizada). Requisito (§10).
+- **Cold start (Eric 8 oct 12:06):** GLiNER caliente con warm-up pings antes del demo; se toleran demoras (§10).
+- **Casos borde (Eric 8 oct 12:06):** cédula sin perfil → perfil nuevo; dato desconocido → se pregunta; mic bloqueado → pedir habilitarlo + texto; A2UI inválido o throttling → backoff y fail closed tras N intentos (§7.7).
+- **Reinicio (Eric 8 oct 12:06):** botón solo en el demo; en producción, reinicio por inactividad conservando perfil y carrito (§7.8).
+- **Facturación SRI (Eric 8 oct 12:06):** se mantiene la regla simple; verificado con fuentes del SRI que la dirección/sector del comprador no es obligatoria, así que no se pide (§7.4). Se elimina la contradicción de §7.4.
+- **Cierre MVP (Eric 8 oct 12:06):** reservar y retirar; pago al retirar; factura mock al confirmar. Backlog: pasarela de pago y entrega a domicilio (§7.5, §17). Cierra la pregunta abierta.
+- **Beneficio (Eric 8 oct 12:06):** el cupón de bienvenida del QR aplica a la primera reserva; la reposición da doble cashback SmartClub (sintético) (§6.2, §7.1).
+- **Modelo Bedrock (Eric 8 oct 12:06):** Gemini 3.8 Flash no está en Bedrock; modelo pendiente del benchmark (Claude Haiku 4.5, Nova 2 Lite si está disponible, Gemma 3 27B) (§10).
+- **Orquestación (Eric 8 oct 12:06):** GLiNER solo clasifica/extrae; el dispatch de acciones es código determinista propio; ninguna acción comercial antes de guardrails + confirmación del usuario (§7.3, §10).
+- **Demo (Eric 8 oct 12:06):** 2 arquetipos contrastantes; reposición solo en el chat (cierra la pregunta del push) (§6.1, §6.2).
+- **Web híbrida (Eric 8 oct 12:06):** se mantiene (visión omnicanal); prototipo en https://main.dfsvbpju4hwi2.amplifyapp.com (§13).
+- **Real vs simulado (8 oct):** GLiNER multi-Decide funciona en Lambda; Transcribe/Polly probados; PWA y web desplegadas en Amplify como mocks (§15).
