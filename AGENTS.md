@@ -14,6 +14,7 @@ Idea: "Farmacéutico Virtual" = generative conversational UI omnichannel. Reto: 
 - Build product TODAY in event. No pre-built product. Old projects = reference ok.
 - Declare: own code vs libs vs AI vs 3rd-party data.
 - Demo must say what real vs simulated.
+- IP: our code stays ours (confirmed Fernando Rivera, Oct 8).
 - Synthetic data only. No real personal/health/payment data.
 - Freeze 15:45. Deliver: repo + public deployed demo URL + short PPT (what/why). Finalist pitch 3 min.
 

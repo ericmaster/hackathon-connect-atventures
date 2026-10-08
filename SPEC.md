@@ -44,13 +44,13 @@ Versiones y checklist del método Montero: pestaña **Propuesta de valor** del d
 Cada paso indica lo que hace el usuario y, después de "→ UI:", lo que genera la interfaz.
 
 ### 6.1 Onboarding: QR + cupón (resuelve la paradoja de adopción)
-1. En la farmacia, el cliente ve un QR con la oferta: *"Descuento/bonificación en tu próxima compra solo instalando la app y mostrando tu cupón al farmacéutico, en un solo paso."* → UI: ninguna (material físico).
+1. En la farmacia, el cliente ve un QR con un beneficio o promoción por instalar la app y mostrar su cupón al farmacéutico en un solo paso. **El beneficio queda abierto: lo define Farmaenlace** (ej. descuento o bonificación en la próxima compra). → UI: ninguna (material físico).
 2. Escanea el QR y se abre la PWA, sin pasar por la tienda de apps. → UI: saludo del Farmacéutico Virtual, botón grande para hablar y la opción de instalar en la pantalla de inicio.
 3. Dice o escribe su cédula, que es el único dato que se pide. → UI: un único campo numérico grande o la captura por voz.
 4. Si la cédula ya está en SmartClub o en los sistemas del grupo, el resto se precarga. → UI: tarjeta con los datos para confirmar ("¿Eres …?") y botones Sí/No.
 5. Si no hay datos, el sistema valida con el usuario conversando, una pregunta a la vez y sin formulario. → UI: preguntas cortas con respuesta por voz o con botones.
 6. Se emite el cupón. → UI: tarjeta grande con el código/QR del cupón y el texto "Muéstralo al farmacéutico".
-7. El cliente lo muestra al farmacéutico en un solo paso y el descuento se aplica en la próxima compra.
+7. El cliente lo muestra al farmacéutico en un solo paso y se aplica el beneficio que haya definido Farmaenlace.
 
 En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato personal es real.
 
@@ -129,14 +129,15 @@ Orden de trabajo de Eric: diseño de app → diseño de arquitectura → definir
 - Diseño de arquitectura (va en un documento aparte).
 
 ## 13. Preguntas abiertas
-1. **Recompensa del QR:** ¿qué monto o tipo (descuento, bonificación, cashback)?
-2. **¿Quién financia el cupón?** (Farmaenlace, una marca o un proveedor)
-3. **"Confirmar" en §6.2:** ¿significa reserva para retiro, pedido o solo intención de compra?
-4. **Modelo de voz:** ¿Nova 2 Sonic o Nova 2.5 Sonic (los dos sin probar)? ¿Alcanza con el límite de 1 RPS de Bedrock?
-5. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
-6. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
-7. **Guardrails propuestos en §7:** falta la confirmación de Eric.
-8. **Beneficio cross-marca en el demo:** ¿se muestra o no (por ejemplo, otras marcas SmartClub)?
-9. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
-10. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
-11. **Propiedad intelectual:** el Acuerdo de participación **cede al patrocinador** el código y los resultados creados para el reto, mientras que las Reglas dicen que "sigue siendo tuyo". Los documentos se contradicen; asumir cesión.
+1. **"Confirmar" en §6.2:** ¿significa reserva para retiro, pedido o solo intención de compra?
+2. **Modelo de voz:** ¿Nova 2 Sonic o Nova 2.5 Sonic (los dos sin probar)? ¿Alcanza con el límite de 1 RPS de Bedrock?
+3. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
+4. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
+5. **Guardrails propuestos en §7:** falta la confirmación de Eric.
+6. **Beneficio cross-marca en el demo:** ¿se muestra o no (por ejemplo, otras marcas SmartClub)?
+7. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
+8. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
+
+## 14. Decisiones registradas
+- **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia).
+- **Propiedad intelectual:** el código que generemos es nuestro (confirmado por Fernando Rivera, 8 oct).

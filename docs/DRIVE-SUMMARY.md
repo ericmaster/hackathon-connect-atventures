@@ -51,6 +51,7 @@ Las subcarpetas tienen nombres de equipos, así que podrían ser carpetas de ent
 - Habrá fotos y video; avisa si no quieres salir.
 
 ### ⚠️ Propiedad intelectual: los documentos se contradicen
+- **Resuelto (8 oct):** Fernando Rivera confirmó que mantenemos la propiedad intelectual del código que generemos.
 - **Reglas participantes**: "Lo que construyes sigue siendo tuyo." La empresa solo tiene **derecho de primera conversación (right of first refusal)**; si no muestra interés "en un plazo razonable", quedas libre.
 - **Acuerdo de participación** (5 oct 2026, firma obligatoria antes de competir): "Cada participante **cede al Patrocinador** que le asigne el reto, **en forma exclusiva y para todo el mundo** durante el plazo legal de protección, los derechos patrimoniales… sobre el código, diseños, documentación, presentaciones, prototipos y demás resultados originales creados específicamente para ese reto durante el hackathon". También pide una **licencia no exclusiva, mundial** sobre el material preexistente que incorpores. La cesión no incluye herramientas ni código creado antes, ni componentes de terceros.
 - La información no pública del patrocinador es confidencial.
