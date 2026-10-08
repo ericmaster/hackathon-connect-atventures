@@ -60,7 +60,7 @@ rm -f "$B"/test_*.py
 rm -f /tmp/$FN.zip; python3 -c "import shutil,sys; shutil.make_archive(sys.argv[1], 'zip', sys.argv[2])" /tmp/$FN "$B"
 echo "   $(ls -la /tmp/$FN.zip | awk '{print $5}') bytes: $(ls "$B" | tr '\n' ' ')"
 
-ENV="Variables={FV_TABLE=$TABLE,FV_LLM_MODEL=$MODEL_PROFILE,FV_LLM_TEMPERATURE=0.1,FV_GLINER_FUNCTION=$GLINER,FV_GLINER_TIMEOUT_S=4}"
+ENV="Variables={FV_TABLE=$TABLE,FV_LLM_MODEL=$MODEL_PROFILE,FV_LLM_TEMPERATURE=0.1,FV_GLINER_FUNCTION=$GLINER,FV_GLINER_TIMEOUT_S=4,FV_TRANSCRIBE_VOCABULARY=connect-atv-meds}"
 echo "== Lambda $FN"
 if aws lambda get-function --function-name $FN >/dev/null 2>&1; then
   aws lambda update-function-code --function-name $FN --zip-file fileb:///tmp/$FN.zip >/dev/null
