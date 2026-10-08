@@ -24,6 +24,7 @@
 
 ## Services
 - app (PWA): AWS Amplify app `d2bloxc35rzfqy` (connect-atventures-app, us-east-1, branch main, manual deploy, SPA rewrite rule) → https://main.d2bloxc35rzfqy.amplifyapp.com. Deploy: `app/deploy.sh` (build + zip + create/start-deployment)
+- web (híbrida): AWS Amplify app `dfsvbpju4hwi2` (connect-atventures-web, us-east-1, branch main, manual deploy, SPA rewrite, tag project=connect-atventures) → https://main.dfsvbpju4hwi2.amplifyapp.com. Deploy: `web/deploy.sh`
 - warp watchdog: /usr/local/bin/huayna-warp-watchdog (loop 30s, restarts warp-svc). Log /tmp/warp-watchdog.log. warp-svc died 08:13 Oct 8 once. (no systemd)
 - `start-huayna-services` (runs from ~/.bashrc): sshd, cloudflared, warp-svc, openchamber, artifacts-manager, dashboard
 - artifacts-manager: /workspace/reference/artifacts-manager, prod build `node build/index.js` (HOST=127.0.0.1 PORT=41820 PROTOCOL_HEADER=x-forwarded-proto), started by start-huayna-services if :41820 free. After git pull → `npm run build` + restart. hackathon-connect registered (`bin/artman register`); `artman setup` NOT run (needs Eric ok)
