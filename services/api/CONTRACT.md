@@ -145,7 +145,26 @@ Confirmación: ConfirmacionPedido + FacturaMock (label SIMULADA) + Cupon (if app
 - Pharmacies: 5 in Quito (`MED-UIO-014` Medicity La Carolina etc.). Coupon `BIENVENIDA3` ($3, first reservation).
 - Rx decoys (`requiere_receta`): Oseltamivir 75 mg, Amoxicilina 500 mg → never in ProductCard.
 
-## Deployed values
+## Deployed values (live since 8 oct ~12:40)
 - Region: `us-east-1`
-- API URL: _pending_
-- Identity Pool ID: _pending_
+- API URL: `https://znpzz1wg21.execute-api.us-east-1.amazonaws.com` (stage `$default`, so no path prefix: `POST {API_URL}/session`)
+- Identity Pool ID: `us-east-1:8434d4ed-e17e-4082-ad26-42b59e004e3e` (guest only, classic flow OFF; role `connect-atv-guest-role`
+  can only `execute-api:Invoke` this API)
+- Sign with service `execute-api`, region `us-east-1`. Unsigned → 403 `{"message":"Forbidden"}` from API Gateway (not our shape).
+- Stage throttling: 5 rps, burst 10 → 429 from API Gateway.
+- Browser sketch:
+```js
+import { CognitoIdentityClient, GetIdCommand, GetCredentialsForIdentityCommand } from '@aws-sdk/client-cognito-identity';
+import { AwsClient } from 'aws4fetch';
+const ci = new CognitoIdentityClient({ region: 'us-east-1' });
+const IdentityId = localStorage.fvIdentityId ||= (await ci.send(new GetIdCommand({ IdentityPoolId: POOL }))).IdentityId;
+const { Credentials: c } = await ci.send(new GetCredentialsForIdentityCommand({ IdentityId }));
+const aws = new AwsClient({ accessKeyId: c.AccessKeyId, secretAccessKey: c.SecretKey, sessionToken: c.SessionToken,
+                            service: 'execute-api', region: 'us-east-1' });
+const res = await aws.fetch(`${API_URL}/turn`, { method: 'POST', headers: { 'content-type': 'application/json' },
+                                                 body: JSON.stringify({ sessionId, text }) });
+```
+  (GetId/GetCredentialsForIdentity are unsigned calls; no AWS keys in the bundle. Creds last ~1 h; refresh on 403/expiry.
+  Keep the same IdentityId: the session is bound to it, a different identity gets 403 `forbidden`.)
+- Direct invoke (ops/tests): `aws lambda invoke --function-name connect-atv-orchestrator --cli-binary-format raw-in-base64-out
+  --payload '{"route":"POST /session","body":{}}' out.json` → same body plus `_status`, `_ms`, `_trace`.
