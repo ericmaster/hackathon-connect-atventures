@@ -22,8 +22,9 @@ const P: Record<string, Prod> = {
 };
 const GRIPE = ['FV-1001', 'FV-1002', 'FV-1003', 'FV-9001'];
 const PH = [
-	{ pharmacyId: 'MED-UIO-014', name: 'Medicity La Carolina', distance: '350 m', hours: 'Abierto hasta las 22:00', phone: '+593 2 000 0000', mapsUrl: 'https://maps.google.com/?q=-0.1807,-78.4847' },
-	{ pharmacyId: 'ECO-UIO-031', name: 'Económicas El Batán', distance: '1,2 km', hours: 'Abierto 24 horas', phone: '+593 2 000 0001', mapsUrl: 'https://maps.google.com/?q=-0.1700,-78.4730' }
+	// Igual que services/farmaenlace-mock/data.py (2 más cercanas a la ubicación demo).
+	{ pharmacyId: 'MED-UIO-014', name: 'Medicity Quito CCI', distance: '240 m', hours: 'Abierto hasta las 22:00', phone: '+593 2 000 0014', mapsUrl: 'https://maps.google.com/?q=-0.1757,-78.484' },
+	{ pharmacyId: 'ECO-UIO-003', name: 'Económicas Shyris', distance: '880 m', hours: 'Abierto hasta las 21:00', phone: '+593 2 000 0003', mapsUrl: 'https://maps.google.com/?q=-0.1735,-78.4787' }
 ];
 type Arch = 'cuidador' | 'practico' | null;
 const PROFILES: Record<string, { name: string; arch: Arch; frecuente: string }> = {

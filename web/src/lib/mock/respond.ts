@@ -16,8 +16,8 @@ const P = {
 } satisfies Record<string, Product>;
 
 const card = (p: Product): Card => ({ kind: 'product', ...p });
-const centro: Card = { kind: 'pharmacy', name: 'Farmacia Demo Centro', distance: '350 m', hours: 'Abierto hasta las 22:00', stock: 'Tiene todo lo que buscas' };
-const norte: Card = { kind: 'pharmacy', name: 'Farmacia Demo Norte', distance: '1,2 km', hours: 'Abierto 24 horas', stock: 'Stock parcial · 3 de 4 productos' };
+const centro: Card = { kind: 'pharmacy', name: 'Medicity Quito CCI', distance: '240 m', hours: 'Abierto hasta las 22:00', stock: 'Tiene todo lo que buscas' };
+const norte: Card = { kind: 'pharmacy', name: 'Económicas Shyris', distance: '880 m', hours: 'Abierto hasta las 21:00', stock: 'Stock parcial · 3 de 4 productos' };
 const ASK = 'Antes de llevarlo, cuéntale al farmacéutico si tienes alergias o tomas otros medicamentos. Si persiste, consulta a un médico.';
 
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
