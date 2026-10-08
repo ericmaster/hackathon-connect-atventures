@@ -30,29 +30,12 @@ def _show_internal() -> bool:
 
 def _crm_items():
     """CRM con condiciones probables: ocultas por defecto (CONTRACT), visibles rotuladas si FV_ADMIN_SHOW_INTERNAL=1."""
-    m = _mock()
-    if not _show_internal():
-        return m.admin_list("crm")
-    from store import get_store
-    s = get_store()
-    raw = [dict(x, _pk="SEED") for x in s.query("SEED", "CRM#")] + s.scan_prefix("CRM#")
-    seen, out = set(), []
-    for x in raw:
-        k = (x.get("_pk"), x.get("cedula"))
-        if k in seen:
-            continue
-        seen.add(k)
-        x = dict(x)
-        x[INTERNAL_KEY] = x.pop("condiciones_probables", None) or []
-        out.append(x)
-    return out
+    # Vía la API de Farmaenlace (GET /admin/crm[?interno=1]); ya no lee la tabla directo.
+    return _mock().admin_list("crm", show_internal=_show_internal())
 
 
 def _smartclub_items():
-    # Evita store.query(pk, "") (DynamoDB rechaza begins_with con prefijo vacío).
-    from store import get_store
-    s = get_store()
-    return s.query("PROMO", "CPNDEF#") + s.query("PROMO", "PROMO#") + s.scan_prefix("CPN#")
+    return _mock().admin_list("smartclub")
 
 
 def service_items(service: str) -> list:

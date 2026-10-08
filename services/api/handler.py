@@ -96,6 +96,7 @@ def handler(event, context=None):
         event = json.loads(event)
     status, body, http = 500, None, False
     fsm.TRACE.clear()
+    mock.STATS.clear()
     trace, sid = {}, None
     try:
         method, path, req, http = _parse(event)
@@ -134,4 +135,4 @@ def handler(event, context=None):
 
 
 def _trace_of():
-    return {k: v for k, v in fsm.TRACE.items() if v is not None}
+    return dict({k: v for k, v in fsm.TRACE.items() if v is not None}, **mock.STATS)

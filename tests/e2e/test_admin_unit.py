@@ -27,9 +27,9 @@ class AdminTest(unittest.TestCase):
             st, body = admin.handle(s)
             self.assertEqual(st, 200, s)
             self.assertIsInstance(body["items"], list)
-        self.assertEqual(len(admin.handle("catalogo")[1]["items"]), 24)
+        self.assertEqual(len(admin.handle("catalogo")[1]["items"]), 36)  # catálogo ampliado (farmaenlace-mock)
         self.assertEqual(len(admin.handle("farmacias")[1]["items"]), 5)
-        self.assertEqual(len(admin.handle("crm")[1]["items"]), 3)
+        self.assertEqual(len(admin.handle("crm")[1]["items"]), 5)  # 4 seeds sintéticos + 1 sandbox
 
     def test_list_service_body(self):
         b = admin.list_service("pedidos")

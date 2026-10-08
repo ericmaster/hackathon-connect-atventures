@@ -1,17 +1,46 @@
-"""Los 7 servicios mock (CRM, Catálogo, Inventario, Farmacias, SmartClub/Promociones, Pedidos, Facturación)
-sobre la tabla única. Datos globales de solo lectura + sandbox por sesión (SBX#<sessionId>)."""
+"""Cliente de los 7 servicios de Farmaenlace (CRM, Catálogo, Inventario, Farmacias, SmartClub/Promociones,
+Pedidos, Facturación). Ya NO lee la tabla del orquestador: llama por HTTP + SigV4 a la API mock separada
+`connect-atv-farmaenlace-api` (Lambda `connect-atv-farmaenlace-mock`, tabla `connect-atv-farmaenlace`),
+como lo haría en producción contra los sistemas de Farmaenlace. Ver services/farmaenlace-mock/README.md.
+
+Misma interfaz de funciones que antes (fsm/admin no cambian de forma). Fail-closed: si la API no responde
+(timeout corto) se lanza BackendUnavailable → el turno devuelve error, nunca datos inventados. Solo catálogo
+y farmacias (datos maestros) se sirven desde caché si un refresco falla.
+
+Transporte (FV_FARMAENLACE_URL):
+  https://<api>.execute-api...  → HTTPS + SigV4 (execute-api) con el rol de la Lambda
+  http://127.0.0.1:8765         → HTTP local sin firma (services/farmaenlace-mock/local_server.py)
+  (vacío) + FV_STORE=memory     → "inproc": invoca el handler de la mock en el mismo proceso (tests offline)
+Los logs del orquestador (LOG#) siguen en su propia tabla vía store.py.
+"""
 import copy
 import hashlib
 import json
+import os
 import random
+import threading
 import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode, urlsplit
 
-import fixtures
+import fixtures  # noqa: F401  (COUPONS/CATALOG_ID siguen usándose en fsm)
 from store import ConditionFailed, get_store
 
 EC_TZ = timezone(timedelta(hours=-5))
 _CACHE = {}
+STATS = {}  # por request: llamadas y ms a la API de Farmaenlace (handler lo agrega al trace)
+TIMEOUT_S = float(os.environ.get("FV_FARMAENLACE_TIMEOUT_S", "2.5"))
+REGION = os.environ.get("AWS_REGION", "us-east-1")
+TTL_MASTER = 300   # catálogo / farmacias
+TTL_STOCK = 20     # inventario
+
+
+class BackendUnavailable(Exception):
+    """La API de Farmaenlace no respondió bien (fail-closed)."""
+
+
+class NotFound(Exception):
+    pass
 
 
 def money(x):
@@ -22,73 +51,171 @@ def r2(x):
     return round(x + 1e-9, 2)
 
 
-# ---------- seed ----------
+# ---------- transporte ----------
+_tls = threading.local()
+_INPROC = {}
+
+
+def _base():
+    return os.environ.get("FV_FARMAENLACE_URL", "").rstrip("/")
+
+
+def _inproc():
+    if "app" not in _INPROC:
+        import importlib.util
+        import sys
+        here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "farmaenlace-mock")
+        spec = importlib.util.spec_from_file_location("fe_data", os.path.join(here, "data.py"))
+        d = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(d)
+        sys.modules.setdefault("data", d)
+        spec = importlib.util.spec_from_file_location("fe_app", os.path.join(here, "app.py"))
+        a = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(a)
+        _INPROC["app"] = a
+        if not get_store().query("CAT", "P#"):  # el "sistema externo" siempre está sembrado
+            a.seed()
+    return _INPROC["app"]
+
+
+def _sign(method, url, body, headers):
+    import boto3
+    from botocore.auth import SigV4Auth
+    from botocore.awsrequest import AWSRequest
+    if "sess" not in _INPROC:
+        _INPROC["sess"] = boto3.Session()
+    creds = _INPROC["sess"].get_credentials().get_frozen_credentials()
+    req = AWSRequest(method=method, url=url, data=body, headers=headers)
+    SigV4Auth(creds, "execute-api", REGION).add_auth(req)
+    return dict(req.headers.items())
+
+
+def _conn(u, fresh=False):
+    import http.client
+    key = (u.scheme, u.netloc)
+    pool = getattr(_tls, "pool", None)
+    if pool is None:
+        pool = _tls.pool = {}
+    c = pool.get(key)
+    if c is None or fresh:
+        if c is not None:
+            try:
+                c.close()
+            except Exception:  # noqa: BLE001
+                pass
+        cls = http.client.HTTPSConnection if u.scheme == "https" else http.client.HTTPConnection
+        c = pool[key] = cls(u.netloc, timeout=TIMEOUT_S)
+    return c
+
+
+def _http(method, path, query, payload, headers):
+    base = _base()
+    url = base + path + ("?" + urlencode(query) if query else "")
+    u = urlsplit(url)
+    body = json.dumps(payload, ensure_ascii=False).encode() if payload is not None else None
+    h = dict(headers, Host=u.netloc, Accept="application/json")
+    if body is not None:
+        h["Content-Type"] = "application/json"
+    if u.scheme == "https":
+        h = _sign(method, url, body, h)
+    target = u.path + ("?" + u.query if u.query else "")
+    last = None
+    for attempt in range(2):  # 1 reintento por conexión keep-alive caída (todas las escrituras son idempotentes)
+        c = _conn(u, fresh=attempt > 0)
+        try:
+            c.request(method, target, body=body, headers=h)
+            r = c.getresponse()
+            raw = r.read()
+            return r.status, (json.loads(raw) if raw else {})
+        except (OSError, ValueError, Exception) as e:  # noqa: BLE001
+            last = e
+            if isinstance(e, TimeoutError) or "timed out" in str(e):
+                break
+    raise BackendUnavailable(f"{method} {path}: {type(last).__name__}")
+
+
+def _inproc_call(method, path, query, payload, headers):
+    ev = {"rawPath": path, "queryStringParameters": {k: str(v) for k, v in (query or {}).items()} or None,
+          "headers": headers, "body": json.dumps(payload) if payload is not None else None,
+          "requestContext": {"http": {"method": method}, "authorizer": {"iam": {
+              "userArn": "arn:aws:sts::000000000000:assumed-role/connect-atv-orchestrator-role/inproc"}}}}
+    r = _inproc().handler(ev)
+    return r["statusCode"], json.loads(r["body"])
+
+
+def call(method, path, query=None, body=None, sid=None, idem=None, ok=(200,)):
+    headers = {}
+    if sid:
+        headers["x-sandbox-id"] = sid
+    if idem:
+        headers["idempotency-key"] = idem
+    t0 = time.time()
+    try:
+        if _base():
+            st, js = _http(method, path, query, body, headers)
+        elif os.environ.get("FV_STORE") == "memory":
+            st, js = _inproc_call(method, path, query, body, headers)
+        else:
+            raise BackendUnavailable("FV_FARMAENLACE_URL no configurada")
+    finally:
+        ms = int((time.time() - t0) * 1000)
+        STATS["fe_calls"] = STATS.get("fe_calls", 0) + 1
+        STATS["fe_ms"] = STATS.get("fe_ms", 0) + ms
+    if st == 404 and 404 not in ok:
+        raise NotFound(path)
+    if st not in ok:
+        raise BackendUnavailable(f"{method} {path} -> {st} {(js.get('error') or {}).get('code', '')}")
+    return st, js
+
+
+def _cached(key, ttl, fn):
+    hit = _CACHE.get(key)
+    if hit and time.time() - hit[0] < ttl:
+        return hit[1]
+    try:
+        v = fn()
+    except BackendUnavailable:
+        if hit:  # datos maestros: caché vencida mejor que nada
+            return hit[1]
+        raise
+    _CACHE[key] = (time.time(), v)
+    return v
+
+
+# ---------- seed (la mock se siembra sola en su deploy; aquí solo en tests/local) ----------
 def seed(store=None):
-    s = store or get_store()
-    for p in fixtures.PRODUCTS:
-        s.put("CAT", "P#" + p["sku"], p)
-    for ph in fixtures.PHARMACIES:
-        s.put("PHARM", "PH#" + ph["pharmacyId"], ph)
-    for pr in fixtures.PROFILES:
-        s.put("SEED", "CRM#" + pr["cedula"], pr)
-    for k, c in fixtures.COUPONS.items():
-        s.put("PROMO", "CPNDEF#" + k, dict(c, qr=k))
-    for p in fixtures.PROMOS:
-        s.put("PROMO", "PROMO#" + p["id"], p)
     _CACHE.clear()
-    return {"products": len(fixtures.PRODUCTS), "pharmacies": len(fixtures.PHARMACIES), "profiles": len(fixtures.PROFILES)}
+    if not _base() and os.environ.get("FV_STORE") == "memory":
+        return _inproc().seed()
+    return call("GET", "/health")[1]
 
 
 # ---------- Catálogo ----------
 def catalog():
-    if "cat" not in _CACHE:
-        items = get_store().query("CAT", "P#") or copy.deepcopy(fixtures.PRODUCTS)
-        _CACHE["cat"] = {p["sku"]: p for p in items}
-    return _CACHE["cat"]
+    return _cached("cat", TTL_MASTER, lambda: {p["sku"]: p for p in call("GET", "/catalogo/productos")[1]["items"]})
 
 
 def product(sku):
     return catalog().get(str(sku or ""))
 
 
-def _norm(t):
-    import unicodedata
-    t = unicodedata.normalize("NFD", str(t).lower())
-    return "".join(c for c in t if unicodedata.category(c) != "Mn")
-
-
-STOP = set("para algo tienen tiene quiero necesito tengo como unos unas los las del con por mejor favor busco hay venden "
-           "dame deme puede puedes ayuda ayudame que cual cuanto cuesta mucho poco estoy esta este esto eso alguna alguno "
-           "buenas buenos dias tardes noches hola gracias sirve sirva tomar tomo".split())
-
-
 def search_products(terms, include_rx=True, limit=6):
-    """Búsqueda por tags/nombre. Devuelve productos ordenados por coincidencias."""
-    words = set()
-    for t in terms or []:
-        for w in _norm(t).replace(",", " ").split():
-            if len(w) >= 3 and w not in STOP:
-                words.add(w)
-                if w.endswith("s") and len(w) > 4:
-                    words.add(w[:-1])
-    scored = []
-    for p in catalog().values():
-        if p.get("requiere_receta") and not include_rx:
-            continue
-        hay = set(p["tags"]) | set(_norm(p["name"]).split())
-        sc = sum(1 for w in words if w in hay or (len(w) >= 5 and any(h.startswith(w) for h in hay)))
-        if sc:
-            scored.append((sc, p["sku"], p))
-    scored.sort(key=lambda x: (-x[0], -x[2].get("boost", 0), x[1]))
-    return [copy.deepcopy(p) for _, _, p in scored[:limit]]
+    """Búsqueda en el catálogo de Farmaenlace (GET /catalogo/productos?q=)."""
+    q = " ".join(str(t) for t in (terms or []) if t)
+    if not q.strip():
+        return []
+    items = call("GET", "/catalogo/productos", {"q": q, "incluir_receta": str(bool(include_rx)).lower(),
+                                                 "limit": limit})[1]["items"]
+    for p in items:
+        p.pop("score", None)
+    return items
 
 
 # ---------- Farmacias / Inventario ----------
 def pharmacies():
-    if "ph" not in _CACHE:
-        items = get_store().query("PHARM", "PH#") or copy.deepcopy(fixtures.PHARMACIES)
-        _CACHE["ph"] = sorted(items, key=lambda x: x["distance_m"])
-    return _CACHE["ph"]
+    phs = _cached("ph", TTL_MASTER, lambda: call("GET", "/farmacias")[1]["items"])
+    inv = _cached("inv", TTL_STOCK, lambda: call("GET", "/inventario")[1]["stock"])
+    return [dict(p, stock=inv.get(p["pharmacyId"], {})) for p in phs]
 
 
 def pharmacy(pid):
@@ -108,37 +235,27 @@ def pharmacies_with_stock(cart, limit=3):
 
 
 def nearest_with(skus):
-    for p in pharmacies():
+    phs = pharmacies()
+    for p in phs:
         if all(p["stock"].get(s, 0) > 0 for s in skus):
             return p
-    return pharmacies()[0]
+    return phs[0]
 
 
-# ---------- CRM (sandbox por sesión) ----------
-def sbx(sid):
-    return "SBX#" + sid
-
-
+# ---------- CRM (sandbox por sesión de demo: header X-Sandbox-Id) ----------
 def get_profile(sid, cedula):
-    s = get_store()
-    p = s.get(sbx(sid), "CRM#" + cedula)
-    if p:
-        return p, False
-    seedp = s.get("SEED", "CRM#" + cedula)
-    if not seedp:
-        seedp = next((copy.deepcopy(x) for x in fixtures.PROFILES if x["cedula"] == cedula), None)
-    created = seedp is None
-    p = seedp or {"cedula": cedula, "name": None, "archetype": None, "ui_hints": {}, "frequent_products": [],
-                  "condiciones_probables": [], "farmacia_habitual": None, "preferencias": {},
-                  "consent": None, "billing": None, "smartclub": {"socio": True, "cashback_saldo": 0.0},
-                  "nuevo": True}
-    p["created_at"] = datetime.now(EC_TZ).isoformat(timespec="seconds")
-    s.put(sbx(sid), "CRM#" + cedula, p)
-    return p, created
+    try:
+        return call("GET", f"/crm/clientes/{cedula}", sid=sid)[1]["cliente"], False
+    except NotFound:
+        pass
+    st, js = call("POST", "/crm/clientes", body={"cedula": cedula}, sid=sid, ok=(201, 409))
+    if st == 409:  # carrera / reintento: ya existe
+        return call("GET", f"/crm/clientes/{cedula}", sid=sid)[1]["cliente"], False
+    return js, True
 
 
 def save_profile(sid, p):
-    get_store().put(sbx(sid), "CRM#" + p["cedula"], p)
+    call("PUT", f"/crm/clientes/{p['cedula']}", body=p, sid=sid)
 
 
 def public_customer(p):
@@ -178,21 +295,19 @@ def personalized_filter(products, p):
 
 # ---------- SmartClub / Promociones ----------
 def ensure_coupon(sid, cedula, qr="BIENVENIDA"):
-    s = get_store()
-    cur = s.get(sbx(sid), "CPN#" + cedula)
-    if cur:
-        return cur
-    d = s.get("PROMO", "CPNDEF#" + qr) or dict(fixtures.COUPONS["BIENVENIDA"], qr="BIENVENIDA")
-    c = dict(d, cedula=cedula, status="disponible")
-    s.put(sbx(sid), "CPN#" + cedula, c, attrs={"status": "disponible"})
-    return c
+    return call("POST", f"/smartclub/{cedula}/cupones", body={"qr": qr or "BIENVENIDA"}, sid=sid)[1]
 
 
 def get_coupon(sid, cedula):
-    return get_store().get(sbx(sid), "CPN#" + cedula) if cedula else None
+    if not cedula:
+        return None
+    try:
+        return call("GET", f"/smartclub/{cedula}", sid=sid)[1].get("cupon")
+    except NotFound:
+        return None
 
 
-# ---------- Pricing (siempre en servidor) ----------
+# ---------- Pricing (vista del carrito; el precio que vale es el que calcula POST /pedidos) ----------
 def price_cart(cart, coupon=None):
     lines, sub, iva, cb, has_repo = [], 0.0, 0.0, 0.0, False
     for it in cart:
@@ -226,105 +341,49 @@ def cart_view(pr):
             "coupon": (f"{pr['coupon_code']} −{money(pr['discount'])}" if pr["coupon_code"] else None)}
 
 
-# ---------- Pedidos + Facturación (transacción idempotente) ----------
+# ---------- Pedidos + Facturación ----------
 def idem_key(sid, cart, pharmacy_id, last_order=None):
     raw = json.dumps([sorted((i["sku"], int(i.get("qty", 1)), bool(i.get("reposicion"))) for i in cart), pharmacy_id, last_order])
     return hashlib.sha256((sid + raw).encode()).hexdigest()[:16]
 
 
 def reserve(sid, session, profile, billing, expected_rev, session_put):
-    """Una transacción: pedido + factura mock + cupón usado + perfil (billing/cashback) + sesión (rev).
-
-    Idempotente por (sesión, carrito, farmacia): un doble toque devuelve el mismo pedido.
-    `session_put(session_doc)` -> (doc, cond, attrs) para la sesión.
+    """POST /pedidos (Idempotency-Key) → Farmaenlace crea pedido + factura mock + cupón usado + CRM (su transacción).
+    Luego el orquestador avanza su sesión con escritura condicional por revisión.
+    Idempotente por (sesión, carrito, farmacia, último pedido): un doble toque devuelve el mismo pedido.
     """
-    s = get_store()
     key = idem_key(sid, session["cart"], session["pharmacyId"], session.get("lastOrder"))
-    prev = s.get(sbx(sid), "IDEM#" + key)
-    if prev:
-        return prev, False
-    coupon = get_coupon(sid, profile["cedula"])
-    pr = price_cart(session["cart"], coupon)
-    ph = pharmacy(session["pharmacyId"])
-    now = datetime.now(EC_TZ)
-    order_no = "FV-" + str(random.randint(100000, 999999))
-    inv_no = f"001-002-{random.randint(1, 999999):09d}"
-    cf = billing.get("tipo") == "consumidor_final"
-    invoice = {"number": inv_no, "label": "SIMULADA", "orderNumber": order_no,
-               "customerName": "CONSUMIDOR FINAL" if cf else billing["nombre"],
-               "customerId": "9999999999999" if cf else billing["identificacion"],
-               "tipoIdentificacion": "07" if cf else billing.get("tipoId", "05"),
-               "email": billing["email"],
-               "items": [{"name": l["name"], "qty": l["qty"], "price": l["price"]} for l in pr["lines"]],
-               "subtotal": money(pr["subtotal"]), "iva": money(pr["iva"]),
-               "discount": money(pr["discount"]), "total": money(pr["total"]),
-               "issuedAt": now.isoformat(timespec="seconds"), "sessionId": sid}
-    order = {"orderNumber": order_no, "status": "reservado_pago_al_retirar", "pharmacyId": ph["pharmacyId"],
-             "pharmacy": ph["name"], "pickupTime": "Hoy desde las " + (now + timedelta(minutes=30)).strftime("%H:%M"),
-             "qrValue": f"FVPICKUP:{order_no}", "cedula": profile["cedula"], "lines": pr["lines"],
-             "totals": {k: pr[k] for k in ("subtotal", "iva", "discount", "total", "cashback")},
-             "coupon": pr["coupon_code"], "invoice": inv_no, "createdAt": now.isoformat(timespec="seconds"), "sessionId": sid}
-    result = {"order": order, "invoice": invoice, "pricing": pr,
-              "coupon": (dict(coupon, status="usado") if pr["coupon_code"] else None)}
-    prof = copy.deepcopy(profile)
-    prof["billing"] = {k: billing.get(k) for k in ("tipo", "nombre", "identificacion", "tipoId", "email")}
-    sc = prof.setdefault("smartclub", {"socio": True, "cashback_saldo": 0.0})
-    sc["cashback_saldo"] = r2(float(sc.get("cashback_saldo", 0)) + pr["cashback"])
-    for l in pr["lines"]:
-        for f in prof.get("frequent_products", []):
-            if f["sku"] == l["sku"]:
-                f["ultima_compra_hace_dias"] = 0
-    ops = [(sbx(sid), "IDEM#" + key, result, "not_exists", None),
-           (sbx(sid), "ORD#" + order_no, order, "not_exists", None),
-           (sbx(sid), "FAC#" + inv_no, invoice, "not_exists", None),
-           (sbx(sid), "CRM#" + profile["cedula"], prof, None, None)]
-    if pr["coupon_code"]:
-        ops.append((sbx(sid), "CPN#" + profile["cedula"], dict(coupon, status="usado", order=order_no),
-                    ("status", "disponible"), {"status": "usado"}))
-    session_doc, cond, attrs = session_put(result)
-    ops.append(("SES#" + sid, "META", session_doc, cond, attrs))
+    body = {"cedula": profile["cedula"], "pharmacyId": session["pharmacyId"],
+            "items": [{"sku": i["sku"], "qty": int(i.get("qty", 1)), "reposicion": bool(i.get("reposicion"))}
+                      for i in session["cart"]],
+            "billing": {k: billing.get(k) for k in ("tipo", "nombre", "identificacion", "tipoId", "email")}}
+    st, res = call("POST", "/pedidos", body=body, sid=sid, idem=key, ok=(200, 201))
+    res.pop("replay", None)
+    if st == 200:
+        return res, False
+    session_doc, cond, attrs = session_put(res)
     try:
-        s.transact(ops)
+        get_store().put("SES#" + sid, "META", session_doc, cond=cond, attrs=attrs)
     except ConditionFailed:
-        prev = s.get(sbx(sid), "IDEM#" + key)
-        if prev:
-            return prev, False
-        raise
-    return result, True
+        return res, False  # otra petición ya avanzó la sesión; el pedido es el mismo (idempotente)
+    return res, True
 
 
 def reset_sandbox(sid):
-    get_store().delete_pk(sbx(sid))
+    call("DELETE", "/sandbox", sid=sid)
 
 
 # ---------- Admin (solo lectura) ----------
-def admin_list(service):
-    s = get_store()
+def admin_list(service, show_internal=False):
     if service == "catalogo":
         return list(catalog().values())
     if service == "farmacias":
         return [{k: v for k, v in p.items() if k != "stock"} for p in pharmacies()]
     if service == "inventario":
         return [{"pharmacyId": p["pharmacyId"], "sku": k, "stock": v} for p in pharmacies() for k, v in sorted(p["stock"].items())]
-    if service == "crm":
-        items = [dict(x, _pk="SEED") for x in s.query("SEED", "CRM#")] + s.scan_prefix("CRM#")
-        seen, out = set(), []
-        for x in items:
-            k = (x.get("_pk"), x.get("cedula"))
-            if k in seen:
-                continue
-            seen.add(k)
-            x = dict(x)
-            if x.pop("condiciones_probables", None) is not None:
-                x["condiciones_probables"] = "[oculto: dato sensible, solo filtra sugerencias]"
-            out.append(x)
-        return out
-    if service == "smartclub":
-        return s.query("PROMO") + s.scan_prefix("CPN#")
-    if service == "pedidos":
-        return s.scan_prefix("ORD#")
-    if service == "facturacion":
-        return s.scan_prefix("FAC#")
+    if service in ("crm", "smartclub", "pedidos", "facturacion"):
+        q = {"interno": "1"} if show_internal else None
+        return call("GET", f"/admin/{service}", q)[1]["items"]
     return None
 
 
