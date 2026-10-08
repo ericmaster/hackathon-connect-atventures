@@ -20,6 +20,15 @@ ul{list-style:none;margin:0;padding:0}li{padding:1px 0;font-size:14px}
 .ag td{padding:6px}.ag tr.k-checkpoint td{background:rgba(210,153,34,.13)}.ag tr.k-deadline td{background:rgba(255,123,156,.15)}
 .ag tr.k-checkpoint td:first-child{box-shadow:inset 3px 0 var(--wip)}.ag tr.k-deadline td:first-child{box-shadow:inset 3px 0 var(--rose)}
 .ag tr.past{opacity:.5}.ag tr.cur td{background:rgba(88,166,255,.15);font-weight:600}.ag .st-cur{color:var(--acc)}.ag .st-past{color:var(--mut)}
+.tabs{display:flex;gap:4px;margin:14px 0 0;border-bottom:1px solid #2d3640}.tabs a{padding:8px 14px;color:var(--mut);text-decoration:none;font-weight:600;border-bottom:2px solid transparent}.tabs a.on{color:var(--fg);border-color:var(--acc)}
+.cv{display:grid;gap:8px;margin:14px 0;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-areas:"pro pro sol sol uvp uvp ven ven seg seg" "pro pro met met uvp uvp can can seg seg" "cos cos cos cos cos ing ing ing ing ing"}
+.box{background:var(--card);border-radius:10px;padding:12px;min-width:0}.blk+.blk{border-top:1px dashed #2d3640;margin-top:10px;padding-top:10px}
+.blk header{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px}.blk h3{font-size:13px;margin:0;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;flex:1}
+.blk ul{cursor:pointer;min-height:1.4em}.blk li:before{content:'• ';color:var(--mut)}.blk.borrador ul{color:#d8c8a0}
+.badge{background:var(--wip);color:#111;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;letter-spacing:.04em}
+.btn{background:#2d3640;color:var(--fg);border:0;border-radius:6px;padding:3px 9px;font:inherit;font-size:12px;cursor:pointer}.btn.pri{background:var(--acc);color:#0b1220}
+.blk textarea{width:100%;min-height:120px;background:var(--bg);color:var(--fg);border:1px solid var(--acc);border-radius:6px;font:inherit;font-size:14px;padding:6px;resize:vertical}.acts{display:flex;gap:6px;margin-top:6px}
+@media(max-width:900px){.cv{grid-template-columns:1fr;grid-template-areas:"seg" "pro" "uvp" "sol" "can" "ing" "cos" "met" "ven"}}
 @media(max-width:760px){thead{display:none}tr{display:block;background:var(--card);border-radius:10px;margin-bottom:10px;padding:6px}
 td{display:flex;gap:8px;border:0;padding:4px 8px}td:before{content:attr(data-l);color:var(--mut);min-width:110px;font-size:12px;text-transform:uppercase}
 td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{background:none;padding:0}
@@ -32,6 +41,8 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
  <div class="card" id="nowc"><h2>Ahora</h2><div class="big" id="nowcd">—</div><div class="nm" id="nown">—</div><div class="sub" id="nowh"></div></div>
  <div class="card" id="nextc"><h2>Próximo hito</h2><div class="big" id="nextcd">—</div><div class="nm" id="nextn">—</div><div class="sub" id="nexth"></div></div>
 </div>
+<nav class="tabs"><a href="#progreso" id="t-progreso">Progreso</a><a href="#canvas" id="t-canvas">Lean Canvas</a></nav>
+<section id="tab-progreso">
 <div class="grid">
  <div class="card"><h2>Freeze 15:45</h2><div class="big" id="cd">—</div><div class="sub">2026-10-08 15:45 (UTC-5)</div></div>
  <div class="card"><h2>Puntaje estimado</h2><div class="big"><span id="tot">0</span> / <span id="goal">100</span></div><div class="bar"><i id="totbar" style="width:0"></i></div><div class="sub" id="totsub"></div></div>
@@ -44,6 +55,11 @@ td.chk{display:block}td.chk:before{display:block;margin-bottom:4px}.tablecard{ba
 <div class="card tablecard"><h2>Objetivos (rúbrica)</h2>
 <table><thead><tr><th>Criterio</th><th>Peso</th><th>Qué evalúa</th><th>Nota (1–5)</th><th>Puntos</th><th>Meta</th><th>Progreso</th><th>Sub-objetivos</th></tr></thead><tbody id="rows"></tbody></table>
 </div>
+</section>
+<section id="tab-canvas" hidden>
+<div class="sub" style="margin-top:10px">Clic en un bloque o «Editar» (una línea por ítem; Ctrl+Enter guarda, Esc cancela) · <span id="cvupd">—</span> · <span id="cvmsg"></span></div>
+<div class="cv" id="cv"></div>
+</section>
 </main>
 <script>
 const ICON={done:'✔',doing:'◐',todo:'○'},esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -91,5 +107,40 @@ async function load(){try{const p=await (await fetch('api/state',{cache:'no-stor
   `<li><span class="s ${b.ok?'done':'err'}">${b.ok?'✔':'✖'}</span> Bedrock us-east-1: ${b.ok?`${b.models} modelos`:esc(b.err||'—')}</li>`;
  document.getElementById('infrat').textContent=i.checked_at?'Chequeo: '+fmt(i.checked_at)+' (cache 60 s)':'';
 }catch(e){document.getElementById('upd').innerHTML=`<span class="err">error: ${esc(e.message)}</span>`}}
-tick();setInterval(tick,1000);load();setInterval(load,30000);
+// --- tabs ---
+function showTab(){const t=location.hash==='#canvas'?'canvas':'progreso';
+ for(const k of ['progreso','canvas']){document.getElementById('tab-'+k).hidden=k!==t;document.getElementById('t-'+k).className=k===t?'on':''}}
+addEventListener('hashchange',showTab);showTab();
+// --- lean canvas (GET/PUT api/canvas; PUT merges the given blocks) ---
+const BOX=[['pro',['problema','alternativas']],['sol',['solucion']],['met',['metricas']],['uvp',['propuesta','concepto']],
+ ['ven',['ventaja']],['can',['canales']],['seg',['segmentos','early_adopters']],['cos',['costos']],['ing',['ingresos']]];
+let cv=null;const editing=new Set(),cvEl=document.getElementById('cv'),cvMsg=(t,bad)=>{const m=document.getElementById('cvmsg');m.textContent=t;m.className=bad?'err':''};
+function renderBlock(k){const el=document.getElementById('b-'+k),b=cv.blocks[k];if(!el)return;
+ if(!b){el.innerHTML='';return}
+ const ta=el.querySelector('textarea'),draft=ta?ta.value:b.items.join('\n'),bor=b.status==='borrador';
+ el.className='blk'+(bor?' borrador':'');
+ el.innerHTML=`<header><h3>${esc(b.title)}</h3>${bor?'<span class="badge">BORRADOR</span>':''}
+  <button class="btn" data-act="st" title="Cambiar estado">${bor?'→ base':'→ borrador'}</button>${editing.has(k)?'':'<button class="btn" data-act="ed">Editar</button>'}</header>`+
+  (editing.has(k)?`<textarea>${esc(draft)}</textarea><div class="acts"><button class="btn pri" data-act="sv">Guardar</button><button class="btn" data-act="cx">Cancelar</button></div>`
+  :`<ul data-act="ed">${b.items.length?b.items.map(i=>`<li>${esc(i)}</li>`).join(''):'<li class="sub">(vacío)</li>'}</ul>`)}
+function renderCanvas(){if(!cvEl.children.length)cvEl.innerHTML=BOX.map(([a,ks])=>`<div class="box" style="grid-area:${a}">${ks.map(k=>`<div class="blk" id="b-${k}" data-k="${k}"></div>`).join('')}</div>`).join('');
+ for(const [,ks] of BOX)for(const k of ks)renderBlock(k);
+ document.getElementById('cvupd').textContent=cv.updated_at?`Actualizado ${fmt(cv.updated_at)}${cv.updated_by?' por '+cv.updated_by:''}`:'—'}
+async function loadCanvas(){if(editing.size)return; // don't wipe in-progress edits
+ try{const r=await fetch('api/canvas',{cache:'no-store'}),c=await r.json();if(!r.ok||c.error)throw new Error(c.error||r.status);if(!editing.size){cv=c;renderCanvas()}}
+ catch(e){cvMsg('error: '+e.message,1)}}
+async function saveBlock(k,patch){const b={...cv.blocks[k],...patch};
+ try{const r=await fetch('api/canvas',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({blocks:{[k]:b}})}),c=await r.json().catch(()=>({error:'HTTP '+r.status}));
+  if(!r.ok||c.error)throw new Error(c.error||'HTTP '+r.status);
+  cv=c;return cvMsg('Guardado '+new Date().toLocaleTimeString('es-EC',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hourCycle:'h23'})),true}
+ catch(e){cvMsg('Error al guardar: '+e.message,1);return false}}
+cvEl.addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),blk=e.target.closest('.blk');if(!a||!blk)return;const k=blk.dataset.k;
+ if(a.dataset.act==='ed'){editing.add(k);renderBlock(k);blk.querySelector('textarea').focus()}
+ else if(a.dataset.act==='cx'){editing.delete(k);blk.querySelector('textarea').value=cv.blocks[k].items.join('\n');renderBlock(k);if(!editing.size)loadCanvas()}
+ else if(a.dataset.act==='sv'){const items=blk.querySelector('textarea').value.split('\n').map(l=>l.replace(/^\s*[-•*]\s*/,'').trim()).filter(Boolean);
+  a.disabled=true;if(await saveBlock(k,{items})){editing.delete(k);blk.querySelector('textarea').remove();renderCanvas()}else a.disabled=false}
+ else if(a.dataset.act==='st'){a.disabled=true;if(await saveBlock(k,{status:cv.blocks[k].status==='borrador'?'base':'borrador'}))renderCanvas();else a.disabled=false}});
+cvEl.addEventListener('keydown',e=>{const blk=e.target.closest('.blk');if(!blk||e.target.tagName!=='TEXTAREA')return;
+ if(e.key==='Escape')blk.querySelector('[data-act=cx]').click();if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))blk.querySelector('[data-act=sv]').click()});
+tick();setInterval(tick,1000);load();loadCanvas();setInterval(()=>{load();loadCanvas()},30000);
 </script></body></html>

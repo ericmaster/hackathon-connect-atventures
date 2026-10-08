@@ -7,6 +7,8 @@ const { execFile } = require('child_process');
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || 41830);
 const DATA = path.join(__dirname, 'progress.json');
+const CANVAS = path.join(__dirname, 'canvas.json');
+const CANVAS_MAX = 64 * 1024;
 const INFRA_TTL = 60_000;
 const W = { todo: 0, doing: 0.5, done: 1 };
 
@@ -57,6 +59,51 @@ function getInfra() {
 }
 getInfra();
 
+// --- lean canvas: GET full doc, PUT {blocks:{key:{title,items,status}}} merges given blocks ---
+const bogotaNow = () => new Date(Date.now() - 5 * 36e5).toISOString().slice(0, 19) + '-05:00';
+const httpErr = (status, msg) => Object.assign(new Error(msg), { status });
+function readBody(req, max) {
+  return new Promise((resolve, reject) => {
+    if (Number(req.headers['content-length'] || 0) > max) return reject(httpErr(413, 'payload demasiado grande'));
+    let n = 0, chunks = [], over = false;
+    req.on('data', d => { n += d.length; if (n > max) over = true; else if (!over) chunks.push(d); });
+    req.on('end', () => over ? reject(httpErr(413, 'payload demasiado grande')) : resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+function validBlock(b) {
+  return b && typeof b === 'object' && typeof b.title === 'string' && b.title.length <= 80 &&
+    Array.isArray(b.items) && b.items.length <= 40 && b.items.every(i => typeof i === 'string' && i.length <= 500) &&
+    (b.status === 'base' || b.status === 'borrador');
+}
+function putAuth(req) { // CF Access identity, or direct localhost (not proxied through Cloudflare/tunnel)
+  const email = String(req.headers['cf-access-authenticated-user-email'] || '').trim().slice(0, 200);
+  if (email) return email;
+  const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
+  if (local && !req.headers['cf-ray'] && !req.headers['cf-connecting-ip']) return 'localhost';
+  return null;
+}
+async function putCanvas(req) {
+  const by = putAuth(req);
+  if (!by) throw httpErr(403, 'no autorizado');
+  let body;
+  try { body = JSON.parse(await readBody(req, CANVAS_MAX)); } catch (e) { throw e.status ? e : httpErr(400, 'JSON inválido'); }
+  const keys = body && body.blocks && typeof body.blocks === 'object' && !Array.isArray(body.blocks) ? Object.keys(body.blocks) : [];
+  if (!keys.length || keys.length > 30) throw httpErr(400, 'se espera {blocks:{...}}');
+  for (const k of keys) if (!/^[a-z_]{1,32}$/.test(k) || !validBlock(body.blocks[k])) throw httpErr(400, `bloque inválido: ${k.slice(0, 32)}`);
+  let cur = { blocks: {} };
+  try { cur = JSON.parse(fs.readFileSync(CANVAS, 'utf8')); } catch {}
+  if (!cur.blocks || typeof cur.blocks !== 'object') cur.blocks = {};
+  for (const k of keys) { const { title, items, status } = body.blocks[k]; cur.blocks[k] = { title, status, items }; }
+  if (Object.keys(cur.blocks).length > 30) throw httpErr(400, 'demasiados bloques');
+  cur.updated_at = bogotaNow(); cur.updated_by = by;
+  const out = JSON.stringify(cur, null, 2) + '\n';
+  if (Buffer.byteLength(out) > CANVAS_MAX * 2) throw httpErr(413, 'canvas demasiado grande');
+  const tmp = `${CANVAS}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, out); fs.renameSync(tmp, CANVAS);
+  return out;
+}
+
 const send = (res, code, type, body) => { res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' }); res.end(body); };
 
 http.createServer(async (req, res) => {
@@ -67,10 +114,15 @@ http.createServer(async (req, res) => {
       p.infra = await getInfra();
       return send(res, 200, 'application/json; charset=utf-8', JSON.stringify(p));
     }
+    if (url === '/api/canvas') {
+      if (req.method === 'GET') return send(res, 200, 'application/json; charset=utf-8', fs.readFileSync(CANVAS, 'utf8'));
+      if (req.method === 'PUT') return send(res, 200, 'application/json; charset=utf-8', await putCanvas(req));
+      return send(res, 405, 'text/plain', 'method not allowed');
+    }
     if (url === '/' || url === '/index.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
     if (url === '/healthz') return send(res, 200, 'text/plain', 'ok');
     send(res, 404, 'text/plain', 'not found');
   } catch (e) {
-    send(res, 500, 'application/json', JSON.stringify({ error: String(e.message || e).slice(0, 200) }));
+    send(res, e.status || 500, 'application/json', JSON.stringify({ error: String(e.message || e).slice(0, 200) }));
   }
 }).listen(PORT, HOST, () => console.log(`dashboard on http://${HOST}:${PORT}`));

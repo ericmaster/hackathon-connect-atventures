@@ -1,0 +1,60 @@
+{
+  "updated_at": "2026-10-08T09:30:00-05:00",
+  "blocks": {
+    "problema": { "title": "Problema", "status": "base", "items": [
+      "Barreras de entrada en apps/e-commerce: catálogos, formularios, menús",
+      "Canal online marginal (~2% de ventas online; contexto)"
+    ] },
+    "alternativas": { "title": "Alternativas existentes", "status": "base", "items": [
+      "Ir a la farmacia y preguntar al dependiente",
+      "Llamar a la farmacia",
+      "Apps/web actuales con catálogo"
+    ] },
+    "solucion": { "title": "Solución", "status": "base", "items": [
+      "Hablar o escribir → la UI se arma al momento (Generative UI)",
+      "Botón grande, audio-first",
+      "Sin formularios",
+      "Web híbrida + PWA móvil"
+    ] },
+    "metricas": { "title": "Métricas clave", "status": "borrador", "items": [
+      "Frecuencia de compra SmartClub",
+      "Ticket promedio",
+      "Share of wallet",
+      "% de sesiones completadas por voz (inferido)"
+    ] },
+    "propuesta": { "title": "Propuesta de valor única", "status": "base", "items": [
+      "Asistente conversacional que genera la interfaz para cada cliente, en web y móvil",
+      "Sin rediseñar el e-commerce; sube frecuencia y ticket",
+      "Para Farmaenlace: capa conversacional sin tocar su core"
+    ] },
+    "concepto": { "title": "High-level concept", "status": "base", "items": [
+      "Tu dependiente de farmacia de confianza, en el celular."
+    ] },
+    "ventaja": { "title": "Ventaja injusta", "status": "borrador", "items": [
+      "Por definir con mentores",
+      "Candidato: datos y relación SmartClub del grupo (activo de Farmaenlace)"
+    ] },
+    "canales": { "title": "Canales", "status": "borrador", "items": [
+      "Integración en la web/app actual de Farmaenlace",
+      "SmartClub",
+      "Puntos de venta (QR en farmacia)"
+    ] },
+    "segmentos": { "title": "Segmentos de clientes", "status": "base", "items": [
+      "Clientes de Farmaenlace que evitan apps/web por complejidad o poca familiaridad con la tecnología",
+      "Decisor/comprador: Farmaenlace"
+    ] },
+    "early_adopters": { "title": "Early adopters", "status": "borrador", "items": [
+      "Adultos mayores o cuidadores que ya compran en farmacia física (hipótesis)"
+    ] },
+    "costos": { "title": "Estructura de costos", "status": "borrador", "items": [
+      "Inferencia LLM/voz por sesión (AWS Bedrock)",
+      "Hosting",
+      "Integración con catálogo/SmartClub"
+    ] },
+    "ingresos": { "title": "Flujos de ingresos", "status": "borrador", "items": [
+      "Por definir",
+      "Candidato: licencia SaaS o fee por sesión a Farmaenlace",
+      "Indirecto: mayor ticket y frecuencia"
+    ] }
+  }
+}
