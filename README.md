@@ -12,7 +12,7 @@ Hackathon Connect atVentures 2026 (BuenTrip + Endeavor), reto Farmaenlace «Fide
 
 - **PWA** (IA real: Bedrock + GLiNER, datos sintéticos): https://main.d2bloxc35rzfqy.amplifyapp.com
 - **PWA modo simulado** (sin backend): https://main.d2bloxc35rzfqy.amplifyapp.com/?demo
-- **Web híbrida** (visión omnicanal): https://main.dfsvbpju4hwi2.amplifyapp.com
+- **Web híbrida** (visión omnicanal; mismo backend y renderer A2UI, `?demo` simulado): https://main.dfsvbpju4hwi2.amplifyapp.com
 
 Guion (Cuidador, cédula sintética `1710034065`): aceptar → reposición + «¿Por qué me sugieres esto?» → «algo para la gripe» → pregunta de seguridad → agregar → retirar aquí → resumen con cupón → consumidor final + email → reserva con QR + factura SIMULADA. Reiniciar → «dolor de pecho» → alerta roja. Contraste: Práctico `1712456787`.
 
