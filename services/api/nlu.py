@@ -46,7 +46,7 @@ def gliner(text):
             import boto3
             from botocore.config import Config
             _client = boto3.client("lambda", config=Config(read_timeout=GLINER_TIMEOUT, connect_timeout=2,
-                                                           retries={"max_attempts": 1, "mode": "standard"}))
+                                                           retries={"total_max_attempts": 1, "mode": "standard"}))
         r = _client.invoke(FunctionName=GLINER_FN, Payload=json.dumps({"texts": [text]}).encode())
         body = json.loads(r["Payload"].read() or b"{}")
         if r.get("FunctionError") or not body.get("results"):

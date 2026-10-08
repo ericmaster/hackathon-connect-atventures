@@ -29,6 +29,7 @@ ACTIONS = {
     "facturacion_tipo": {"facturacion"},
     "facturacion_dato": {"facturacion"},
     "handoff": set(STATES),
+    "seguridad": {"consulta"},
 }
 NEEDS_CONFIRM = {"agregar_pedido", "reservar", "confirmar_reserva"}
 COMMERCE = NEEDS_CONFIRM | {"retirar_aqui", "facturacion_tipo", "facturacion_dato"}
@@ -36,6 +37,7 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$")
 CF_LIMIT = 50.0
 TURN_BUDGET_S = 25.0
 TRACE = {}
+SAFETY_NOTE = "Como mencionaste alergias u otros medicamentos, confírmalo con el farmacéutico antes de tomarlo."
 
 
 class ApiError(Exception):
@@ -190,6 +192,8 @@ def free_turn(s, text, deadline):
     if g["diagnosis"]:
         return handoff_resp(s, "No puedo darte un diagnóstico, eso lo hace un médico. Sí puedo ayudarte con productos de venta libre "
                                "o comunicarte con un farmacéutico.", mode)
+    if s.get("blocked"):  # tras una alarma no se vuelve a sugerir ni vender hasta Reiniciar
+        return red_flag(s, mode)
     intent = n["intent"]["label"]
     p = profile_of(s)
     if intent == "checkout" and s.get("cart"):
@@ -220,6 +224,16 @@ def free_turn(s, text, deadline):
     otc = otc[: int(hints.get("max_options") or 3)]
     if g["rx"] or (rx and not otc):
         return handoff_resp(s, "Ese medicamento necesita receta médica. Un farmacéutico te puede orientar.", mode)
+    if otc and not s.get("safety"):
+        # SPEC §7.2.2: una pregunta de seguridad por sesión antes de la primera sugerencia (plantilla, sin LLM).
+        s["pending_query"] = text
+        prac = (mock.public_customer(p).get("archetype") == "Práctico")
+        return step(s, "consulta", lambda r: T.safety(r, prac), T.SAFETY_Q, mode)
+    safety = s.get("safety") or {}
+    if safety and not safety.get("ok"):
+        # Excluye productos que la persona nombró en su respuesta (alergia / ya lo toma). Nunca se infiere condición.
+        said = set(w for w in guardrails.norm(safety.get("answer", "")).split() if len(w) >= 5)
+        otc = [x for x in otc if not said & (set(x["tags"]) | set(guardrails.norm(x["name"]).split()))] or []
 
     ph = mock.nearest_with([x["sku"] for x in otc]) if otc else mock.pharmacies()[0]
     new_rev = s["revision"] + 1
@@ -236,12 +250,15 @@ def free_turn(s, text, deadline):
         ctx["data"]["note"] = "No hay productos para esto en el catálogo: haz UNA pregunta corta para entender qué necesita o sugiere hablar con un farmacéutico. Sin ProductCard."
     if hints:
         ctx["ui_hints"] = hints
+    if safety and not safety.get("ok") and otc:
+        ctx["data"]["safety"] = {"reporto_alergias_u_otros_medicamentos": True,
+                                 "instruccion": "En note de cada ProductCard: 'Confírmalo con el farmacéutico antes de tomarlo'."}
     if s.get("cart"):
         ctx["data"]["cart_items"] = len(s["cart"])
 
     msgs, llm_info = None, {}
     for attempt in range(2):
-        if time.time() + 6 > deadline:
+        if time.time() + 11 > deadline:  # una llamada Bedrock (read_timeout 10 s) debe caber en el presupuesto
             break
         extra = None
         if attempt == 1:
@@ -259,13 +276,18 @@ def free_turn(s, text, deadline):
     TRACE.update({"llm": {k: v for k, v in llm_info.items() if k != "errors"},
                   "llm_errors": [e.split(":")[0] for e in llm_info.get("errors") or []] or None})
     s["lastProducts"] = [x["sku"] for x in otc]
+    if msgs is not None and safety and not safety.get("ok"):
+        for c in validate.checks.components_of(msgs):
+            if c.get("component") == "ProductCard":
+                c["note"] = SAFETY_NOTE
     if msgs is not None:
         has_cards = any(c.get("component") == "ProductCard" for c in validate.checks.components_of(msgs))
         return step(s, "productos" if has_cards else "consulta", lambda r: msgs, validate.spoken_from(msgs), mode)
     # fail closed: plantilla segura, ninguna acción ejecutada
     if otc:
         intro = "Estas opciones de venta libre te pueden ayudar:" if symptom else "Encontré esto para ti:"
-        return step(s, "productos", lambda r: T.products(r, otc, ph, intro, symptom),
+        note = SAFETY_NOTE if safety and not safety.get("ok") else None
+        return step(s, "productos", lambda r: T.products(r, otc, ph, intro, symptom, note),
                     f"Te muestro {len(otc)} opción{'es' if len(otc) > 1 else ''} de venta libre.", "simulado")
     return step(s, "consulta", lambda r: T.message(r, "No te entendí bien. ¿Me cuentas qué síntoma tienes o qué producto buscas?",
                                                    buttons=[("Hablar con un farmacéutico", "handoff", {})]),
@@ -385,6 +407,8 @@ def action(caller, body):
         return do_consent(s, ctx.get("acepta") is True or str(ctx.get("acepta")).lower() == "true")
     if name == "handoff":
         return handoff_resp(s, "Te comunico con un farmacéutico de verdad.")
+    if name == "seguridad":
+        return answer_safety(s, ctx.get("ok") is True, "no" if ctx.get("ok") is True else "sí")
     if name in ("agregar_pedido", "reservar"):
         pr = mock.product(ctx.get("sku"))
         if not pr:
@@ -455,8 +479,17 @@ def action(caller, body):
     raise ApiError(400, "action_not_allowed", name, s)
 
 
+def answer_safety(s, ok, answer):
+    s["safety"] = {"ok": bool(ok), "answer": str(answer)[:200], "ts": datetime.now(mock.EC_TZ).isoformat(timespec="seconds")}
+    q = s.pop("pending_query", None)
+    if not q:
+        return step(s, "consulta", lambda r: T.message(r, "Gracias. ¿Qué necesitas?"), "Gracias. ¿Qué necesitas?")
+    return free_turn(s, q, time.time() + TURN_BUDGET_S)
+
+
 YES_RE = re.compile(r"\b(si|sí|acepto|claro|dale|ok|okay|de acuerdo|bueno|confirmo|confirmar)\b")
 NO_RE = re.compile(r"\b(no|nop|prefiero no|no acepto)\b")
+NONE_RE = re.compile(r"\b(no|ninguno|ninguna|nada|tampoco)\b")
 
 
 def turn(caller, body):
@@ -500,4 +533,8 @@ def turn(caller, body):
         elif pend in ("email", "nombre", "identificacion"):
             return action(caller, {"sessionId": s["sessionId"], "revision": s["revision"],
                                    "action": {"name": "facturacion_dato", "context": {"campo": pend, "valor": text}}})
+    if st in POST_ONBOARD and s.get("pending_query") and not s.get("safety"):
+        # Respuesta a la pregunta de seguridad: cualquier respuesta continúa con la consulta pendiente.
+        ok = bool(NONE_RE.search(t)) and not re.search(r"\b(si|alergi|tomo|estoy tomando)\b", t)
+        return answer_safety(s, ok, text)
     return free_turn(s, text, deadline)

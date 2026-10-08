@@ -42,7 +42,10 @@ Owner: A (backend). Readers: B (PWA/A2UI), C (voz/admin). Keep this EXACT; chang
 - `consulta`: free-text questions (`/turn`). `productos`: ProductCards shown. `farmacia`: cart has items, choose pharmacy.
   `resumen`: ResumenPedido. `facturacion`: one billing question at a time. `confirmacion`: reservation done.
 - Red flag at any point: AlertaRoja surface, state stays (`consulta`), commerce actions blocked for the session until
-  `/demo/reset` (409 `blocked_red_flag`).
+  `/demo/reset` (409 `blocked_red_flag`); later free turns keep returning AlertaRoja (no products).
+- Safety question (SPEC §7.2.2): the first time a turn would show products, the server returns a template surface
+  ("¿Tienes alergia a algún medicamento o estás tomando otro?" + buttons `seguridad {ok:true}` "No, ninguno" / `{ok:false}` "Sí")
+  with state `consulta`; products come in the response to that answer. Asked once per session (reset asks again).
 - 3rd invalid cédula: hand-off surface (HandoffCard) is offered; you may keep trying.
 
 ## Routes
@@ -81,6 +84,7 @@ Body:
 | `facturacion_tipo` | `{tipo: "consumidor_final"\|"datos"}` | facturacion | `consumidor_final` only if total incl. IVA ≤ $50 |
 | `facturacion_dato` | `{campo: "email"\|"nombre"\|"identificacion", valor}` | facturacion | validates; next missing field or billing confirm card |
 | `handoff` | `{}` | any | HandoffCard (nearest pharmacy) |
+| `seguridad` | `{ok: bool}` | consulta | answer to the one-per-session safety question (allergies / other meds) asked before the FIRST product suggestion; `ok:true` = "No, ninguno". Any answer (button or free `/turn` text) continues with the pending query; "sí" adds a pharmacist note to each ProductCard and drops products the user named |
 | `como_llegar`, `llamar` | — | — | **client-side only** (`openUrl` with `mapsUrl` / `tel:`); do not send |
 
 Billing rule: email ALWAYS required. Total incl. IVA (15%) ≤ $50 → offer "Consumidor final" (07 / 9999999999999) + email;

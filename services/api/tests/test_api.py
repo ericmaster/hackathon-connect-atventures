@@ -69,6 +69,13 @@ class Base(unittest.TestCase):
     def act(self, r, name, ctx=None):
         return call("POST /action", {"sessionId": r["sessionId"], "revision": r["revision"], "action": {"name": name, "context": ctx or {}}})
 
+    def ask(self, r, text="algo para la gripe", safety_ok=True):
+        """Turno libre; responde la pregunta de seguridad (una por sesión) si aparece."""
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": text})
+        if '"seguridad"' in json.dumps(r):
+            r = self.act(r, "seguridad", {"ok": safety_ok})
+        return r
+
     def onboard(self, ced=CUIDADOR, consent=True):
         r = call("POST /session", {"qr": "BIENVENIDA"})
         r = self.act(r, "enviar_cedula", {"cedula": ced})
@@ -167,7 +174,7 @@ class TestGuardrails(Base):
             return fake_llm_cards(ctx, deadline, extra)
         llm.generate = spy
         r = self.onboard(CUIDADOR)
-        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la gripe"})
+        r = self.ask(r)
         self.assertNotIn("condiciones", seen["ctx"])
         self.assertNotIn("hipertens", seen["ctx"])
         skus = [c.get("sku") for c in checks.components_of(r["messages"]) if c["component"] == "ProductCard"]
@@ -187,7 +194,7 @@ class TestGuardrails(Base):
             return {"ok": True, "text": "\n".join(json.dumps(x, ensure_ascii=False) for x in l)}
         llm.generate = leaky
         r = self.onboard(CUIDADOR)
-        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la gripe"})
+        r = self.ask(r)
         self.assertEqual(r["mode"], "simulado")
         self.assertNotIn("hipertens", json.dumps(r, ensure_ascii=False).lower())
         self.assertIn("ProductCard", types(r))
@@ -201,10 +208,62 @@ class TestGuardrails(Base):
         self.assertIn("HandoffCard", types(x))
 
 
+class TestReviewFixes(Base):
+    def test_red_flag_sticks_on_next_free_turn(self):
+        r = self.onboard(PRACTICO)
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "me duele el pecho"})
+        self.assertIn("AlertaRoja", types(r))
+        r = self.ask(r, "algo para la gripe")
+        self.assertIn("AlertaRoja", types(r))
+        self.assertNotIn("ProductCard", types(r))
+        self.assertEqual(self.calls, 0)
+
+    def test_safety_question_once_before_products_no_llm(self):
+        r = self.onboard(PRACTICO)
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la gripe"})
+        self.assertNotIn("ProductCard", types(r))
+        self.assertIn("alergia", json.dumps(r, ensure_ascii=False))
+        self.assertEqual(self.calls, 0)
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "no, ninguno"})
+        self.assertIn("ProductCard", types(r))
+        self.assertEqual(self.calls, 1)
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la tos"})
+        self.assertIn("ProductCard", types(r))  # no se vuelve a preguntar
+        self.assertEqual(self.calls, 2)
+
+    def test_safety_yes_filters_named_product_and_adds_note(self):
+        r = self.onboard(PRACTICO, consent=False)
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "me duele la cabeza"})
+        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "sí, soy alérgico al paracetamol"})
+        cards = [c for c in checks.components_of(r["messages"]) if c["component"] == "ProductCard"]
+        self.assertTrue(cards)
+        self.assertNotIn("FV-1002", [c["sku"] for c in cards])
+        self.assertTrue(all("farmacéutico" in c.get("note", "") for c in cards))
+        ok, hits = checks.check_no_condition(r["messages"])
+        self.assertTrue(ok, hits)
+
+    def test_same_cart_can_be_ordered_again(self):
+        orders = []
+        r = self.onboard(PRACTICO)
+        for _ in range(2):
+            r = self.act(r, "agregar_pedido", {"sku": "FV-1002", "confirm": True})
+            r = self.act(r, "retirar_aqui", {"pharmacyId": "MED-UIO-014"})
+            r = self.act(r, "confirmar_reserva", {"confirm": True})
+            if '"facturacion_tipo"' in json.dumps(r) and "consumidor_final" in json.dumps(r):
+                r = self.act(r, "facturacion_tipo", {"tipo": "consumidor_final"})
+            if "/factura/email" in json.dumps(r):
+                r = self.act(r, "facturacion_dato", {"campo": "email", "valor": "a@b.co"})
+            r = self.act(r, "confirmar_reserva", {"confirm": True})
+            self.assertEqual(r["state"], "confirmacion", r.get("error"))
+            orders.append(next(c for c in checks.components_of(r["messages"]) if c["component"] == "ConfirmacionPedido")["orderNumber"])
+        self.assertNotEqual(orders[0], orders[1])
+        self.assertEqual(len(store.get_store().query("SBX#" + r["sessionId"], "ORD#")), 2)
+
+
 class TestCheckout(Base):
     def _to_resumen(self, sku="FV-1002", qty=1, ced=PRACTICO):
         r = self.onboard(ced)
-        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la gripe"})
+        r = self.ask(r)
         r = self.act(r, "agregar_pedido", {"sku": sku, "qty": qty, "confirm": True})
         self.assertEqual(r["state"], "farmacia")
         ph = next(c for c in checks.components_of(r["messages"]) if c["component"] == "PharmacyCard")

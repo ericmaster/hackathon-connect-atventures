@@ -33,8 +33,8 @@ def _brt():
     if _client is None:
         import boto3
         from botocore.config import Config
-        _client = boto3.client("bedrock-runtime", config=Config(read_timeout=15, connect_timeout=3,
-                                                                retries={"max_attempts": 1, "mode": "standard"}))
+        _client = boto3.client("bedrock-runtime", config=Config(read_timeout=10, connect_timeout=3,
+                                                                retries={"total_max_attempts": 1, "mode": "standard"}))
     return _client
 
 
@@ -76,7 +76,7 @@ def generate(context, deadline, extra_user=None):
                 break
             retries += 1
             sleep = min(4.0, 1.0 * 2 ** attempt) + random.uniform(0, 0.4)
-            if time.time() + sleep + 3 > deadline:
+            if time.time() + sleep + 11 > deadline:
                 break
             time.sleep(sleep)
     return {"ok": False, "error": err, "retries": retries, "ms": 0}

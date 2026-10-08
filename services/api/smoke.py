@@ -57,6 +57,8 @@ def main():
     r = act(r, "consentimiento", {"acepta": True})
     expect(r["state"] == "consulta", "consent→consulta")
     r = inv("POST /turn", {"sessionId": r["sessionId"], "text": "algo para la gripe"}, "turn 'algo para la gripe'")
+    expect('"seguridad"' in json.dumps(r) and not comp(r, "ProductCard"), "pregunta de seguridad antes de productos")
+    r = act(r, "seguridad", {"ok": True}, "seguridad: No, ninguno (LLM)")
     pc = comp(r, "ProductCard")
     expect(pc is not None, "gripe → ProductCard")
     blob = json.dumps(r, ensure_ascii=False).lower()
@@ -80,6 +82,8 @@ def main():
     # alarma
     r2 = inv("POST /turn", {"sessionId": sid, "text": "me duele mucho el pecho y no puedo respirar"}, "turn red flag")
     expect(comp(r2, "AlertaRoja") and not comp(r2, "ProductCard"), "red flag → AlertaRoja sin productos")
+    r2 = inv("POST /turn", {"sessionId": sid, "text": "algo para la tos"}, "free turn after red flag")
+    expect(comp(r2, "AlertaRoja") and not comp(r2, "ProductCard"), "alarma persiste en turno libre")
     x = act(r2, "agregar_pedido", {"sku": "FV-1002", "confirm": True}, "commerce after red flag")
     expect((x.get("error") or {}).get("code") == "blocked_red_flag", "comercio bloqueado tras alarma")
     r3 = inv("POST /demo/reset", {"sessionId": sid}, "demo/reset")

@@ -107,11 +107,24 @@ def listo(rev, customer, coupon, repo=None, repo_product=None, pharmacy=None):
     return s.messages()
 
 
-def products(rev, prods, pharmacy, intro, symptom=True):
+SAFETY_Q = "¿Tienes alergia a algún medicamento o estás tomando otro?"
+
+
+def safety(rev, practico=False):
+    s = Surface(rev)
+    s.text("t1", "Rápido, por seguridad:" if practico else "Antes de sugerirte algo, por seguridad:", "h3")
+    s.text("t2", SAFETY_Q, "body")
+    s.button("b1", "No, ninguno", "seguridad", {"ok": True})
+    s.button("b2", "Sí", "seguridad", {"ok": False}, variant="borderless")
+    s.text("t3", "También puedes decirme cuál (por ejemplo: \"soy alérgico al ibuprofeno\").", "caption")
+    return s.messages()
+
+
+def products(rev, prods, pharmacy, intro, symptom=True, note=None):
     s = Surface(rev)
     s.text("t1", intro, "h3")
     for i, p in enumerate(prods):
-        product_card(s, f"p{i + 1}", p, pharmacy)
+        product_card(s, f"p{i + 1}", p, pharmacy, note)
     if pharmacy:
         pharmacy_card(s, "ph1", pharmacy, "Tiene estos productos")
     if symptom:

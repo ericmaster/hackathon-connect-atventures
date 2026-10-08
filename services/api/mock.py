@@ -227,8 +227,8 @@ def cart_view(pr):
 
 
 # ---------- Pedidos + Facturación (transacción idempotente) ----------
-def idem_key(sid, cart, pharmacy_id):
-    raw = json.dumps([sorted((i["sku"], int(i.get("qty", 1)), bool(i.get("reposicion"))) for i in cart), pharmacy_id])
+def idem_key(sid, cart, pharmacy_id, last_order=None):
+    raw = json.dumps([sorted((i["sku"], int(i.get("qty", 1)), bool(i.get("reposicion"))) for i in cart), pharmacy_id, last_order])
     return hashlib.sha256((sid + raw).encode()).hexdigest()[:16]
 
 
@@ -239,7 +239,7 @@ def reserve(sid, session, profile, billing, expected_rev, session_put):
     `session_put(session_doc)` -> (doc, cond, attrs) para la sesión.
     """
     s = get_store()
-    key = idem_key(sid, session["cart"], session["pharmacyId"])
+    key = idem_key(sid, session["cart"], session["pharmacyId"], session.get("lastOrder"))
     prev = s.get(sbx(sid), "IDEM#" + key)
     if prev:
         return prev, False

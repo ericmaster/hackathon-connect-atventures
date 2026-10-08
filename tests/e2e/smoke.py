@@ -162,6 +162,13 @@ class Client:
     def turn(self, text):
         return self._call("POST", "/turn", {"sessionId": self.sid, "text": text}, "turn")
 
+    def ask(self, text):
+        """Turno libre + responde 'No, ninguno' a la pregunta de seguridad (una por sesión, SPEC §7.2.2)."""
+        st, b = self.turn(text)
+        if st == 200 and '"seguridad"' in json.dumps(b.get("messages") or []):
+            st, b = self.act("seguridad", {"ok": True}, label="seguridad")
+        return st, b
+
     def act(self, name, context=None, revision=None, label=None):
         return self._call("POST", "/action", {
             "sessionId": self.sid, "revision": self.rev if revision is None else revision,
@@ -245,7 +252,7 @@ def case_happy_path(inv):
     """QR → cédula (Práctico) → consentimiento → consulta → producto → farmacia → resumen → factura → confirmación."""
     c = Client(inv)
     c.onboard(PRACTICO, True)
-    st, b = c.turn("algo para la gripe")
+    st, b = c.ask("algo para la gripe")
     check(st == 200, f"/turn → {st} {err(b)}")
     prods = find(b, "ProductCard")
     check(prods, f"sin ProductCard (state={b.get('state')}, mode={b.get('mode')})")
@@ -295,7 +302,7 @@ def case_consent_no(inv):
     c = Client(inv)
     b = c.onboard(CUIDADOR, consent=False)
     check(not has(b, "Reposicion") and not has(b, "SugerenciaPersonalizada"), "personalización sin consentimiento")
-    st, t = c.turn("algo para la gripe")
+    st, t = c.ask("algo para la gripe")
     check(st == 200, f"/turn → {st}")
     check(not has(t, "Reposicion") and not has(t, "SugerenciaPersonalizada"), "sugerencia personalizada sin consentimiento")
     txt = json.dumps(t, ensure_ascii=False).lower()
