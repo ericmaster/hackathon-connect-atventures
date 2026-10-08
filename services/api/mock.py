@@ -21,7 +21,7 @@ import random
 import threading
 import time
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import quote, urlencode, urlsplit
 
 import fixtures  # noqa: F401  (COUPONS/CATALOG_ID siguen usándose en fsm)
 from store import ConditionFailed, get_store
@@ -110,7 +110,7 @@ def _conn(u, fresh=False):
 
 def _http(method, path, query, payload, headers):
     base = _base()
-    url = base + path + ("?" + urlencode(query) if query else "")
+    url = base + path + ("?" + urlencode(query, quote_via=quote) if query else "")
     u = urlsplit(url)
     body = json.dumps(payload, ensure_ascii=False).encode() if payload is not None else None
     h = dict(headers, Host=u.netloc, Accept="application/json")

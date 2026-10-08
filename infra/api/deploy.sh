@@ -60,7 +60,11 @@ rm -f "$B"/test_*.py
 rm -f /tmp/$FN.zip; python3 -c "import shutil,sys; shutil.make_archive(sys.argv[1], 'zip', sys.argv[2])" /tmp/$FN "$B"
 echo "   $(ls -la /tmp/$FN.zip | awk '{print $5}') bytes: $(ls "$B" | tr '\n' ' ')"
 
-ENV="Variables={FV_TABLE=$TABLE,FV_LLM_MODEL=$MODEL_PROFILE,FV_LLM_TEMPERATURE=0.1,FV_GLINER_FUNCTION=$GLINER,FV_GLINER_TIMEOUT_S=4,FV_TRANSCRIBE_VOCABULARY=connect-atv-meds}"
+# Farmaenlace mock API (separate Lambda/table/HTTP API, infra/farmaenlace-mock/deploy.sh); orchestrator calls it via SigV4.
+FE_API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='connect-atv-farmaenlace-api'].ApiId | [0]" --output text)
+if [ -z "$FE_API_ID" ] || [ "$FE_API_ID" = "None" ]; then echo "ERROR: run infra/farmaenlace-mock/deploy.sh first" >&2; exit 1; fi
+FE_URL="https://$FE_API_ID.execute-api.$R.amazonaws.com"
+ENV="Variables={FV_TABLE=$TABLE,FV_FARMAENLACE_URL=$FE_URL,FV_FARMAENLACE_TIMEOUT_S=2.5,FV_LLM_MODEL=$MODEL_PROFILE,FV_LLM_TEMPERATURE=0.1,FV_GLINER_FUNCTION=$GLINER,FV_GLINER_TIMEOUT_S=4,FV_TRANSCRIBE_VOCABULARY=connect-atv-meds}"
 echo "== Lambda $FN"
 if aws lambda get-function --function-name $FN >/dev/null 2>&1; then
   aws lambda update-function-code --function-name $FN --zip-file fileb:///tmp/$FN.zip >/dev/null
