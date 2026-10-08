@@ -6,7 +6,9 @@
   "scripts": {
     "test": "playwright test",
     "test:demo": "playwright test --project=demo",
-    "test:live": "playwright test --project=live"
+    "test:live": "playwright test --project=live",
+    "record": "playwright test -c playwright.record.config.ts",
+    "record:real": "REAL=1 playwright test -c playwright.record.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "latest"
