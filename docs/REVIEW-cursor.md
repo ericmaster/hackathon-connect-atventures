@@ -43,3 +43,7 @@
 - P1-5: trivial → `clients.claim()` in SW activate.
 - Rest: not fixed (time box).
 - Fixed in da964d2 (deployed Amplify job 9). Regression: tests/playwright demo/05 "mid-request" (failed on old build, passes now).
+- P1-3/P1-4 fixed 2b2efb9: 403 / session not_found → clear `fv-identity`, new guest identity + session (start retries once; else Reintentar / Usar modo simulado). Tests live/10 (route-mocked, no LLM).
+- P1-1 fixed 2b2efb9: mic disabled + "Espera un momento…" while thinking; late voice final queued and sent after reply. Tests demo/07.
+- P0-1/P0-2 hardened 2b2efb9: deploy.sh copies .env.example → .env if missing.
+- Deployed Amplify job 10; Playwright 15/15 green vs deployed (1.2 min).
