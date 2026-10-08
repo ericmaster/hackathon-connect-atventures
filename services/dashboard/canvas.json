@@ -13,7 +13,7 @@
       "title": "Alternativas existentes",
       "status": "base",
       "items": [
-        "Ir a la farmacia y preguntar al dependiente",
+        "Ir a la farmacia y preguntar al farmacéutico más cercano",
         "Llamar a la farmacia",
         "Apps/web actuales con catálogo"
       ]
@@ -52,7 +52,7 @@
       "title": "High-level concept",
       "status": "base",
       "items": [
-        "Tu dependiente de farmacia de confianza, en el celular."
+        "Tu farmacéutico más cercano, en el celular."
       ]
     },
     "ventaja": {

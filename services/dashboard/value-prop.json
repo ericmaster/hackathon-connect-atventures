@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T09:45:00-05:00",
+  "updated_at": "2026-10-08T09:42:21-05:00",
   "method": {
     "source": "J.D. Montero (NEST.Lab), «Establecer la propuesta de valor», NEST Program 2025 — vía NotebookLM",
     "mantra": "No te enamores de tu solución, enamórate del problema."
@@ -60,7 +60,7 @@
     "formula_cliente": {
       "name": "Fórmula — versión cliente (usuario)",
       "template": "Para [cliente objetivo] que enfrentan [problema], ofrecemos [solución], que a diferencia de [alternativa], logra [beneficio único].",
-      "text": "Para los clientes de Farmaenlace que evitan las apps porque les resultan complicadas o poco familiares, ofrecemos un asistente al que simplemente le hablas y te arma en el momento la pantalla que necesitas, que a diferencia de las tiendas online llenas de catálogos y formularios, hace que comprar sea tan fácil como preguntarle al dependiente de tu farmacia.",
+      "text": "Para la audiencia objetivo de Farmaenlace que evitan las apps porque les resultan complicadas o poco familiares, ofrecemos un asistente al que simplemente le hablas y te arma en el momento la pantalla que necesitas, que a diferencia de las tiendas online llenas de catálogos y formularios, hace que comprar sea tan fácil como preguntarle a tu farmacéutico más cercano.",
       "audience": "cliente",
       "status": "borrador",
       "checks": {
@@ -95,7 +95,7 @@
     "high_concept": {
       "name": "High-concept pitch",
       "template": "[Tu producto] es el [empresa/producto conocido] de [categoría]",
-      "text": "Tu dependiente de farmacia de confianza, en el celular.",
+      "text": "Tu farmacéutico más cercano, en el celular.",
       "audience": "jurado",
       "status": "borrador",
       "checks": {
@@ -146,5 +146,6 @@
       },
       "note": "Llenar con una frase real escuchada en farmacia o con mentores; no inventar."
     }
-  }
+  },
+  "updated_by": "eric@nimblersoft.com"
 }
