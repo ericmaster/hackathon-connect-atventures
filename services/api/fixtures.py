@@ -5,10 +5,10 @@ IVA = 0.15  # Ecuador: medicamentos 0 %, resto 15 %
 
 # sku, name, detail, price (sin IVA), iva, tags, extra
 _P = [
-    ("FV-1001", "Antigripal Día y Noche", "Caja x 12 tabletas · con fenilefrina", 4.50, 0, "gripe resfriado congestion antigripal", {"contraindica": ["hipertension"]}),
+    ("FV-1001", "Antigripal Día y Noche", "Caja x 12 tabletas · con fenilefrina", 4.50, 0, "gripe resfriado congestion antigripal", {"contraindica": ["hipertension"], "boost": 1}),
     ("FV-1002", "Paracetamol 500 mg", "Genérico · 20 tabletas", 2.40, 0, "gripe fiebre dolor cabeza paracetamol acetaminofen malestar", {}),
     ("FV-1003", "Vitamina C 1 g efervescente", "Tubo x 10", 3.90, 0, "gripe resfriado defensas vitamina", {}),
-    ("FV-1004", "Antigripal sin descongestionante", "Caja x 10 cápsulas · sin fenilefrina", 5.20, 0, "gripe resfriado antigripal", {}),
+    ("FV-1004", "Antigripal sin descongestionante", "Caja x 10 cápsulas · sin fenilefrina", 5.20, 0, "gripe resfriado antigripal", {"boost": 1}),
     ("FV-1005", "Jarabe para la tos 120 ml", "Dextrometorfano · adultos", 6.80, 0, "tos jarabe gripe garganta", {}),
     ("FV-1006", "Pastillas para la garganta", "Miel y limón · x 16", 2.10, 0, "garganta tos dolor", {}),
     ("FV-1007", "Ibuprofeno 400 mg", "Genérico · 10 tabletas", 2.90, 0, "dolor cabeza muscular fiebre ibuprofeno inflamacion", {"contraindica": ["hipertension", "gastritis"]}),
@@ -36,7 +36,8 @@ PRODUCTS = []
 for sku, name, detail, price, iva, tags, extra in _P:
     PRODUCTS.append({"sku": sku, "name": name, "detail": detail, "price": price, "iva": iva,
                      "tags": tags.split(), "requiere_receta": bool(extra.get("requiere_receta")),
-                     "contraindica": extra.get("contraindica", []), "cashback_pct": 5})
+                     "contraindica": extra.get("contraindica", []), "cashback_pct": 5,
+                     "boost": extra.get("boost", 0)})
 
 _ALL = [p["sku"] for p in PRODUCTS]
 PHARMACIES = [

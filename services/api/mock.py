@@ -57,12 +57,17 @@ def _norm(t):
     return "".join(c for c in t if unicodedata.category(c) != "Mn")
 
 
+STOP = set("para algo tienen tiene quiero necesito tengo como unos unas los las del con por mejor favor busco hay venden "
+           "dame deme puede puedes ayuda ayudame que cual cuanto cuesta mucho poco estoy esta este esto eso alguna alguno "
+           "buenas buenos dias tardes noches hola gracias sirve sirva tomar tomo".split())
+
+
 def search_products(terms, include_rx=True, limit=6):
     """Búsqueda por tags/nombre. Devuelve productos ordenados por coincidencias."""
     words = set()
     for t in terms or []:
         for w in _norm(t).replace(",", " ").split():
-            if len(w) >= 3:
+            if len(w) >= 3 and w not in STOP:
                 words.add(w)
                 if w.endswith("s") and len(w) > 4:
                     words.add(w[:-1])
@@ -71,10 +76,10 @@ def search_products(terms, include_rx=True, limit=6):
         if p.get("requiere_receta") and not include_rx:
             continue
         hay = set(p["tags"]) | set(_norm(p["name"]).split())
-        sc = sum(1 for w in words if w in hay or any(h.startswith(w) for h in hay if len(w) >= 4))
+        sc = sum(1 for w in words if w in hay or (len(w) >= 5 and any(h.startswith(w) for h in hay)))
         if sc:
             scored.append((sc, p["sku"], p))
-    scored.sort(key=lambda x: (-x[0], x[1]))
+    scored.sort(key=lambda x: (-x[0], -x[2].get("boost", 0), x[1]))
     return [copy.deepcopy(p) for _, _, p in scored[:limit]]
 
 
