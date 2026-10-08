@@ -1,5 +1,6 @@
 """Valida la salida del LLM con los chequeos de tests/llm/checks.py + reglas del servidor."""
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -9,10 +10,17 @@ except ImportError:  # local: usar tests/llm directamente
     sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tests" / "llm"))
     import checks
 
+import fsm
 import guardrails
 import mock
 
 COMMERCE_FORBIDDEN = {"ConfirmacionPedido", "FacturaMock", "Cupon", "ResumenPedido"}
+HOME_RE = re.compile(r"inicio|reinici|empezar|nueva consulta|nueva_consulta|volver|home|menu", re.I)
+
+
+def _label(comps, c):
+    ch = next((x for x in comps if x.get("id") == c.get("child")), {})
+    return ch.get("text") if isinstance(ch.get("text"), str) else ""
 
 
 def validate(text, surface_id, ctx_products, profile, red_flag=False):
@@ -28,6 +36,7 @@ def validate(text, surface_id, ctx_products, profile, red_flag=False):
     comps = checks.components_of(msgs)
     types = [c.get("component") for c in comps]
     allowed_skus = {p["sku"] for p in ctx_products}
+    drop = set()
     for c in comps:
         t = c.get("component")
         if t in COMMERCE_FORBIDDEN:
@@ -45,6 +54,14 @@ def validate(text, surface_id, ctx_products, profile, red_flag=False):
                 c["action"] = {"event": {"name": "agregar_pedido", "context": {"sku": sku, "confirm": True}}}
         if t == "AlertaRoja" and not red_flag:
             errs.append("AlertaRoja sin señal de alarma")
+        ev = (c.get("action") or {}).get("event") if isinstance(c.get("action"), dict) else None
+        if t == "Button" and isinstance(ev, dict) and ev.get("name") not in fsm.ACTIONS:
+            # Evento inventado por el LLM (p. ej. "volver_inicio") → 400 al tocarlo. "Inicio" = Nueva consulta
+            # (seguir_comprando, como en confirmación); cualquier otro se descarta.
+            if HOME_RE.search(f"{ev.get('name')} {_label(comps, c)}"):
+                c["action"] = {"event": {"name": "seguir_comprando", "context": {}}}
+            else:
+                drop.add(c.get("id"))
     hits = guardrails.leaks(checks.visible_text(msgs), profile)
     if hits:
         errs.append("filtra condición del CRM")
@@ -52,6 +69,15 @@ def validate(text, surface_id, ctx_products, profile, red_flag=False):
         errs.append("productos ante alarma")
     if errs:
         return False, None, errs
+    for c in comps:
+        if isinstance(c.get("children"), list):
+            c["children"] = [k for k in c["children"] if k not in drop]
+        if c.get("child") in drop:
+            c.pop("child")
+    for m in msgs:
+        uc = m.get("updateComponents")
+        if uc and isinstance(uc.get("components"), list):
+            uc["components"] = [c for c in uc["components"] if c.get("id") not in drop]
     # Aviso de salud obligatorio si hay productos.
     if "ProductCard" in types and "AvisoSalud" not in types:
         root = next(c for c in comps if c.get("id") == "root")

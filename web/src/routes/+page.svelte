@@ -139,7 +139,9 @@
 		input = '';
 		entries.push({ key: k++, kind: 'user', text: q });
 		await tick();
-		results?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		// Llevar a la vista la última pregunta (abajo), no el inicio del historial.
+		const us = results?.querySelectorAll('[data-user]');
+		(us?.length ? us[us.length - 1] : results)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 		if (!sessionId) {
 			pending = q;
@@ -367,7 +369,7 @@
 											<SurfaceView surface={store.surfaces[e.id!]} {onAction} />
 										</div>
 									{:else if e.kind === 'user'}
-										<div class="ml-auto w-fit max-w-[85%] rounded-bubble rounded-br-md bg-primary-strong px-4 py-2.5 text-lg leading-snug text-white">{e.text}</div>
+										<div data-user class="ml-auto w-fit max-w-[85%] scroll-mt-40 rounded-bubble rounded-br-md bg-primary-strong px-4 py-2.5 text-lg leading-snug text-white">{e.text}</div>
 									{:else if e.kind === 'error'}
 										<div class="w-fit max-w-[85%] rounded-bubble rounded-bl-md border-2 border-danger bg-card px-4 py-2.5 text-lg" role="alert">{e.text}</div>
 									{/if}

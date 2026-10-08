@@ -260,6 +260,56 @@ class TestReviewFixes(Base):
         self.assertEqual(len(store.get_store().query("SBX#" + r["sessionId"], "ORD#")), 2)
 
 
+    def test_followup_adds_shown_product_not_catalog_miss(self):
+        # Regresión: «ok, agrégalo a mi pedido» tras ver productos se re-buscaba en el catálogo → «no está en el catálogo».
+        r = self.ask(self.onboard(PRACTICO), "algo para la tos")
+        shown = [c["sku"] for c in checks.components_of(r["messages"]) if c["component"] == "ProductCard"]
+        self.assertTrue(shown)
+        n = self.calls
+        x = call("POST /turn", {"sessionId": r["sessionId"], "text": "ok, agrégalo a mi pedido"})
+        self.assertEqual(self.calls, n)  # sin LLM ni «no hay productos»
+        if len(shown) == 1:
+            self.assertEqual(x["state"], "farmacia")
+        else:
+            self.assertEqual(x["state"], "productos")
+            self.assertEqual(shown, [c["sku"] for c in checks.components_of(x["messages"]) if c["component"] == "ProductCard"])
+            x = call("POST /turn", {"sessionId": r["sessionId"], "text": "agrega el segundo"})
+            self.assertEqual(x["state"], "farmacia", x.get("error"))
+        self.assertIn("Agregué", x["spokenText"])
+
+    def test_invented_button_event_is_rewritten_or_dropped(self):
+        def gen(ctx, deadline, extra=None):
+            self.calls += 1
+            sid = ctx["surfaceId"]
+            comps = [{"id": "root", "component": "Column", "children": ["t1", "b1", "b2"]},
+                     {"id": "t1", "component": "Text", "text": "¿Algo más?"},
+                     {"id": "b1", "component": "Button", "child": "b1l", "action": {"event": {"name": "volver_inicio"}}},
+                     {"id": "b1l", "component": "Text", "text": "Volver al inicio"},
+                     {"id": "b2", "component": "Button", "child": "b2l", "action": {"event": {"name": "borrar_todo"}}},
+                     {"id": "b2l", "component": "Text", "text": "Otra cosa"}]
+            lines = [{"version": "v0.9.1", "createSurface": {"surfaceId": sid, "catalogId": "https://farmaenlace.ec/a2ui/fv/v1"}},
+                     {"version": "v0.9.1", "updateComponents": {"surfaceId": sid, "components": comps}}]
+            return {"ok": True, "text": "\n".join(json.dumps(l) for l in lines), "ms": 1, "retries": 0}
+        llm.generate = gen
+        r = self.ask(self.onboard(PRACTICO), "necesito un termómetro")
+        comps = {c["id"]: c for c in checks.components_of(r["messages"])}
+        self.assertEqual(comps["b1"]["action"]["event"]["name"], "seguir_comprando")
+        self.assertNotIn("b2", comps)
+        self.assertNotIn("b2", comps["root"]["children"])
+        x = self.act(r, "seguir_comprando")
+        self.assertEqual((x["_status"], x["state"]), (200, "consulta"))
+
+    def test_audit_log_per_turn_without_cedula(self):
+        r = self.ask(self.onboard(PRACTICO), "algo para la tos, mi cédula es 1712456787")
+        items = store.get_store().query("AUDIT#" + __import__("datetime").datetime.now(mock.EC_TZ).strftime("%Y-%m-%d"), r["sessionId"])
+        routes = {i["route"] for i in items}
+        self.assertEqual(routes, {"/session", "/action", "/turn"})
+        blob = json.dumps(items, ensure_ascii=False)
+        self.assertNotIn("1712456787", blob)
+        self.assertIn({"name": "enviar_cedula"}, [i.get("action") for i in items])
+        self.assertTrue(any(i.get("products") for i in items))
+
+
 class TestCheckout(Base):
     def _to_resumen(self, sku="FV-1002", qty=1, ced=PRACTICO):
         r = self.onboard(ced)

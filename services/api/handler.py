@@ -4,12 +4,17 @@ Directa: {"route": "POST /turn", "body": {...}, "identityId": "opcional"} → de
 """
 import base64
 import json
+import random
+import re
 import time
 import traceback
+from datetime import datetime
 
 import fsm
 import mock
 import templates as T
+from store import get_store
+from validate import checks
 
 ADMIN_SERVICES = {"crm", "catalogo", "inventario", "farmacias", "smartclub", "pedidos", "facturacion"}
 
@@ -127,11 +132,49 @@ def handler(event, context=None):
                       "sessionId": (sid or (body or {}).get("sessionId") or "")[:10], **_trace_of()})
     except Exception:  # noqa: BLE001
         pass
+    if locals().get("path") in AUDIT_ROUTES:
+        audit(path, req or {}, status, body or {}, sid)
     print(json.dumps({"route": locals().get("path"), "status": status, "ms": ms, **_trace_of()}, ensure_ascii=False))
     if http:
         return {"statusCode": status, "headers": {"Content-Type": "application/json", "Cache-Control": "no-store"},
                 "body": json.dumps(body, ensure_ascii=False)}
     return dict(body or {}, _status=status, _ms=ms, _trace=_trace_of())
+
+
+AUDIT_ROUTES = {"/session", "/turn", "/action", "/demo/reset"}
+AUDIT_CTX = ("sku", "pharmacyId", "tipo", "campo", "acepta", "ok")  # nunca cédula ni datos de facturación
+_EMAIL = re.compile(r"\S+@\S+")
+_NUM = re.compile(r"\d[\d\s.-]{5,}\d")
+
+
+def audit(path, req, status, body, sid):
+    """Registro de auditoría por turno (AUDIT#<día>, sk <sessionId>#<ms>). Sin cédulas, CRM ni datos de factura."""
+    try:
+        now = time.time()
+        sid = body.get("sessionId") or sid or "-"
+        doc = {"sessionId": sid, "ts": datetime.now(mock.EC_TZ).isoformat(timespec="milliseconds"), "route": path,
+               "status": status, "state": body.get("state"), "revision": body.get("revision"), "mode": body.get("mode"),
+               "outcome": (body.get("error") or {}).get("code") or "ok", "intent": fsm.TRACE.get("intent")}
+        if path == "/turn":
+            t = "[dato de facturación]" if fsm.TRACE.get("billing_text") else str(req.get("text") or "")
+            doc["text"] = _NUM.sub("[num]", _EMAIL.sub("[email]", t))[:200]
+        a = req.get("action") if isinstance(req.get("action"), dict) else None
+        if a:
+            ctx = a.get("context") if isinstance(a.get("context"), dict) else {}
+            doc["action"] = {"name": str(a.get("name"))[:40], **{k: ctx[k] for k in AUDIT_CTX if k in ctx}}
+        skus = []
+        for c in checks.components_of(body.get("messages") or []):
+            pr = c.get("product") if isinstance(c.get("product"), dict) else {}
+            k = c.get("sku") or pr.get("sku")
+            if k and k not in skus:
+                skus.append(k)
+        if fsm.TRACE.get("sku") and fsm.TRACE["sku"] not in skus:
+            skus.append(fsm.TRACE["sku"])
+        doc["products"] = skus
+        get_store().put("AUDIT#" + datetime.now(mock.EC_TZ).strftime("%Y-%m-%d"), f"{sid}#{int(now * 1000)}#{random.randint(0, 9999):04d}",
+                        {k: v for k, v in doc.items() if v not in (None, [], "")})
+    except Exception as e:  # noqa: BLE001 — la auditoría nunca rompe un turno
+        print("AUDIT_FAIL", type(e).__name__)
 
 
 def _trace_of():

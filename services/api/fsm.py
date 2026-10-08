@@ -218,6 +218,8 @@ def free_turn(s, text, deadline):
 
     terms = [e["text"] for k in ("sintoma", "producto") for e in n.get("entities", {}).get(k, [])] + [text]
     found = mock.search_products(terms, include_rx=True)
+    if not found and s["state"] == "productos" and s.get("lastProducts") and REF_RE.search(guardrails.norm(text)):
+        return follow_up(s, guardrails.norm(text), mode)
     rx = [x for x in found if x.get("requiere_receta")]
     otc = mock.personalized_filter(guardrails.otc_only(found), p)
     hints = mock.ui_hints(p)
@@ -292,6 +294,30 @@ def free_turn(s, text, deadline):
     return step(s, "consulta", lambda r: T.message(r, "No te entendí bien. ¿Me cuentas qué síntoma tienes o qué producto buscas?",
                                                    buttons=[("Hablar con un farmacéutico", "handoff", {})]),
                 "¿Me cuentas qué producto buscas?", "simulado")
+
+
+ADD_RE = re.compile(r"\b(agreg\w*|anad\w*|ponlo|ponla|sumalo|lo quiero|la quiero|lo llevo|la llevo|me lo llevo|me la llevo)\b")
+REF_RE = re.compile(ADD_RE.pattern + r"|\b(ese|esa|ese mismo|el primero|el segundo|el tercero|el ultimo|pedido|carrito)\b")
+ORD = (("primer", 0), ("segund", 1), ("tercer", 2), ("ultim", -1))
+
+
+def follow_up(s, t, mode):
+    """«agrégalo a mi pedido», «el segundo»: se refiere a lo ya mostrado. Re-buscar ese texto en el catálogo
+    no encuentra nada y el LLM respondía «no está en el catálogo» (lastProducts se pisaba con [])."""
+    last = [x for x in map(mock.product, s["lastProducts"]) if x and not x.get("requiere_receta")]
+    pick = next((i for w, i in ORD if re.search(rf"\b{w}", t)), None)
+    if pick is not None and pick >= len(last):
+        pick = None
+    if last and ADD_RE.search(t) and (len(last) == 1 or pick is not None):
+        sku = last[pick or 0]["sku"]
+        TRACE["sku"] = sku
+        return action("direct", {"sessionId": s["sessionId"], "revision": s["revision"],
+                                 "action": {"name": "agregar_pedido", "context": {"sku": sku, "confirm": True}}})
+    if not last:
+        return step(s, "consulta", lambda r: T.message(r, "¿Qué producto buscas?"), "¿Qué producto buscas?", mode)
+    ph = mock.nearest_with([x["sku"] for x in last])
+    q = "¿Cuál agrego a tu pedido? Toca «Agregar» en el que quieras."
+    return step(s, "productos", lambda r: T.products(r, last, ph, q, False), q, mode)
 
 
 # ---------- pedido / facturación ----------
@@ -531,6 +557,7 @@ def turn(caller, body):
                 return action(caller, {"sessionId": s["sessionId"], "revision": s["revision"],
                                        "action": {"name": "confirmar_reserva", "context": {"confirm": True}}})
         elif pend in ("email", "nombre", "identificacion"):
+            TRACE["billing_text"] = True
             return action(caller, {"sessionId": s["sessionId"], "revision": s["revision"],
                                    "action": {"name": "facturacion_dato", "context": {"campo": pend, "valor": text}}})
     if st in POST_ONBOARD and s.get("pending_query") and not s.get("safety"):

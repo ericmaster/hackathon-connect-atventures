@@ -104,6 +104,8 @@ Body `{"language": "es-US", "sampleRate": 16000}` → `{"url": "wss://...", "exp
 `service` ∈ `crm | catalogo | inventario | farmacias | smartclub | pedidos | facturacion` → `{"service": "crm", "items": [...]}`.
 `crm` items never include `condiciones_probables` (redacted). `GET /admin/logs` → `{"items": [{ts, route, state, ms, mode, intent, status}]}` (last 100).
 
+Audit: one item per `/session` `/turn` `/action` `/demo/reset` in `connect-atv-data`, pk `AUDIT#<YYYY-MM-DD>` (EC), sk `<sessionId>#<ms>#<rnd>`, doc `{sessionId, ts, route, status, state, revision, outcome, intent?, text? (200 chars, emails/numbers redacted), action? {name, sku/pharmacyId/tipo/campo}, products?}`; no cédula, CRM or billing data, no TTL. Query: `aws dynamodb query --table-name connect-atv-data --key-condition-expression "pk=:d AND begins_with(sk,:s)" --expression-attribute-values '{":d":{"S":"AUDIT#2026-10-08"},":s":{"S":"s_"}}' --query 'Items[].doc.S'` (use the full sessionId in `:s` for one conversation).
+
 ## Components (catalogId `https://farmaenlace.ec/a2ui/fv/v1`)
 Basic: Text, Image, Icon, Video, AudioPlayer, Row, Column, List, Card, Tabs, Modal, Divider, Button, CheckBox, TextField,
 DateTimeInput, ChoicePicker, Slider. Functions: required, regex, length, numeric, email, formatString, formatCurrency, openUrl, cedulaEc, rucEc.

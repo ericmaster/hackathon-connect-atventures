@@ -64,9 +64,9 @@ Campos con forma SRI (`infoTributaria`, `infoFactura`, `detalles`, `totalConImpu
 | pharmacyId | Nombre | Dirección pública | Fuente |
 |---|---|---|---|
 | MED-UIO-014 | Medicity Quito CCI | Av. Amazonas N36-152 y Naciones Unidas | farmaenlace.com |
-| ECO-UIO-003 | Económicas Shyris | Av. de los Shyris N37-104 y El Comercio | ubica.ec |
+| ECO-UIO-003 | Farmacias Económicas Shyris | Av. de los Shyris N37-104 y El Comercio | ubica.ec |
 | MED-UIO-021 | Medicity Amazonas | Av. Amazonas N31-63 y Av. Eloy Alfaro | humana.med.ec |
-| ECO-UIO-011 | Económicas El Inca 2 | Av. El Inca E13-50 y De los Madroños | ubica.ec / exa.ai |
+| ECO-UIO-011 | Farmacias Económicas El Inca 2 | Av. El Inca E13-50 y De los Madroños | ubica.ec / exa.ai |
 | MED-UIO-030 | Medicity Quito Robles | Av. Amazonas N21-108 entre Robles y Roca | humana.med.ec |
 
 **Fuentes**
