@@ -85,9 +85,9 @@ aws lambda invoke --function-name $FN --cli-binary-format raw-in-base64-out \
   --payload '{"route":"POST /internal/seed","body":{}}' /tmp/seed.json >/dev/null && cat /tmp/seed.json; echo
 
 # ---------------------------------------------------------------------------
-# TODO(auth/API): public exposure step. Decided by Eric 8 oct: Cognito Identity Pool
-# (guest identities) + API Gateway HTTP API with IAM (SigV4) auth. Implemented in
-# infra/api/expose.sh; run with EXPOSE=1 (re-runnable).
+# AUTH/API HOOK (was TODO; DONE 8 oct): Eric chose Cognito Identity Pool guest identities +
+# API Gateway HTTP API with IAM (SigV4) auth on every route. Implemented in infra/api/expose.sh
+# (re-runnable): EXPOSE=1 infra/api/deploy.sh. Verify: python3 infra/api/test_guest.py
 # ---------------------------------------------------------------------------
 if [ "${EXPOSE:-0}" = 1 ]; then
   bash infra/api/expose.sh
