@@ -83,4 +83,4 @@ Valor 30 → 2, 3, 7 · Técnico 25 → 4, 6 · Novedad 20 → 5 · Factibilidad
 
 ## Abierto (Eric)
 - Cargo/empresa para la portada.
-- Hook: ¿se queda la "señora mayor de Medicity" (persona sintética Cuidador) u otra?
+- Hook: cerrado — señora adulta de Económicas + "Pensemos… Según ella…"
