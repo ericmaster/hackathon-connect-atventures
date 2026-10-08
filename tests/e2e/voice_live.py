@@ -22,9 +22,21 @@ PHRASES = [
 ]
 
 
+def presign_via_lambda():
+    """URL firmada por la Lambda desplegada (credenciales del rol), por invoke directo."""
+    import smoke
+    st, b, _ = smoke.Invoker("boto3")(smoke.event("POST", "/voice/stt-url", {"language": "es-US", "sampleRate": 16000}))
+    if st != 200:
+        raise RuntimeError(f"stt-url via Lambda → {st}")
+    return b
+
+
+VIA_LAMBDA = "--via-lambda" in sys.argv
+
+
 async def stt(pcm: bytes, realtime: bool = True):
     t0 = time.perf_counter()
-    info = voice.presign_transcribe_url()
+    info = presign_via_lambda() if VIA_LAMBDA else voice.presign_transcribe_url()
     t_presign = (time.perf_counter() - t0) * 1000
     partials, finals = [], []
     t_audio_end = None
@@ -74,7 +86,7 @@ def main():
         res = asyncio.run(stt(pcm))
         print(json.dumps({"input": p, "audio_s": round(len(pcm) / 32000, 1), **res}, ensure_ascii=False))
         ok = ok and bool(res["final"])
-    print("LIVE", "PASS" if ok else "FAIL")
+    print("LIVE", "(URL firmada por la Lambda)" if VIA_LAMBDA else "(URL firmada local)", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)
 
 
