@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { openLive, enterCedula, latestSurface, waitIdle } from '../helpers/flow';
 
-// No LLM turns: only /session and the deterministic cédula /turn.
+// No LLM turns: only /session and the deterministic cédula /action.
 // Uses plain `page` (simulated 403s make Chrome log "Failed to load resource"), but still fails on pageerror.
 const FORBIDDEN = { status: 403, contentType: 'application/json', body: '{"message":"Forbidden"}' };
 
@@ -16,11 +16,11 @@ test.describe('live session recovery', () => {
 		expect((page as unknown as { _errs: string[] })._errs).toEqual([]);
 	});
 
-	test('403 on /turn → fresh guest identity + new session, app keeps working', async ({ page }) => {
+	test('403 on /action → fresh guest identity + new session, app keeps working', async ({ page }) => {
 		await openLive(page);
 		const before = await page.evaluate(() => localStorage.getItem('fv-identity'));
 		let n = 0;
-		await page.route('**/turn', (route) => (n++ < 2 ? route.fulfill(FORBIDDEN) : route.fallback()));
+		await page.route('**/action', (route) => (n++ < 2 ? route.fulfill(FORBIDDEN) : route.fallback()));
 		await enterCedula(page, '1710034065'); // 403 (signedFetch retries once → 403 again) → relogin
 		await expect(page.getByText(/tu sesión expiró/i)).toBeVisible();
 		await expect(page.getByText(/no pude conectar/i)).toHaveCount(0);

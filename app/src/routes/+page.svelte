@@ -250,6 +250,7 @@
 				↺ Reiniciar demo
 			</button>
 		</div>
+		<p class="mt-1 text-[12px] leading-tight text-muted">Solo productos de venta libre · No diagnostica · No reemplaza la consulta médica</p>
 	</header>
 
 	<main bind:this={list} class="relative flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
@@ -309,7 +310,7 @@
 				<form class="flex gap-2" onsubmit={(ev) => (ev.preventDefault(), send(input))}>
 					<input
 						bind:value={input}
-						placeholder={fsmState === 'cedula' || fsmState === 'saludo' ? 'Escribe o di tu cédula' : 'O escribe aquí…'}
+						placeholder="O escribe aquí…"
 						aria-label="Escribe tu pregunta"
 						class="min-w-0 flex-1 rounded-full border-2 border-line bg-bg px-4 py-2.5 text-[18px] outline-none placeholder:text-muted focus:border-primary-strong"
 					/>

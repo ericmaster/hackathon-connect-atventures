@@ -104,21 +104,7 @@ class TestFSM(Base):
         self.assertEqual(r["state"], "cedula")
         ok, det = checks.check_shape(r["messages"], f"fv-{r['revision']}")
         self.assertTrue(ok, det)
-        # Sin campo de cédula propio: se escribe o se dice en el prompt principal.
-        self.assertNotIn("TextField", json.dumps(r["messages"]))
-        self.assertNotIn("CedulaInput", json.dumps(r["messages"]))
-        self.assertIn("cédula", json.dumps(r["messages"], ensure_ascii=False))
-
-    def test_cedula_from_prompt_text(self):
-        r = call("POST /session")
-        r = call("POST /turn", {"sessionId": r["sessionId"], "text": "1710034065"})
-        self.assertEqual(r["state"], "consentimiento")
-        r = call("POST /session")
-        for i in range(3):
-            r = call("POST /turn", {"sessionId": r["sessionId"], "text": "mi cédula es 1710034066"})
-            self.assertEqual(r["state"], "cedula")
-            self.assertNotIn("TextField", json.dumps(r["messages"]))
-        self.assertIn("HandoffCard", types(r))
+        self.assertIn("cedulaEc", json.dumps(r["messages"]))
 
     def test_onboarding_and_new_profile(self):
         r = call("POST /session")

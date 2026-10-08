@@ -67,10 +67,14 @@ def cedula(rev, coupon, retry=None, handoff_ph=None, greet=True):
         if coupon:
             s.add("cup", "Cupon", title=coupon["title"], code=coupon["code"], until=coupon["until"],
                   note="Se aplica en tu primera reserva")
-    # Sin campo propio: la cédula se escribe o se dice en el prompt principal (FSM la extrae del texto libre).
     s.text("t2", retry or "¿Me ayudas con tu número de cédula?", "body")
+    s.add("f1", "TextField", label="Cédula", variant="number", value={"path": "/cedula"},
+          checks=[{"call": "required", "args": {"value": {"path": "/cedula"}}, "message": "Escribe tu cédula"},
+                  {"call": "cedulaEc", "args": {"value": {"path": "/cedula"}}, "message": "¿Me la repites? Revisa los 10 dígitos"}])
+    s.button("b1", "Continuar", "enviar_cedula", {"cedula": {"path": "/cedula"}})
     if handoff_ph:
         handoff_card(s, handoff_ph, "No pudimos validar la cédula. Un farmacéutico puede ayudarte.")
+    s.model("/cedula", "")
     return s.messages()
 
 

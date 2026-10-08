@@ -186,8 +186,7 @@ class Client:
     def onboard(self, cedula, consent=True):
         st, b = self.session()
         check(st == 200 and b.get("state") == "cedula", f"/session → {st} {b.get('state')}")
-        check(not has(b, "TextField") and not has(b, "CedulaInput"), "pantalla de cédula con campo propio")
-        st, b = self.turn(cedula)  # la cédula va en el prompt principal (sin campo propio)
+        st, b = self.act("enviar_cedula", {"cedula": cedula})
         check(st == 200 and b.get("state") == "consentimiento", f"cédula → {st} {b.get('state')}")
         st, b = self.act("consentimiento", {"acepta": consent})
         check(st == 200 and b.get("state") == "consulta", f"consentimiento → {st} {b.get('state')}")
@@ -272,7 +271,7 @@ def case_invalid_cedula_x3(inv):
     c = Client(inv)
     c.session()
     for i in range(3):
-        st, b = c.turn(INVALIDA)
+        st, b = c.act("enviar_cedula", {"cedula": INVALIDA})
         check(st in (200, 400), f"intento {i + 1} → {st}")
         check(b.get("state") == "cedula", f"intento {i + 1} avanzó a {b.get('state')}")
         if i < 2:
@@ -284,7 +283,7 @@ def case_invalid_cedula_x3(inv):
 def case_new_cedula(inv):
     c = Client(inv)
     c.session()
-    st, b = c.turn(f"mi cédula es {NUEVA}")
+    st, b = c.act("enviar_cedula", {"cedula": NUEVA})
     check(st == 200 and b.get("state") == "consentimiento", f"→ {st} {b.get('state')}")
     note = ""
     st2, a = c.admin("crm")
@@ -398,7 +397,7 @@ def case_reset(inv):
     st, b = c.reset()
     check(st == 200 and b.get("state") == "cedula", f"reset → {st} {b.get('state')}")
     check(b.get("revision", 0) > rev, "revision no aumentó")
-    st, b = c.turn(PRACTICO)
+    st, b = c.act("enviar_cedula", {"cedula": PRACTICO})
     check(st == 200 and b.get("state") == "consentimiento", "tras reset no reinicia onboarding")
     return c, ""
 

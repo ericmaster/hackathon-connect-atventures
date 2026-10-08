@@ -13,7 +13,8 @@ test.describe('live mic denied', () => {
 		await page.getByRole('button', { name: /^hablar$/i }).click();
 		await expect(page.getByRole('alert').filter({ hasText: /permiso para usar tu micr[oó]fono/i })).toBeVisible({ timeout: 15_000 });
 		await expect(page.getByRole('button', { name: /^hablar$/i })).toBeVisible(); // not stuck listening
-		await enterCedula(page, '1710034065'); // typed in the main prompt (no separate field)
+		await page.getByRole('textbox', { name: /c[eé]dula/i }).fill('1710034065');
+		await page.getByRole('button', { name: /^continuar$/i }).last().click();
 		await expect(latestSurface(page).getByText(/privacidad|historial|consentimiento|autoriz/i).first()).toBeVisible();
 	});
 });
