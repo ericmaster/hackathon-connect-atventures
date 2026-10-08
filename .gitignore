@@ -23,3 +23,4 @@ docs/audios/*.m4a
 .DS_Store
 *.log
 coverage/
+__pycache__/

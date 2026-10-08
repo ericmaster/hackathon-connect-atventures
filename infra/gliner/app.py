@@ -1,34 +1,54 @@
-"""GLiNER2.5-Decide handler. Lambda entry = handler. Local: python app.py"""
+"""GLiNER2.5-multi-Decide handler. Lambda entry = handler. Local: python app.py "texto"..."""
 import json, os, time
 
-MODEL_ID = os.environ.get("MODEL_ID", "fastino/GLiNER2.5-Decide")
-MODEL_DIR = os.environ.get("MODEL_DIR")  # baked weights path in image
+MODEL_ID = os.environ.get("MODEL_ID", "fastino/GLiNER2.5-multi-Decide")
+MODEL_DIR = os.environ.get("MODEL_DIR")  # local weights dir
+MODEL_S3 = os.environ.get("MODEL_S3")  # s3://bucket/prefix/ -> /tmp/model on cold start (beats lazy image load)
+ENT_TH = float(os.environ.get("ENT_THRESHOLD", "0.15"))
 
+# intent id -> label text the model sees. Short EN phrases scored best (descriptions hurt).
 INTENTS = {
-    "buscar_producto": "user wants to find or buy a medicine or product",
-    "consulta_sintoma": "user describes a symptom or asks what to take",
-    "dar_cedula": "user gives their ID number (cedula)",
-    "farmacia_cercana": "user asks for the nearest pharmacy or store location",
-    "checkout": "user wants to pay or finish the purchase",
-    "emergencia_medica": "medical emergency: chest pain, cannot breathe, fainting, severe bleeding",
+    "buscar_producto": "buy medicine or product",
+    "consulta_sintoma": "ask about a symptom",
+    "dar_cedula": "give ID number",
+    "farmacia_cercana": "find nearest pharmacy",
+    "checkout": "pay",
+    "emergencia_medica": "medical emergency",
     "saludo": "greeting",
-    "otro": "anything else",
+    "otro": "other",
 }
+# entity -> description. Order/wording matters (tuned on synthetic ES set).
 ENTITIES = {
-    "sintoma": "symptom or illness",
-    "producto": "medicine or pharmacy product",
-    "cedula": "national ID number",
-    "ubicacion": "place, city or address",
+    "sintoma": "síntoma o enfermedad, ej. gripe, fiebre, tos, dolor de pecho",
+    "cedula": "número de cédula ecuatoriana de 10 dígitos",
+    "ubicacion": "ciudad, lugar o dirección",
+    "producto": "medicine, brand or pharmacy product name, e.g. paracetamol, ibuprofen, sunscreen",
 }
 
-_model, LOAD_S, _cold = None, None, True
+_model, LOAD_S, IO_S, _cold = None, None, None, True
+
+
+def _s3_fetch(uri, dst="/tmp/model"):
+    import boto3
+    from boto3.s3.transfer import TransferConfig
+    bucket, prefix = uri[5:].split("/", 1)
+    s3, cfg = boto3.client("s3"), TransferConfig(max_concurrency=16, multipart_chunksize=16 << 20)
+    for o in s3.list_objects_v2(Bucket=bucket, Prefix=prefix)["Contents"]:
+        out = os.path.join(dst, o["Key"][len(prefix):].lstrip("/"))
+        if not os.path.exists(out) or os.path.getsize(out) != o["Size"]:
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            s3.download_file(bucket, o["Key"], out, Config=cfg)
+    return dst
 
 
 def _get():
     # lazy: Lambda init phase caps at 10s, load in first invoke instead
-    global _model, LOAD_S
+    global _model, LOAD_S, IO_S, MODEL_DIR
     if _model is None:
         t0 = time.time()
+        if MODEL_S3:
+            MODEL_DIR = _s3_fetch(MODEL_S3)
+            IO_S = round(time.time() - t0, 2)
         import torch
         from gliner2 import AutoExtractor
         torch.set_num_threads(int(os.environ.get("THREADS", os.cpu_count() or 2)))
@@ -37,14 +57,20 @@ def _get():
     return _model
 
 
-def predict(text, intents=None, entities=None, threshold=0.4):
+def predict(text, intents=None, entities=None, threshold=None):
+    """intents: list of ids or {id: label_text}. entities: list or {name: description}."""
     m = _get()
-    s = m.create_schema()
-    s = s.classification("intent", intents or INTENTS)
-    s = s.entities(entities or ENTITIES)
+    it = intents or INTENTS
+    it = it if isinstance(it, dict) else {i: i for i in it}
+    back = {v: k for k, v in it.items()}
     t = time.time()
-    out = m.extract(text, s, threshold=threshold, include_confidence=True)
-    return out, round((time.time() - t) * 1000, 1)
+    c = m.classify_text(text, {"intent": list(back)}, include_confidence=True)["intent"]
+    e = m.extract_entities(text, entities or ENTITIES, threshold=threshold or ENT_TH,
+                           include_confidence=True)["entities"]
+    ms = round((time.time() - t) * 1000, 1)
+    return {"intent": {"label": back.get(c["label"], c["label"]), "confidence": round(c["confidence"], 3)},
+            "entities": {k: [{"text": x["text"], "confidence": round(x["confidence"], 3)} for x in v]
+                         for k, v in e.items() if v}}, ms
 
 
 def handler(event, context=None):
@@ -58,9 +84,9 @@ def handler(event, context=None):
     texts = event.get("texts") or [event.get("text", "")]
     res = []
     for tx in texts:
-        out, ms = predict(tx, event.get("intents"), event.get("entities"), event.get("threshold", 0.4))
+        out, ms = predict(tx, event.get("intents"), event.get("entities"), event.get("threshold"))
         res.append({"text": tx, "ms": ms, "out": out})
-    return {"model": MODEL_ID, "cold": cold, "load_s": LOAD_S, "results": res}
+    return {"model": MODEL_ID, "cold": cold, "load_s": LOAD_S, "io_s": IO_S, "results": res}
 
 
 if __name__ == "__main__":
@@ -72,6 +98,8 @@ if __name__ == "__main__":
         "¿dónde está la farmacia más cercana?",
         "quiero pagar",
         "me duele el pecho y no puedo respirar",
+        "quiero comprar paracetamol en Quito",
+        "tengo fiebre y tos desde ayer",
     ]
     r = handler({"texts": U})
     print(json.dumps(r, ensure_ascii=False, indent=1))
