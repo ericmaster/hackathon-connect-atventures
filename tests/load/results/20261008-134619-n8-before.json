@@ -1,0 +1,1262 @@
+{
+ "summary": {
+  "n": 8,
+  "tag": "before",
+  "start": "13:45:19",
+  "wall_s": 50.6,
+  "completed": 8,
+  "llm_turn_ms": {
+   "p50": 7391,
+   "p95": 8332,
+   "max": 8442,
+   "n": 8
+  },
+  "template_ms": {
+   "p50": 343,
+   "p95": 794,
+   "max": 861,
+   "n": 80
+  },
+  "llm_fallback_simulado": 0,
+  "http_429": 0,
+  "http_403": 0,
+  "http_5xx": 0,
+  "http_4xx_other": 0,
+  "requests": 88,
+  "per_step": {
+   "session": {
+    "p50": 324,
+    "p95": 379,
+    "max": 380,
+    "n": 8
+   },
+   "enviar_cedula": {
+    "p50": 345,
+    "p95": 439,
+    "max": 473,
+    "n": 8
+   },
+   "consentimiento": {
+    "p50": 331,
+    "p95": 446,
+    "max": 472,
+    "n": 8
+   },
+   "turn": {
+    "p50": 797,
+    "p95": 854,
+    "max": 861,
+    "n": 8
+   },
+   "seguridad(LLM)": {
+    "p50": 7391,
+    "p95": 8332,
+    "max": 8442,
+    "n": 8
+   },
+   "agregar_pedido": {
+    "p50": 342,
+    "p95": 466,
+    "max": 488,
+    "n": 8
+   },
+   "retirar_aqui": {
+    "p50": 362,
+    "p95": 438,
+    "max": 450,
+    "n": 8
+   },
+   "confirmar_reserva": {
+    "p50": 361,
+    "p95": 410,
+    "max": 418,
+    "n": 16
+   },
+   "facturacion_tipo": {
+    "p50": 382,
+    "p95": 455,
+    "max": 462,
+    "n": 8
+   },
+   "facturacion_dato": {
+    "p50": 336,
+    "p95": 383,
+    "max": 405,
+    "n": 8
+   }
+  },
+  "errors": [],
+  "cloudwatch": {
+   "throttling_lines": 0,
+   "llm_calls": 8,
+   "llm_failed": 0,
+   "llm_errors": [],
+   "llm_retries": 0,
+   "llm_validation_retry": 0,
+   "lambda_ms_llm": [
+    4578,
+    5542,
+    5707,
+    7364,
+    6602,
+    7491,
+    7471,
+    7781
+   ]
+  }
+ },
+ "judges": [
+  {
+   "judge": 0,
+   "cedula": "1710…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 378
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 473
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 332
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 842
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 7648
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 425
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 413
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 335
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 462
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 405
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 343
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 378,
+     "attempt": 0,
+     "t": 1791485121.6917515
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 473,
+     "attempt": 0,
+     "t": 1791485125.74821
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 332,
+     "attempt": 0,
+     "t": 1791485130.6056614
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 842,
+     "attempt": 0,
+     "t": 1791485135.781215
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 7648,
+     "attempt": 0,
+     "t": 1791485146.0338655
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 425,
+     "attempt": 0,
+     "t": 1791485150.27694
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 413,
+     "attempt": 0,
+     "t": 1791485154.3550098
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 335,
+     "attempt": 0,
+     "t": 1791485158.079903
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 462,
+     "attempt": 0,
+     "t": 1791485162.7777247
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 405,
+     "attempt": 0,
+     "t": 1791485165.7023144
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 343,
+     "attempt": 0,
+     "t": 1791485168.3334138
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 1,
+   "cedula": "1712…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 314
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 360
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 306
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 786
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8102
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 401
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 309
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 316
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 389
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 380
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 314,
+     "attempt": 0,
+     "t": 1791485122.9830835
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 360,
+     "attempt": 0,
+     "t": 1791485127.3694234
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 306,
+     "attempt": 0,
+     "t": 1791485130.0395014
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 786,
+     "attempt": 0,
+     "t": 1791485134.7457142
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8102,
+     "attempt": 0,
+     "t": 1791485147.4008582
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 401,
+     "attempt": 0,
+     "t": 1791485150.3688421
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 309,
+     "attempt": 0,
+     "t": 1791485153.4949079
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 316,
+     "attempt": 0,
+     "t": 1791485156.2518728
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 389,
+     "attempt": 0,
+     "t": 1791485160.6559196
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485165.6564088
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 380,
+     "attempt": 0,
+     "t": 1791485168.6524785
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 2,
+   "cedula": "1745…",
+   "text": "vitaminas para mi mamá",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 305
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 340
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 311
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 774
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 6016
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 321
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 388
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 314
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 340
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 319
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 379
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 305,
+     "attempt": 0,
+     "t": 1791485122.4009013
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 340,
+     "attempt": 0,
+     "t": 1791485126.5904715
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 311,
+     "attempt": 0,
+     "t": 1791485129.7848258
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 774,
+     "attempt": 0,
+     "t": 1791485134.16759
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 6016,
+     "attempt": 0,
+     "t": 1791485143.407663
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 321,
+     "attempt": 0,
+     "t": 1791485148.011376
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 388,
+     "attempt": 0,
+     "t": 1791485152.5011296
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 314,
+     "attempt": 0,
+     "t": 1791485156.3926013
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 340,
+     "attempt": 0,
+     "t": 1791485160.138534
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 319,
+     "attempt": 0,
+     "t": 1791485163.7366695
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 379,
+     "attempt": 0,
+     "t": 1791485167.8696377
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 3,
+   "cedula": "1703…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 304
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 343
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 322
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 761
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 7134
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 347
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 328
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 311
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 317
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 339
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 408
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 304,
+     "attempt": 0,
+     "t": 1791485122.8575711
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 343,
+     "attempt": 0,
+     "t": 1791485127.9534094
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 322,
+     "attempt": 0,
+     "t": 1791485133.0232606
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 761,
+     "attempt": 0,
+     "t": 1791485136.1546545
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 7134,
+     "attempt": 0,
+     "t": 1791485146.0536199
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 347,
+     "attempt": 0,
+     "t": 1791485150.07729
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 328,
+     "attempt": 0,
+     "t": 1791485152.864852
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 311,
+     "attempt": 0,
+     "t": 1791485156.6307533
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 317,
+     "attempt": 0,
+     "t": 1791485159.3640976
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 339,
+     "attempt": 0,
+     "t": 1791485162.3614697
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 408,
+     "attempt": 0,
+     "t": 1791485165.8036132
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 4,
+   "cedula": "1713…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 320
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 375
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 472
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 794
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8442
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 450
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 394
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 441
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 312
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 339
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 320,
+     "attempt": 0,
+     "t": 1791485122.122477
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 375,
+     "attempt": 0,
+     "t": 1791485126.8998797
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 472,
+     "attempt": 0,
+     "t": 1791485131.4245734
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 794,
+     "attempt": 0,
+     "t": 1791485136.1466892
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8442,
+     "attempt": 0,
+     "t": 1791485148.8772063
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485152.6457286
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 450,
+     "attempt": 0,
+     "t": 1791485156.0915933
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 394,
+     "attempt": 0,
+     "t": 1791485159.8488052
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 441,
+     "attempt": 0,
+     "t": 1791485162.5241132
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 312,
+     "attempt": 0,
+     "t": 1791485166.4873054
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 339,
+     "attempt": 0,
+     "t": 1791485170.4222345
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 5,
+   "cedula": "1747…",
+   "text": "vitaminas para mi mamá",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 329
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 347
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 398
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 861
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 4859
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 488
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 337
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 321
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 398
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 396
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 329,
+     "attempt": 0,
+     "t": 1791485122.893439
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 347,
+     "attempt": 0,
+     "t": 1791485126.6690068
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 398,
+     "attempt": 0,
+     "t": 1791485130.309588
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 861,
+     "attempt": 0,
+     "t": 1791485133.9520347
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 4859,
+     "attempt": 0,
+     "t": 1791485140.9906924
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 488,
+     "attempt": 0,
+     "t": 1791485144.1110477
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 337,
+     "attempt": 0,
+     "t": 1791485147.445442
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 321,
+     "attempt": 0,
+     "t": 1791485152.6295547
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 398,
+     "attempt": 0,
+     "t": 1791485157.8213105
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485162.3772187
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 396,
+     "attempt": 0,
+     "t": 1791485164.7857602
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 6,
+   "cedula": "1707…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 362
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 330
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 835
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8128
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 298
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 415
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 313
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 375
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 341
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 418
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 362,
+     "attempt": 0,
+     "t": 1791485120.7968302
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485125.2376635
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 330,
+     "attempt": 0,
+     "t": 1791485129.5833776
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 835,
+     "attempt": 0,
+     "t": 1791485134.5315034
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8128,
+     "attempt": 0,
+     "t": 1791485147.1926932
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 298,
+     "attempt": 0,
+     "t": 1791485151.5079248
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 415,
+     "attempt": 0,
+     "t": 1791485155.9113452
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 313,
+     "attempt": 0,
+     "t": 1791485160.651247
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 375,
+     "attempt": 0,
+     "t": 1791485163.5029008
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 341,
+     "attempt": 0,
+     "t": 1791485166.1418893
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 418,
+     "attempt": 0,
+     "t": 1791485169.358599
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 7,
+   "cedula": "1739…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 380
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 337
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 800
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 5869
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 325
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 304
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 397
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 323
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 335
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 396
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 380,
+     "attempt": 0,
+     "t": 1791485121.2569983
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485126.165284
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 337,
+     "attempt": 0,
+     "t": 1791485128.703425
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 800,
+     "attempt": 0,
+     "t": 1791485131.6056533
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 5869,
+     "attempt": 0,
+     "t": 1791485142.1445177
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 325,
+     "attempt": 0,
+     "t": 1791485144.7992516
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 304,
+     "attempt": 0,
+     "t": 1791485150.0182312
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 397,
+     "attempt": 0,
+     "t": 1791485153.87044
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 323,
+     "attempt": 0,
+     "t": 1791485158.1390085
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 335,
+     "attempt": 0,
+     "t": 1791485163.1987226
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 396,
+     "attempt": 0,
+     "t": 1791485168.3700683
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  }
+ ]
+}

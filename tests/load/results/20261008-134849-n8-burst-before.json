@@ -1,0 +1,1530 @@
+{
+ "summary": {
+  "n": 8,
+  "tag": "burst-before",
+  "start": "13:48:07",
+  "wall_s": 33.9,
+  "completed": 6,
+  "llm_turn_ms": {
+   "p50": 7734,
+   "p95": 8509,
+   "max": 8567,
+   "n": 6
+  },
+  "template_ms": {
+   "p50": 375,
+   "p95": 774,
+   "max": 824,
+   "n": 64
+  },
+  "llm_fallback_simulado": 0,
+  "http_429": 4,
+  "http_403": 0,
+  "http_5xx": 0,
+  "http_4xx_other": 0,
+  "requests": 138,
+  "tts": {
+   "n": 68,
+   "non200": 2,
+   "p95": 2224
+  },
+  "status_by_path": {
+   "/voice/tts 429": 2,
+   "/action 429": 2
+  },
+  "per_step": {
+   "session": {
+    "p50": 362,
+    "p95": 404,
+    "max": 412,
+    "n": 8
+   },
+   "enviar_cedula": {
+    "p50": 347,
+    "p95": 421,
+    "max": 424,
+    "n": 8
+   },
+   "consentimiento": {
+    "p50": 342,
+    "p95": 418,
+    "max": 427,
+    "n": 6
+   },
+   "turn": {
+    "p50": 778,
+    "p95": 820,
+    "max": 824,
+    "n": 6
+   },
+   "seguridad(LLM)": {
+    "p50": 7734,
+    "p95": 8509,
+    "max": 8567,
+    "n": 6
+   },
+   "agregar_pedido": {
+    "p50": 381,
+    "p95": 404,
+    "max": 405,
+    "n": 6
+   },
+   "retirar_aqui": {
+    "p50": 356,
+    "p95": 397,
+    "max": 401,
+    "n": 6
+   },
+   "confirmar_reserva": {
+    "p50": 355,
+    "p95": 459,
+    "max": 472,
+    "n": 12
+   },
+   "facturacion_tipo": {
+    "p50": 377,
+    "p95": 382,
+    "max": 384,
+    "n": 6
+   },
+   "facturacion_dato": {
+    "p50": 383,
+    "p95": 465,
+    "max": 472,
+    "n": 6
+   }
+  },
+  "errors": [
+   "j1: Fail: cédula → 429 None",
+   "j2: Fail: cédula → 429 None"
+  ],
+  "cloudwatch": {
+   "throttling_lines": 0,
+   "llm_calls": 6,
+   "llm_failed": 0,
+   "llm_errors": [],
+   "llm_retries": 0,
+   "llm_validation_retry": 0,
+   "lambda_ms_llm": [
+    4957,
+    5519,
+    6930,
+    7882,
+    7990,
+    8269
+   ]
+  }
+ },
+ "judges": [
+  {
+   "judge": 0,
+   "cedula": "1710…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 369
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 327
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 427
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 806
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 5263
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 402
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 385
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 434
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 376
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 472
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 442
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 369,
+     "attempt": 0,
+     "t": 1791485288.4354322
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1519,
+     "attempt": 0,
+     "t": 1791485289.9552426
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 327,
+     "attempt": 0,
+     "t": 1791485290.307529
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1513,
+     "attempt": 0,
+     "t": 1791485291.8210535
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 427,
+     "attempt": 0,
+     "t": 1791485291.8447435
+    },
+    {
+     "path": "/voice/tts",
+     "status": 429,
+     "ms": 278,
+     "attempt": 0,
+     "t": 1791485292.123203
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 806,
+     "attempt": 0,
+     "t": 1791485293.7037382
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1220,
+     "attempt": 0,
+     "t": 1791485294.924501
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 5263,
+     "attempt": 0,
+     "t": 1791485300.3293664
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 862,
+     "attempt": 0,
+     "t": 1791485301.1921225
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 402,
+     "attempt": 0,
+     "t": 1791485301.8096168
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 385,
+     "attempt": 0,
+     "t": 1791485303.5814736
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2186,
+     "attempt": 0,
+     "t": 1791485303.9960787
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1804,
+     "attempt": 0,
+     "t": 1791485305.386391
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 434,
+     "attempt": 0,
+     "t": 1791485305.8919458
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1626,
+     "attempt": 0,
+     "t": 1791485307.5189533
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 376,
+     "attempt": 0,
+     "t": 1791485308.2156188
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 885,
+     "attempt": 0,
+     "t": 1791485309.1016455
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 472,
+     "attempt": 0,
+     "t": 1791485310.007727
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 936,
+     "attempt": 0,
+     "t": 1791485310.9444242
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 442,
+     "attempt": 0,
+     "t": 1791485312.3992476
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2152,
+     "attempt": 0,
+     "t": 1791485314.551982
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 1,
+   "cedula": "1712…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 362
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 429,
+     "ms": 346
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 362,
+     "attempt": 0,
+     "t": 1791485288.4528713
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1444,
+     "attempt": 0,
+     "t": 1791485289.8970802
+    },
+    {
+     "path": "/action",
+     "status": 429,
+     "ms": 346,
+     "attempt": 0,
+     "t": 1791485290.5881214
+    }
+   ],
+   "ok": false,
+   "error": "Fail: cédula → 429 None"
+  },
+  {
+   "judge": 2,
+   "cedula": "1732…",
+   "text": "vitaminas para mi mamá",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 328
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 429,
+     "ms": 294
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 328,
+     "attempt": 0,
+     "t": 1791485288.443532
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1893,
+     "attempt": 0,
+     "t": 1791485290.337331
+    },
+    {
+     "path": "/action",
+     "status": 429,
+     "ms": 294,
+     "attempt": 0,
+     "t": 1791485290.6032386
+    }
+   ],
+   "ok": false,
+   "error": "Fail: cédula → 429 None"
+  },
+  {
+   "judge": 3,
+   "cedula": "1719…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 361
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 424
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 392
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 756
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8192
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 374
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 401
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 328
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 378
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 377
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 332
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 361,
+     "attempt": 0,
+     "t": 1791485288.495223
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 424,
+     "attempt": 0,
+     "t": 1791485289.961696
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1470,
+     "attempt": 0,
+     "t": 1791485289.9655952
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1608,
+     "attempt": 0,
+     "t": 1791485291.5703833
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 392,
+     "attempt": 0,
+     "t": 1791485291.7188308
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1415,
+     "attempt": 0,
+     "t": 1791485293.1345472
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 756,
+     "attempt": 0,
+     "t": 1791485293.7147484
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1083,
+     "attempt": 0,
+     "t": 1791485294.7986007
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8192,
+     "attempt": 0,
+     "t": 1791485303.8371158
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 954,
+     "attempt": 0,
+     "t": 1791485304.7920763
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 374,
+     "attempt": 0,
+     "t": 1791485305.8183389
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2099,
+     "attempt": 0,
+     "t": 1791485307.918374
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 401,
+     "attempt": 0,
+     "t": 1791485308.076258
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 328,
+     "attempt": 0,
+     "t": 1791485309.5636053
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1816,
+     "attempt": 0,
+     "t": 1791485309.8928957
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1723,
+     "attempt": 0,
+     "t": 1791485311.287135
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 378,
+     "attempt": 0,
+     "t": 1791485311.4707174
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 877,
+     "attempt": 0,
+     "t": 1791485312.3483312
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 377,
+     "attempt": 0,
+     "t": 1791485312.9762864
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1009,
+     "attempt": 0,
+     "t": 1791485313.9855518
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 332,
+     "attempt": 0,
+     "t": 1791485314.9519596
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2149,
+     "attempt": 0,
+     "t": 1791485317.1017656
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 4,
+   "cedula": "1721…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 329
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 348
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 314
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 749
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8335
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 388
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 313
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 323
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 368
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 369
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 395
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 329,
+     "attempt": 0,
+     "t": 1791485288.446596
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1424,
+     "attempt": 0,
+     "t": 1791485289.8715153
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 348,
+     "attempt": 0,
+     "t": 1791485290.136532
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1622,
+     "attempt": 0,
+     "t": 1791485291.758638
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 314,
+     "attempt": 0,
+     "t": 1791485292.194666
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1234,
+     "attempt": 0,
+     "t": 1791485293.4295962
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 749,
+     "attempt": 0,
+     "t": 1791485294.814079
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1231,
+     "attempt": 0,
+     "t": 1791485296.0462072
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8335,
+     "attempt": 0,
+     "t": 1791485304.4618876
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 954,
+     "attempt": 0,
+     "t": 1791485305.4161205
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 388,
+     "attempt": 0,
+     "t": 1791485306.7426233
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 313,
+     "attempt": 0,
+     "t": 1791485308.1030216
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2255,
+     "attempt": 0,
+     "t": 1791485308.9985538
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1776,
+     "attempt": 0,
+     "t": 1791485309.8798072
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 323,
+     "attempt": 0,
+     "t": 1791485310.3790922
+    },
+    {
+     "path": "/voice/tts",
+     "status": 429,
+     "ms": 346,
+     "attempt": 0,
+     "t": 1791485310.7256181
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 368,
+     "attempt": 0,
+     "t": 1791485311.8954515
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 866,
+     "attempt": 0,
+     "t": 1791485312.7624443
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 369,
+     "attempt": 0,
+     "t": 1791485313.3342252
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 943,
+     "attempt": 0,
+     "t": 1791485314.2776563
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 395,
+     "attempt": 0,
+     "t": 1791485315.580674
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2252,
+     "attempt": 0,
+     "t": 1791485317.8332853
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 5,
+   "cedula": "1744…",
+   "text": "vitaminas para mi mamá",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 388
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 409
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 328
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 779
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 5887
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 294
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 329
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 299
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 336
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 443
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 472
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 388,
+     "attempt": 0,
+     "t": 1791485288.6649897
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 409,
+     "attempt": 0,
+     "t": 1791485290.2498791
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2244,
+     "attempt": 0,
+     "t": 1791485290.9097424
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1474,
+     "attempt": 0,
+     "t": 1791485291.724155
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 328,
+     "attempt": 0,
+     "t": 1791485292.297156
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1244,
+     "attempt": 0,
+     "t": 1791485293.5417104
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 779,
+     "attempt": 0,
+     "t": 1791485294.0851114
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1079,
+     "attempt": 0,
+     "t": 1791485295.1648312
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 5887,
+     "attempt": 0,
+     "t": 1791485301.0192745
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 782,
+     "attempt": 0,
+     "t": 1791485301.802427
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 294,
+     "attempt": 0,
+     "t": 1791485302.458768
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2152,
+     "attempt": 0,
+     "t": 1791485304.6116045
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 329,
+     "attempt": 0,
+     "t": 1791485304.7882555
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 299,
+     "attempt": 0,
+     "t": 1791485306.2733448
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1628,
+     "attempt": 0,
+     "t": 1791485306.4169226
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1572,
+     "attempt": 0,
+     "t": 1791485307.8460767
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 336,
+     "attempt": 0,
+     "t": 1791485308.245903
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 913,
+     "attempt": 0,
+     "t": 1791485309.1595178
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 443,
+     "attempt": 0,
+     "t": 1791485309.7554448
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 953,
+     "attempt": 0,
+     "t": 1791485310.7089307
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 472,
+     "attempt": 0,
+     "t": 1791485312.080551
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2065,
+     "attempt": 0,
+     "t": 1791485314.1462593
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 6,
+   "cedula": "1710…",
+   "text": "algo para la gripe",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 321
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 415
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 332
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 824
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 7276
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 297
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 306
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 311
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 378
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 320
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 342
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 321,
+     "attempt": 0,
+     "t": 1791485288.4356937
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1469,
+     "attempt": 0,
+     "t": 1791485289.9057949
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 415,
+     "attempt": 0,
+     "t": 1791485290.042857
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1516,
+     "attempt": 0,
+     "t": 1791485291.5590737
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 332,
+     "attempt": 0,
+     "t": 1791485291.8595126
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1234,
+     "attempt": 0,
+     "t": 1791485293.094567
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 824,
+     "attempt": 0,
+     "t": 1791485294.4562285
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1136,
+     "attempt": 0,
+     "t": 1791485295.5925174
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 7276,
+     "attempt": 0,
+     "t": 1791485302.8041258
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 969,
+     "attempt": 0,
+     "t": 1791485303.7740664
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 297,
+     "attempt": 0,
+     "t": 1791485304.2013004
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 306,
+     "attempt": 0,
+     "t": 1791485305.9303546
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2033,
+     "attempt": 0,
+     "t": 1791485306.2354681
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 311,
+     "attempt": 0,
+     "t": 1791485307.3283787
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1850,
+     "attempt": 0,
+     "t": 1791485307.7806592
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 378,
+     "attempt": 0,
+     "t": 1791485308.9975398
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1729,
+     "attempt": 0,
+     "t": 1791485309.0577297
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 917,
+     "attempt": 0,
+     "t": 1791485309.9154603
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 320,
+     "attempt": 0,
+     "t": 1791485311.03019
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 999,
+     "attempt": 0,
+     "t": 1791485312.029781
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 342,
+     "attempt": 0,
+     "t": 1791485312.688021
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2054,
+     "attempt": 0,
+     "t": 1791485314.7420986
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  },
+  {
+   "judge": 7,
+   "cedula": "1745…",
+   "text": "tengo tos",
+   "steps": [
+    {
+     "label": "session",
+     "status": 200,
+     "ms": 412
+    },
+    {
+     "label": "enviar_cedula",
+     "status": 200,
+     "ms": 342
+    },
+    {
+     "label": "consentimiento",
+     "status": 200,
+     "ms": 351
+    },
+    {
+     "label": "turn",
+     "status": 200,
+     "ms": 777
+    },
+    {
+     "label": "seguridad(LLM)",
+     "status": 200,
+     "ms": 8567
+    },
+    {
+     "label": "agregar_pedido",
+     "status": 200,
+     "ms": 405
+    },
+    {
+     "label": "retirar_aqui",
+     "status": 200,
+     "ms": 384
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 368
+    },
+    {
+     "label": "facturacion_tipo",
+     "status": 200,
+     "ms": 384
+    },
+    {
+     "label": "facturacion_dato",
+     "status": 200,
+     "ms": 389
+    },
+    {
+     "label": "confirmar_reserva",
+     "status": 200,
+     "ms": 449
+    }
+   ],
+   "http": [
+    {
+     "path": "/session",
+     "status": 200,
+     "ms": 412,
+     "attempt": 0,
+     "t": 1791485288.7220001
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1918,
+     "attempt": 0,
+     "t": 1791485290.6405365
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 342,
+     "attempt": 0,
+     "t": 1791485290.9051738
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1537,
+     "attempt": 0,
+     "t": 1791485292.4427738
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 351,
+     "attempt": 0,
+     "t": 1791485292.8426695
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1316,
+     "attempt": 0,
+     "t": 1791485294.159521
+    },
+    {
+     "path": "/turn",
+     "status": 200,
+     "ms": 777,
+     "attempt": 0,
+     "t": 1791485295.2916784
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1061,
+     "attempt": 0,
+     "t": 1791485296.353544
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 8567,
+     "attempt": 0,
+     "t": 1791485305.7784204
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 825,
+     "attempt": 0,
+     "t": 1791485306.6036298
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 405,
+     "attempt": 0,
+     "t": 1791485307.500629
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 384,
+     "attempt": 0,
+     "t": 1791485309.231879
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2309,
+     "attempt": 0,
+     "t": 1791485309.8103442
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1890,
+     "attempt": 0,
+     "t": 1791485311.122936
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 368,
+     "attempt": 0,
+     "t": 1791485311.4189322
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 1696,
+     "attempt": 0,
+     "t": 1791485313.1152859
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 384,
+     "attempt": 0,
+     "t": 1791485313.5267167
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 953,
+     "attempt": 0,
+     "t": 1791485314.4801743
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 389,
+     "attempt": 0,
+     "t": 1791485315.7844121
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 945,
+     "attempt": 0,
+     "t": 1791485316.7296212
+    },
+    {
+     "path": "/action",
+     "status": 200,
+     "ms": 449,
+     "attempt": 0,
+     "t": 1791485317.9181893
+    },
+    {
+     "path": "/voice/tts",
+     "status": 200,
+     "ms": 2072,
+     "attempt": 0,
+     "t": 1791485319.9910467
+    }
+   ],
+   "ok": true,
+   "llm_mode": "real",
+   "llm_label": "seguridad(LLM)"
+  }
+ ]
+}
