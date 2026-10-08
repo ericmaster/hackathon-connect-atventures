@@ -2,7 +2,7 @@
 
 > Estado: borrador del 8 oct 2026. **Decidido** = acordado con Eric. **Propuesta** = falta que Eric lo confirme. **Por definir** = no está decidido. **En prueba** = se está probando.
 > Fuentes: `PITCH.md`, `services/dashboard/canvas.json`, `services/dashboard/value-prop.json` y `docs/DRIVE-SUMMARY.md`. Requisitos SRI: fuentes oficiales en §7.4.
-> Actualizado 8 oct 12:06 con la revisión de Eric (§19).
+> Actualizado 8 oct 12:06 con la revisión de Eric (§19). 8 oct 12:22: modelo del LLM de respuesta decidido (§10).
 
 ## 1. Resumen
 El Farmacéutico Virtual es un asistente de Farmaenlace al que le hablas o le escribes y que **arma en el momento la pantalla que necesitas**: productos, la farmacia más cercana y tu beneficio SmartClub, sin catálogos ni formularios. Está pensado para los clientes que hoy evitan las apps y la web. Entran por un QR en la farmacia que les da un beneficio y se identifican solo con su cédula. Los datos de facturación se piden una sola vez, justo antes de la primera compra.
@@ -147,7 +147,7 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 | Cédula válida sin perfil CRM | Crear perfil nuevo (§7.1). |
 | Dato desconocido (ubicación, etc.) | El asistente lo pregunta. |
 | Micrófono bloqueado | Pedir que lo habilite; la entrada de texto sigue disponible. |
-| JSON A2UI inválido o throttling de Bedrock | Reintento con backoff exponencial; tras N intentos (propuesta: 3), **fail closed**: mensaje fijo seguro y **ninguna acción ejecutada**. |
+| JSON A2UI inválido o throttling de Bedrock | A2UI inválido (chequeos de forma de `tests/llm`): **un reintento**. Throttling: reintento con backoff exponencial (N por definir). Si sigue fallando, **fail closed**: mensaje fijo seguro y **ninguna acción ejecutada**. |
 | Cold start de GLiNER | Pings de warm-up antes del demo; por ahora se toleran demoras. |
 
 ### 7.8 Reinicio de la conversación (decidido 8 oct)
@@ -203,7 +203,11 @@ En el demo todo esto es simulado con datos sintéticos: ninguna cédula ni dato 
 - **Turno (orden decidido 8 oct):** voz → STT → **GLiNER2.5-multi-Decide** (solo clasifica intención y extrae entidades) → **guardrails** → **dispatcher determinista propio** (solo lecturas a la API mock: catálogo, stock, farmacias, CRM) → **LLM de Bedrock** genera la respuesta en A2UI → se valida contra el schema → TTS de la frase corta. **Acciones comerciales** (agregar, reservar, facturar): solo después de guardrails + **confirmación del usuario** (`action` A2UI), y las ejecuta el dispatcher.
 - **GLiNER2.5-multi-Decide** (decidido, **funciona en Lambda**: contenedor, pesos desde S3): clasifica y extrae; **no** despacha acciones. **Cold start:** pings de warm-up antes del demo; por ahora se toleran demoras.
 - **Dispatch de acciones** (decidido): código determinista propio, no el modelo.
-- **LLM de Bedrock** (decidido): solo genera la respuesta en el schema A2UI, con **temperatura baja**. **Modelo pendiente del benchmark** (corre aparte). Candidatos: **Claude Haiku 4.5**, **Nova 2 Lite** (si está disponible) y **Gemma 3 27B**. Gemini 3.8 Flash **no está en Bedrock** (de Google solo aparecen Gemma 3 4B/12B/27B). **Propuesta:** los pasos fijos del FSM (onboarding, facturación) usan plantillas A2UI sin LLM.
+- **LLM de Bedrock** (decidido): solo genera la respuesta en el schema A2UI. **Modelo (decidido, Eric 8 oct 12:22): Claude Haiku 4.5**, vía inference profile `us.anthropic.claude-haiku-4-5-20251001-v1:0`. **Temperatura 0,1 en producción** (suena menos robótico); **0 solo en la suite de pruebas** (determinismo). El benchmark dio 100% con 0 y con 0,2.
+  - **Prompt v2** de `tests/llm` (`system_prompt.md`): JSONL, **un componente por línea** (un `updateComponents` por componente). Antes de renderizar, se valida la forma con los chequeos de `tests/llm` (`checks.py`); si falla, **se reintenta una vez** y luego fail closed (§7.7).
+  - **Modelo configurable por variable de entorno.** Upgrade preferido: **Claude Haiku 5.5** si los organizadores lo habilitan (hoy bloqueado por *private marketplace eligibility*; además rechaza `temperature`, así que no se envía). Fallback barato: **gpt-oss-120b** (`openai.gpt-oss-120b-1:0`; 100% con prompt v2).
+  - **Descartados:** Nova 2 Lite (JSON inválido y sugiere productos ante una alarma) y Gemma 3 27B (JSON inválido, latencia muy variable). Evidencia: `tests/llm/results/BENCHMARK.md` y `docs/MODEL-BENCHMARKS.md`. Gemini 3.8 Flash **no está en Bedrock**.
+  - **Propuesta:** los pasos fijos del FSM (onboarding, facturación) usan plantillas A2UI sin LLM.
 - **Consistencia (requisito decidido, 8 oct):** no se exigen respuestas idénticas, sí comportamiento consistente. **Suite de pruebas** de los casos más comunes sobre contextos pre-armados (fixtures sintéticos: perfiles, carritos, estados de conversación). Verifica comportamiento, no texto exacto: JSON A2UI válido, componentes correctos, guardrails respetados, ninguna condición verbalizada (§6).
 - **Límite de Bedrock (máx. 1 RPS, decidido):** una pequeña pausa entre llamadas encadenadas a Bedrock y reintentos con backoff exponencial ante throttling o A2UI inválido; tras N intentos, fail closed (§7.7). Transcribe y Polly no cuentan para ese límite.
 - **Voz (decidido, Eric 8 oct 10:38 — lo más simple):**
@@ -261,7 +265,7 @@ Estado al 8 oct.
 
 | Componente | Demo |
 |---|---|
-| LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real** (modelo pendiente del benchmark, §10) |
+| LLM A2UI (AWS Bedrock, máx. 1 RPS) | **Real**: Claude Haiku 4.5, temperatura 0,1 (0 en tests) (§10) |
 | GLiNER2.5-multi-Decide (AWS Lambda) | **Real**: funciona en Lambda (contenedor, pesos desde S3) |
 | STT (Transcribe) y TTS (Polly) | **Real**: probados |
 | PWA y web híbrida (AWS Amplify) | **Desplegadas** en Amplify como mocks |
@@ -282,7 +286,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - **Criterio MVP (decidido, Eric 8 oct 10:38):** lo más simple en cada elección abierta.
   - Voz: Transcribe streaming `es-US` + Polly Lupe (§10).
   - Renderer A2UI: Svelte mínimo propio (§9).
-  - Facturación: "consumidor final" si total ≤ USD 50 c/IVA; si no, nombre + ID + email (§7.4).
+  - Facturación: "consumidor final" + email si total ≤ USD 50 c/IVA; si no, nombre + ID + email. Email siempre obligatorio (§7.4).
   - Cierre: reservar y retirar; pago al retirar; factura mock al confirmar (§7.3, §7.5).
   - Casos borde: fallback más simple de §7.7.
 - **Demo:** 2 arquetipos contrastantes (§6.1); reposición solo en el chat (§6.2); botón de reinicio solo en el demo (§7.8); GLiNER caliente con warm-up (§10).
@@ -302,7 +306,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 
 ## 18. Preguntas abiertas
 1. ~~**Pago**~~ **Cerrada (8 oct):** se paga al retirar; factura mock al confirmar (§7.5).
-2. **Modelo de Bedrock para generar A2UI:** pendiente del benchmark. Candidatos: Claude Haiku 4.5, Nova 2 Lite (si está disponible), Gemma 3 27B (§10).
+2. ~~**Modelo de Bedrock para generar A2UI**~~ **Cerrada (Eric 8 oct 12:22):** Claude Haiku 4.5, temperatura 0,1 en producción y 0 en tests; configurable por env (upgrade Haiku 5.5, fallback gpt-oss-120b) (§10).
 3. **Cruce de datos con SmartClub en un piloto:** acceso, consentimiento y protección de datos.
 4. **Canal real del hand-off:** presencial, teléfono o WhatsApp.
 5. **Guardrails propuestos en §8:** falta la confirmación de Eric.
@@ -310,7 +314,7 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 7. **Early adopters y "voz del cliente":** falta validar con mentores y sponsors (observar, no preguntar).
 8. **Meta "100k socios SmartClub":** no tiene fuente. El deck dice 75.377.
 9. ~~**Reposición proactiva: chat o push**~~ **Cerrada (8 oct):** solo en el chat (§6.2).
-10. **Periodo de inactividad** para reiniciar la conversación en producción (§7.8) y **N** de reintentos antes del fail closed (§7.7).
+10. **Periodo de inactividad** para reiniciar la conversación en producción (§7.8) y **N** de reintentos ante throttling antes del fail closed (§7.7; A2UI inválido: un reintento).
 
 ## 19. Decisiones registradas
 - **Beneficio del QR:** promoción abierta; la define Farmaenlace (monto, tipo y quién la financia). En el demo: cupón de bienvenida en la primera reserva (8 oct).
@@ -342,4 +346,5 @@ Orden de trabajo de Eric: diseño de producto → diseño de arquitectura → de
 - **Demo (Eric 8 oct 12:06):** 2 arquetipos contrastantes; reposición solo en el chat (cierra la pregunta del push) (§6.1, §6.2).
 - **Web híbrida (Eric 8 oct 12:06):** se mantiene (visión omnicanal); prototipo en https://main.dfsvbpju4hwi2.amplifyapp.com (§13).
 - **Email de facturación obligatorio (Eric 8 oct 12:11):** siempre que se piden datos de facturación (nombre + ID + email), el email es obligatorio; con consumidor final también se pide el email para enviar la factura/RIDE. Motivo: toda la facturación es electrónica y la factura se entrega por email (§7.4).
+- **Modelo LLM de respuesta (Eric 8 oct 12:22):** Claude Haiku 4.5, temperatura 0,1 en producción (menos robótico) y 0 solo en la suite de pruebas, inference profile `us.anthropic.claude-haiku-4-5-20251001-v1:0`; prompt v2 de `tests/llm` (JSONL, un componente por línea); forma validada con los chequeos de `tests/llm` antes de renderizar, un reintento. Modelo configurable por env: upgrade Haiku 5.5 si lo habilitan (sin `temperature`), fallback gpt-oss-120b. Nova 2 Lite y Gemma 3 27B descartados (`tests/llm/results/BENCHMARK.md`, `docs/MODEL-BENCHMARKS.md`). Cierra la pregunta abierta (§10, §18).
 - **Real vs simulado (8 oct):** GLiNER multi-Decide funciona en Lambda; Transcribe/Polly probados; PWA y web desplegadas en Amplify como mocks (§15).
