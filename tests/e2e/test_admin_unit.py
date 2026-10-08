@@ -31,6 +31,11 @@ class AdminTest(unittest.TestCase):
         self.assertEqual(len(admin.handle("farmacias")[1]["items"]), 5)
         self.assertEqual(len(admin.handle("crm")[1]["items"]), 3)
 
+    def test_list_service_body(self):
+        b = admin.list_service("pedidos")
+        self.assertEqual(b["service"], "pedidos")
+        self.assertIsInstance(b["items"], list)
+
     def test_logs(self):
         st, body = admin.handle("logs")
         self.assertEqual(st, 200)

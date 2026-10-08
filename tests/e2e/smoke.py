@@ -130,6 +130,9 @@ def check(cond, msg):
         raise Fail(msg)
 
 
+LAST_CLIENTS = []
+
+
 class Client:
     """Una sesión del contrato con su identidad sintética."""
 
@@ -141,6 +144,7 @@ class Client:
         self.state = None
         self.last = None
         self.calls = []  # (label, status, ms)
+        LAST_CLIENTS.append(self)
 
     def _call(self, method, path, body=None, label=None, identity=None):
         st, b, ms = self.inv(event(method, path, body, identity or self.identity))
@@ -193,10 +197,11 @@ class Client:
         check(st == 200 and b.get("state") == "resumen", f"retirar_aqui → {st} {b.get('state')} {err(b)}")
         return b
 
-    def billing(self, prefer_cf):
+    def billing(self, prefer_cf, start=True):
         """Responde la facturación pregunta a pregunta. Devuelve (respuesta_confirmacion, offered_cf)."""
-        st, b = self.act("confirmar_reserva", {"confirm": True})
-        check(st == 200, f"confirmar_reserva → {st} {err(b)}")
+        if start:
+            st, b = self.act("confirmar_reserva", {"confirm": True})
+            check(st == 200, f"confirmar_reserva → {st} {err(b)}")
         offered_cf = False
         values = {"email": "comprador.demo@example.com", "nombre": "María Demo Sintética",
                   "identificacion": NUEVA}
@@ -218,13 +223,13 @@ class Client:
                 st, b = self.act("facturacion_dato", {"campo": campo, "valor": values.get(campo, "x")})
                 check(st == 200, f"dato {campo} → {st} {err(b)}")
                 continue
-            if "facturacion_tipo" in names and not prefer_cf:
-                st, b = self.act("facturacion_tipo", {"tipo": "datos"})
-                check(st == 200, f"tipo datos → {st} {err(b)}")
-                continue
             if "confirmar_reserva" in names:
                 st, b = self.act("confirmar_reserva", {"confirm": True})
                 check(st == 200, f"confirmar_reserva final → {st} {err(b)}")
+                continue
+            if "facturacion_tipo" in names and not prefer_cf:
+                st, b = self.act("facturacion_tipo", {"tipo": "datos"})
+                check(st == 200, f"tipo datos → {st} {err(b)}")
                 continue
             raise Fail(f"facturación sin acción reconocible: {names}")
         raise Fail("facturación no terminó en 8 pasos")
@@ -298,7 +303,6 @@ def case_consent_no(inv):
     # contraste (informativo): con consentimiento debería aparecer reposición
     c2 = Client(inv)
     b2 = c2.onboard(CUIDADOR, consent=True)
-    c.calls += c2.calls
     return c, ("con consentimiento: Reposicion ✓" if (has(b2, "Reposicion") or has(b2, "SugerenciaPersonalizada"))
                else "con consentimiento: sin Reposicion (revisar)")
 
@@ -371,7 +375,8 @@ def case_billing_gt50(inv):
     check(st >= 400 or c.state == "facturacion", f"consumidor final aceptado >$50 ({st})")
     c._cf_sent = True
     # sigue con datos completos (billing() vuelve a confirmar)
-    conf, _ = c.billing(prefer_cf=False)
+    check(not str(c.last.get("state")) == "confirmacion", "confirmó con consumidor final >$50")
+    conf, _ = c.billing(prefer_cf=False, start=False)
     s = json.dumps(find(conf, "FacturaMock")[0], ensure_ascii=False)
     check("9999999999999" not in s and NUEVA in s and "@" in s, "factura >$50 sin nombre/ID/email")
     return c, ""
@@ -412,6 +417,16 @@ def case_admin_readonly(inv):
     return c, " ".join(notes)
 
 
+def case_voice(inv):
+    c = Client(inv)
+    st, b = c._call("POST", "/voice/stt-url", {"language": "es-US", "sampleRate": 16000}, "voice/stt-url")
+    check(st == 200 and str(b.get("url", "")).startswith("wss://transcribestreaming."), f"stt-url → {st} {err(b)}")
+    check("X-Amz-Signature=" in b["url"], "url sin firma")  # nunca se imprime
+    st, t = c._call("POST", "/voice/tts", {"text": "Hola, soy tu Farmacéutico Virtual."}, "voice/tts")
+    check(st == 200 and len(t.get("audio", "")) > 1000, f"tts → {st} {err(t)}")
+    return c, f"tts engine={t.get('engine')} polly_ms={t.get('ms')}"
+
+
 CASES = [
     ("happy_path", case_happy_path),
     ("invalid_cedula_x3", case_invalid_cedula_x3),
@@ -424,6 +439,7 @@ CASES = [
     ("reset", case_reset),
     ("other_identity_403", case_other_identity),
     ("admin_readonly", case_admin_readonly),
+    ("voice", case_voice),
 ]
 
 
@@ -440,6 +456,7 @@ def main():
         if a.only and name not in a.only:
             continue
         t0 = time.perf_counter()
+        LAST_CLIENTS.clear()
         c, ok, note = None, False, ""
         try:
             c, note = fn(inv)
@@ -450,7 +467,7 @@ def main():
             note = f"ERROR: {type(e).__name__}: {str(e)[:200]}"
             if os.environ.get("FV_E2E_DEBUG"):
                 traceback.print_exc()
-        calls = getattr(c, "calls", []) if c else []
+        calls = [x for cl in LAST_CLIENTS for x in cl.calls]
         ms = [x[2] for x in calls]
         rows.append({"case": name, "ok": ok, "calls": len(calls), "total_ms": round((time.perf_counter() - t0) * 1000),
                      "max_ms": max(ms) if ms else 0, "slowest": max(calls, key=lambda x: x[2])[0] if calls else "",

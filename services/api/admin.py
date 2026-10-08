@@ -3,6 +3,7 @@
 La Lambda de A lo usa así (GET /admin/{service}, GET /admin/logs):
     import admin
     status, body = admin.handle(service, event)   # body = {"service", "items", "count"}
+    body = admin.list_service(service)            # lo que ya usa handler.py (sin chequeo de allowlist)
 
 Nunca escribe. Lee con mock.py/store.py de A (tabla única `connect-atv-data`):
     CAT/P#<sku> · PHARM/PH#<id> (stock embebido) · SEED/CRM#<cedula> + SBX#<sid>/CRM#<cedula>
@@ -47,11 +48,17 @@ def _crm_items():
     return out
 
 
-def list_service(service: str) -> list:
+def service_items(service: str) -> list:
     if service not in SERVICES:
         raise KeyError(service)
     items = _crm_items() if service == "crm" else _mock().admin_list(service)
     return _jsonable((items or [])[:MAX_ITEMS])
+
+
+def list_service(service: str) -> dict:
+    """Body completo para GET /admin/{service} (lo llama handler.py de A tal cual)."""
+    items = service_items(service)
+    return {"service": service, "items": items, "count": len(items)}
 
 
 def list_logs(limit: int = 100) -> list:
@@ -83,7 +90,7 @@ def handle(service: str, event: dict | None = None, limit: int | None = None):
         if service == "logs":
             items = list_logs(limit or 100)
         else:
-            items = list_service(service)
+            items = service_items(service)
     except KeyError:
         return 404, {"error": {"code": "not_found", "message": f"Servicio desconocido: {service}"},
                      "services": list(SERVICES) + ["logs"]}
