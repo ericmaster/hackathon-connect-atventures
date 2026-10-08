@@ -63,6 +63,8 @@ def save(s, old_rev):
 
 
 def out(s, messages, spoken, mode="real"):
+    if s.get("senior") and messages and isinstance(messages[0].get("createSurface"), dict):
+        messages[0]["createSurface"]["theme"] = dict(messages[0]["createSurface"].get("theme") or {}, senior=True)
     return {"sessionId": s["sessionId"], "state": s["state"], "revision": s["revision"],
             "messages": messages, "spokenText": spoken, "mode": mode}
 
@@ -133,6 +135,7 @@ def do_consent(s, acepta):
     p = profile_of(s)
     p["consent"] = {"value": bool(acepta), "ts": datetime.now(mock.EC_TZ).isoformat(timespec="seconds")}
     mock.save_profile(s["sessionId"], p)
+    s["senior"] = bool(acepta) and p.get("archetype") == "Cuidador"  # UI por arquetipo solo con consentimiento
     cust = mock.public_customer(p)
     coupon = mock.get_coupon(s["sessionId"], s["cedula"])
     repo = mock.due_reposicion(p)

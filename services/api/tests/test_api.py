@@ -127,11 +127,20 @@ class TestFSM(Base):
     def test_cuidador_reposicion_and_why_has_no_condition(self):
         r = self.onboard(CUIDADOR)
         self.assertIn("SugerenciaPersonalizada", types(r))
+        self.assertEqual(r["messages"][0]["createSurface"].get("theme"), {"senior": True})
+        self.assertNotIn("por_que", json.dumps(r))  # el botón lo pinta la PWA
+        rep = next(c for c in checks.components_of(r["messages"]) if c["component"] == "SugerenciaPersonalizada")
+        self.assertTrue(rep["why"])
         blob = json.dumps(r, ensure_ascii=False).lower()
         self.assertNotIn("hipertens", blob)
         r = self.act(r, "por_que", {"sku": "FV-2001"})
         self.assertNotIn("hipertens", json.dumps(r, ensure_ascii=False).lower())
         self.assertIn("sueles", json.dumps(r, ensure_ascii=False).lower())
+
+    def test_no_senior_theme_without_consent_or_for_practico(self):
+        for ced, consent in ((CUIDADOR, False), (PRACTICO, True)):
+            r = self.onboard(ced, consent)
+            self.assertNotIn("theme", r["messages"][0]["createSurface"])
 
     def test_owner_check(self):
         r = call("POST /session", identity="us-east-1:aaa")

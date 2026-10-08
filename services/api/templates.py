@@ -103,7 +103,6 @@ def listo(rev, customer, coupon, repo=None, repo_product=None, pharmacy=None):
                        "cashback": f"Doble cashback SmartClub · {money(p['price'] * p['cashback_pct'] * 2 / 100)}"},
               why=f"Te lo sugiero porque lo compras {repo['ritmo']} y tu última compra fue hace {repo['ultima_compra_hace_dias']} días.",
               action={"event": {"name": "reservar", "context": {"sku": p["sku"], "confirm": True}}})
-        s.button("why", "¿Por qué me sugieres esto?", "por_que", {"sku": p["sku"]}, variant="borderless")
     s.text("t2", "¿En qué te ayudo hoy? Puedes hablarme o escribirme.", "body")
     return s.messages()
 

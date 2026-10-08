@@ -27,6 +27,8 @@ Owner: A (backend). Readers: B (PWA/A2UI), C (voz/admin). Keep this EXACT; chang
 - `messages`: always ONE new surface per response: first `createSurface` (`surfaceId` = `fv-<revision>`, catalogId
   `https://farmaenlace.ec/a2ui/fv/v1`), then `updateComponents` (one or more, one has id `root`), optional `updateDataModel`.
   Append surfaces to the chat history; older surfaces are stale (their buttons fail the revision check).
+- `createSurface.theme`: `{"senior": true}` on EVERY surface once a **Cuidador** profile has **accepted consent**
+  (PWA enables large text). Absent otherwise (no consent → no archetype UI, §6.5). Cleared by `/demo/reset`.
 - `spokenText`: short phrase for TTS (send to `/voice/tts`), never contains conditions.
 - `mode`: `"real"` = server/AI pipeline ran for real (GLiNER + Haiku, or a deterministic template step);
   `"simulado"` = a fallback was used (GLiNER cold/timeout → keyword intent, or Bedrock failed → safe template).
@@ -104,7 +106,8 @@ DateTimeInput, ChoicePicker, Slider. Functions: required, regex, length, numeric
 Custom FV (flat props, as in `tests/llm/system_prompt.md`):
 - `ProductCard`: sku, name, detail, price, cashback, stock, ventaLibre, note?, action{event:{name:"agregar_pedido",context:{sku,confirm:true}}}
 - `PharmacyCard`: pharmacyId, name, distance, hours, stock, phone, mapsUrl, action (retirar_aqui {pharmacyId})
-- `SugerenciaPersonalizada` / `Reposicion`: message, product{sku,name,price,cashback}, why, action (reservar {sku,confirm:true})
+- `SugerenciaPersonalizada` / `Reposicion`: message, product{sku,name,price,cashback}, why, action (reservar {sku,confirm:true}).
+  The server sends NO separate "¿Por qué…?" Button: the PWA card renders it from `why` (or may send `por_que {sku}`).
 - `AvisoSalud`: text
 - `ResumenPedido`: items[{name,qty,price}], total, cashback, pharmacy, subtotal?, iva?, coupon?, action (confirmar_reserva {confirm:true})
 - `ConfirmacionPedido`: orderNumber, pharmacy, pickupTime, qrValue
