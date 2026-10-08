@@ -78,5 +78,23 @@ export async function signedFetch(input: string, init: RequestInit = {}): Promis
 		creds = null; // credenciales expiradas/rotadas: un reintento
 		r = await (await getClient()).fetch(url, base);
 	}
+	// 429 = API Gateway throttle (antes de Lambda): reintentar con backoff
+	for (const delay of [700, 1600]) {
+		if (r.status !== 429) break;
+		if (init.signal?.aborted) return r;
+		await new Promise<void>((resolve) => {
+			const t = setTimeout(resolve, delay + Math.random() * 300);
+			init.signal?.addEventListener(
+				'abort',
+				() => {
+					clearTimeout(t);
+					resolve();
+				},
+				{ once: true }
+			);
+		});
+		if (init.signal?.aborted) return r;
+		r = await (await getClient()).fetch(url, base);
+	}
 	return r;
 }

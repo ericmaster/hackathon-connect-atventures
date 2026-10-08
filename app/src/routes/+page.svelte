@@ -22,10 +22,19 @@
 	let input = $state('');
 	let busy = $state(false);
 	let slow = $state(false);
+	let veryslow = $state(false);
 	let slowT: ReturnType<typeof setTimeout> | undefined;
+	let veryslowT: ReturnType<typeof setTimeout> | undefined;
 	$effect(() => {
-		if (busy) slowT = setTimeout(() => (slow = true), 1500);
-		else (clearTimeout(slowT), (slow = false));
+		if (busy) {
+			slowT = setTimeout(() => (slow = true), 1500);
+			veryslowT = setTimeout(() => (veryslow = true), 8000);
+		} else {
+			clearTimeout(slowT);
+			clearTimeout(veryslowT);
+			slow = false;
+			veryslow = false;
+		}
 	});
 	let listening = $state(false);
 	let partial = $state('');
@@ -273,7 +282,7 @@
 					<span class="size-2.5 animate-bounce rounded-full bg-primary-strong [animation-delay:150ms]"></span>
 					<span class="size-2.5 animate-bounce rounded-full bg-primary-strong [animation-delay:300ms]"></span>
 				</span>
-				<span class="text-lg">Pensando{slow ? ' tu respuesta, un momento…' : '…'}</span>
+				<span class="text-lg">{veryslow ? 'Pensando… Hay varias personas probando, un momento…' : `Pensando${slow ? ' tu respuesta, un momento…' : '…'}`}</span>
 			</div>
 		{/if}
 	</main>
