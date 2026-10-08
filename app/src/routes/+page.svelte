@@ -34,6 +34,7 @@
 	let list: HTMLElement;
 	let ac: AbortController | null = null;
 	let k = 0;
+	let gen = 0; // generación de petición: reset/start invalidan respuestas pendientes
 
 	const simulated = $derived(transport.kind === 'fake' || mode === 'simulado');
 	const latestSurface = $derived([...entries].reverse().find((e) => e.kind === 'surface')?.id);
@@ -49,13 +50,15 @@
 
 	async function start() {
 		startError = '';
+		const g = ++gen;
 		busy = true;
 		try {
-			handle(await transport.start());
+			const res = await transport.start();
+			if (g === gen) handle(res);
 		} catch (e) {
 			startError = `No pude conectar con la API (${(e as Error).message}).`;
 		} finally {
-			busy = false;
+			if (g === gen) busy = false;
 		}
 	}
 
@@ -83,17 +86,21 @@
 
 	async function call(fn: (signal: AbortSignal) => Promise<FvResponse>) {
 		if (!sessionId) return;
+		const g = gen;
 		busy = true;
-		ac = new AbortController();
+		const ctl = (ac = new AbortController());
 		try {
-			handle(await fn(ac.signal));
+			const res = await fn(ctl.signal);
+			if (g === gen) handle(res); // respuesta de antes de Reiniciar: se descarta
 		} catch (e) {
-			if ((e as Error).name !== 'AbortError')
+			if (g === gen && (e as Error).name !== 'AbortError')
 				entries.push({ key: k++, kind: 'error', text: 'Uy, no pude responder. Intenta de nuevo. No se hizo ningún cambio.' });
 		} finally {
-			busy = false;
-			ac = null;
-			scrollToLast();
+			if (g === gen) {
+				busy = false;
+				ac = null;
+				scrollToLast();
+			}
 		}
 	}
 
@@ -148,13 +155,16 @@
 		senior = false;
 		localStorage.removeItem(FV_CACHE_KEY);
 		sessionStorage.clear();
+		const g = ++gen;
+		ac = null;
 		busy = true;
 		try {
-			handle(await transport.reset(sessionId));
+			const res = await transport.reset(sessionId);
+			if (g === gen) handle(res);
 		} catch {
-			startError = 'No pude reiniciar la sesión.';
+			if (g === gen) startError = 'No pude reiniciar la sesión.';
 		} finally {
-			busy = false;
+			if (g === gen) busy = false;
 		}
 	}
 
